@@ -1,0 +1,32 @@
+<div class="accessibility-panel" [class.expanded]="isExpanded">
+  <button
+    class="main-button"
+    (click)="togglePanel()"
+    aria-label="Panel de accesibilidad"
+  >
+    <span class="icon">♿</span>
+  </button>
+  <div class="options-container" *ngIf="isExpanded">
+    <button
+      class="option"
+      (click)="increaseFont()"
+      title="Aumentar tamaño de texto"
+    >
+      <span class="icon">A+</span>
+      <span class="label">Aumentar</span>
+    </button>
+
+    <button class="option" (click)="resetFont()" title="Tamaño de texto normal">
+      <span class="icon">A </span>
+      <span class="label">Normal</span>
+    </button>
+    <button
+      class="option"
+      (click)="decreaseFont()"
+      title="Disminuir tamaño de texto"
+    >
+      <span class="icon">A-</span>
+      <span class="label">Disminuir</span>
+    </button>
+  </div>
+</div>

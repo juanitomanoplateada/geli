@@ -1,0 +1,49 @@
+<div class="confirm-code-background">
+  <div class="confirm-code-container">
+    <div class="confirm-code-header">
+      <button class="confirm-code-button-comeback" (click)="goBack()">←</button>
+    </div>
+    <div class="confirm-code-logos">
+      <img
+        class="confirm-code-logo uptc-logo"
+        src="/logo_uptc.png"
+        alt="Logo UPTC"
+      />
+      <hr class="confirm-code-divider" />
+      <img
+        class="confirm-code-logo incitema-logo"
+        src="/logo_incitema.png"
+        alt="Logo INCITEMA"
+      />
+    </div>
+    <h2 class="confirm-code-title">VALIDAR CÓDIGO DE RECUPERACIÓN</h2>
+    <p class="confirm-code-instructions">
+      Ingresa el código que enviamos a tu correo institucional
+    </p>
+    <form class="confirm-code-form" (ngSubmit)="login()">
+      <div class="confirm-code-code-wrapper">
+        <input
+          class="confirm-code-input code-input"
+          type="text"
+          [(ngModel)]="code"
+          name="code"
+          (input)="onCodeInput($event)"
+          placeholder="Código de Recuperación"
+          required
+        />
+      </div>
+      <button class="confirm-code-button" type="submit">Continuar</button>
+      <button
+        class="confirm-code-button resend-button"
+        type="button"
+        [disabled]="!canResend"
+        (click)="resendCode()"
+      >
+        Reenviar Código
+        <span *ngIf="!canResend" class="resend-counter"
+          >({{ countdown }}s)</span
+        >
+      </button>
+    </form>
+  </div>
+</div>

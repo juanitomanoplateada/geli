@@ -1,1 +1,15 @@
-/* You can add global styles to this file, and also import other style files */
+html,
+body,
+input,
+p,
+span,
+button {
+  font-size: var(--accessibility-fontSize, 16px);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}

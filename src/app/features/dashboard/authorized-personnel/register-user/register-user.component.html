@@ -1,0 +1,115 @@
+<div class="register-container">
+  <h1>Registro de Usuario</h1>
+  <p class="subtitle">
+    Ingrese los datos de la persona a registrar en el sistema.
+  </p>
+
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="email">Correo Institucional</label>
+      <div class="email-input-group">
+        <input
+          id="email"
+          type="text"
+          formControlName="email"
+          placeholder="Usuario Institucional"
+          class="form-control email-input"
+        />
+        <span class="domain-display">&#64;uptc.edu.co</span>
+      </div>
+      <div
+        *ngIf="
+          registerForm.get('email')?.invalid &&
+          registerForm.get('email')?.touched
+        "
+        class="error-message"
+      >
+        Ingrese un usuario institucional válido
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="fullName">Nombre de la Persona</label>
+      <input
+        id="fullName"
+        type="text"
+        formControlName="fullName"
+        placeholder="Nombre completo"
+        class="form-control"
+      />
+      <div
+        *ngIf="
+          registerForm.get('fullName')?.invalid &&
+          registerForm.get('fullName')?.touched
+        "
+        class="error-message"
+      >
+        Este campo es requerido
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="identification">Identificación</label>
+      <input
+        id="identification"
+        type="text"
+        formControlName="identification"
+        placeholder="Número de identificación"
+        class="form-control"
+      />
+      <div
+        *ngIf="
+          registerForm.get('identification')?.invalid &&
+          registerForm.get('identification')?.touched
+        "
+        class="error-message"
+      >
+        Este campo es requerido
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="role">Rol</label>
+      <select
+        id="role"
+        formControlName="role"
+        class="form-control"
+        (change)="onRoleChange($event)"
+      >
+        <option value="" disabled selected>Seleccione un rol</option>
+        <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+      </select>
+      <div
+        *ngIf="
+          registerForm.get('role')?.invalid && registerForm.get('role')?.touched
+        "
+        class="error-message"
+      >
+        Debe seleccionar un rol
+      </div>
+    </div>
+
+    <div class="form-group" *ngIf="showDateField()">
+      <label for="assignmentDate">Fecha de Asignación</label>
+      <input
+        id="assignmentDate"
+        type="date"
+        formControlName="assignmentDate"
+        class="form-control"
+      />
+    </div>
+
+    <div class="button-group">
+      <button type="button" class="btn cancel-btn" (click)="onCancel()">
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        class="btn submit-btn"
+        [disabled]="!registerForm.valid"
+      >
+        Registrar Persona
+      </button>
+    </div>
+  </form>
+</div>

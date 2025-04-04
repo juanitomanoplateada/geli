@@ -1,0 +1,69 @@
+<section class="layout">
+  <button class="menu-toggle" (click)="toggleSidebar()">☰</button>
+
+  <div class="sidebar" [class.open]="sidebarOpen">
+    <div class="logos-container">
+      <img src="/logo_incitema.png" alt="Logo INCITEMA" />
+    </div>
+
+    <a
+      routerLink="/dashboard/home"
+      class="menu-item"
+      [class.active]="isExactActive('/dashboard/home')"
+    >
+      Inicio
+    </a>
+
+    <div
+      class="menu-item"
+      (click)="toggleSubmenu('authorized-personnel')"
+      [class.active-parent]="isActive('/dashboard/authorized-personnel')"
+    >
+      Personal Autorizado
+      <span class="arrow" [class.open]="isSubmenuOpen('authorized-personnel')"
+        >▼</span
+      >
+    </div>
+    <div class="submenu" [class.open]="isSubmenuOpen('authorized-personnel')">
+      <a
+        routerLink="/dashboard/authorized-personnel/search-user"
+        [class.active]="isActive('/dashboard/authorized-personnel/search-user')"
+      >
+        Buscar Usuario
+      </a>
+      <a
+        routerLink="/dashboard/authorized-personnel/register-user"
+        [class.active]="
+          isActive('/dashboard/authorized-personnel/register-user')
+        "
+      >
+        Registrar Usuario
+      </a>
+    </div>
+
+    <a
+      routerLink="/dashboard/profile"
+      class="menu-item"
+      [class.active]="isExactActive('/dashboard/profile')"
+    >
+      Mi Perfil
+    </a>
+
+    <a
+      routerLink="/auth/login"
+      class="menu-item"
+      [class.active]="isExactActive('/auth/login')"
+    >
+      Cerrar Sesión
+    </a>
+  </div>
+
+  <div class="body">
+    <div class="top-bar">
+      <div class="info">
+        <span>RAMIREZ RAMIREZ RAMIREZ RAMIREZ - AREA DE CALIDAD</span>
+      </div>
+    </div>
+    <router-outlet></router-outlet>
+  </div>
+</section>

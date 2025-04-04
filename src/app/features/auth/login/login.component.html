@@ -1,0 +1,49 @@
+<div class="login-background">
+  <div class="login-container">
+    <div class="login-logos">
+      <img class="login-logo uptc-logo" src="/logo_uptc.png" alt="Logo UPTC" />
+      <hr class="login-divider" />
+      <img
+        class="login-logo incitema-logo"
+        src="/logo_incitema.png"
+        alt="Logo INCITEMA"
+      />
+    </div>
+    <h2 class="login-title">INICIAR SESIÓN</h2>
+    <p>Ingresa tus credenciales</p>
+    <form class="login-form" (ngSubmit)="onLogin()">
+      <div class="login-username-wrapper">
+        <input
+          class="login-input username-field"
+          type="text"
+          [(ngModel)]="username"
+          name="username"
+          (input)="handleUsernameInput($event)"
+          placeholder="Usuario Institucional"
+          required
+        />
+        <span class="login-domain">&#64;uptc.edu.co</span>
+      </div>
+      <div class="login-password-wrapper">
+        <input
+          class="login-input password-field"
+          [type]="isPasswordVisible ? 'text' : 'password'"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Contraseña"
+          required
+        />
+        <span
+          class="login-toggle-password"
+          (click)="togglePasswordVisibility()"
+        >
+          {{ isPasswordVisible ? "🙈" : "👁️" }}
+        </span>
+      </div>
+      <button class="login-button" type="submit">Acceder</button>
+    </form>
+    <a routerLink="../forgot-password" class="login-forgot-password"
+      >¿Olvidó su contraseña?</a
+    >
+  </div>
+</div>

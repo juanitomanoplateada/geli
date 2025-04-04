@@ -1,0 +1,266 @@
+/* Estilos generales */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  overflow-x: hidden;
+  width: 100vw;
+}
+
+/* Layout principal */
+.layout {
+  font-family: Arial, sans-serif;
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  height: 100vh;
+  width: 100%;
+}
+
+/* Sidebar */
+.sidebar {
+  background: #333;
+  color: white;
+  padding: 20px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  transition: all 0.3s ease;
+}
+
+.logos-container img {
+  max-width: 80%;
+  margin: 0 auto 20px auto;
+  display: block;
+  border-radius: 10px 30px 10px 30px;
+}
+
+.menu-item {
+  padding: 15px;
+  cursor: pointer;
+  background: #444;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.3s;
+  color: white;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu-item:hover {
+  background: #555;
+}
+
+.submenu {
+  display: none;
+  background: #555;
+  padding-left: 15px;
+  border-left: 3px solid #777;
+}
+
+.submenu.open {
+  display: block;
+}
+
+.submenu a {
+  display: block;
+  padding: 10px;
+  color: white;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.submenu a:hover {
+  background: #666;
+}
+
+.arrow {
+  transition: transform 0.3s;
+}
+
+.arrow.open {
+  transform: rotate(180deg);
+}
+
+/* Contenedor principal */
+.body {
+  background: #f4f4f4;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  width: 100%;
+}
+
+/* Franja amarilla dentro del body */
+.top-bar {
+  background: #ffcc00;
+  color: black;
+  padding: 15px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.top-bar .info {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-bar .info span {
+  margin: 0 1rem;
+}
+
+/* Barra de búsqueda */
+.search-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 800px;
+  background: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+}
+
+.search-container input {
+  width: 80%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.search-container button {
+  padding: 10px 20px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.search-container button:hover {
+  background: #218838;
+}
+
+/* Panel de resultados */
+.results-panel {
+  width: 100%;
+  max-width: 800px;
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+}
+
+/* Estilos activos */
+.menu-item.active {
+  color: #ffcc00 !important;
+  font-weight: bold;
+}
+
+.menu-item.active-parent {
+  color: #ffcc00 !important;
+}
+
+.submenu a.active {
+  color: #ffcc00 !important;
+  font-weight: bold;
+  background: #666;
+}
+
+/* Menú hamburguesa para móviles */
+.menu-toggle {
+  display: none;
+  background: #444;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+/* Media Queries para responsive */
+@media (max-width: 992px) {
+  .layout {
+    grid-template-columns: 200px 1fr;
+  }
+
+  .menu-item {
+    padding: 12px 10px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+    position: relative;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    width: 250px;
+    height: 100vh;
+    z-index: 1000;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .body {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .menu-toggle {
+    display: block;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+  }
+
+  .top-bar {
+    padding-left: 50px;
+  }
+}
+
+@media (max-width: 576px) {
+  .top-bar .info span {
+    font-size: 12px;
+    margin: 0 0.5rem;
+  }
+
+  .search-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-container input {
+    width: 100%;
+  }
+
+  .search-container button {
+    width: 100%;
+  }
+}

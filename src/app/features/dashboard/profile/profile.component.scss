@@ -1,0 +1,112 @@
+.student-profile-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  padding: 20px;
+}
+
+.profile-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  max-width: 800px;
+  width: 100%;
+}
+
+h1 {
+  color: #333;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+h3 {
+  color: #444;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+  margin-top: 20px;
+}
+
+.profile-section {
+  margin-bottom: 25px;
+}
+
+.profile-data-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.profile-data-row {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.data-label {
+  font-weight: bold;
+  min-width: 180px;
+  color: #555;
+}
+
+.data-value {
+  color: #333;
+}
+
+.password-change-form {
+  margin-top: 15px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.change-password-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #ffc107;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.password-field {
+  padding-right: 35px; /* Make space for the eye icon */
+  width: 100%;
+}
+
+.change-password-button:hover {
+  background-color: #45a049;
+}
