@@ -1,0 +1,40 @@
+<div class="history-container">
+  <div class="history-filters">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      placeholder="Search by laboratory..."
+    />
+    <select [(ngModel)]="selectedFilter" aria-label="Filter by availability">
+      <option value="">All</option>
+      <option value="Yes">Available</option>
+      <option value="No">Not Available</option>
+    </select>
+  </div>
+
+  <div class="history-content">
+    <aside class="history-sidebar">
+      <div
+        class="session-preview"
+        *ngFor="let session of filteredSessions"
+        (click)="selectSession(session)"
+        [class.active]="session === selectedSession"
+      >
+        <h4>{{ session.lab }}</h4>
+        <p>{{ session.equipment }}</p>
+        <span>{{ session.date }} - {{ session.time }}</span>
+      </div>
+    </aside>
+
+    <section class="history-detail" *ngIf="selectedSession">
+      <h2>Session Details</h2>
+      <p><strong>Laboratory:</strong> {{ selectedSession.lab }}</p>
+      <p><strong>Equipment:</strong> {{ selectedSession.equipment }}</p>
+      <p><strong>Date:</strong> {{ selectedSession.date }}</p>
+      <p><strong>Time:</strong> {{ selectedSession.time }}</p>
+      <p><strong>User:</strong> {{ selectedSession.user }}</p>
+      <p><strong>Available:</strong> {{ selectedSession.available }}</p>
+      <p><strong>Remarks:</strong> {{ selectedSession.remarks || "N/A" }}</p>
+    </section>
+  </div>
+</div>

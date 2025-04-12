@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
 
@@ -10,10 +10,20 @@ import { Router, RouterModule, RouterOutlet } from '@angular/router';
   styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent {
+  //userRole: string = 'PERSONAL_AUTORIZADO';
+  userRole: string = 'ANALISTA_CALIDAD';
   activeSubmenu: string | null = null;
   sidebarOpen: boolean = false;
 
   constructor(private router: Router) {}
+
+  ngOnInit() {
+    //this.userRole = this.authService.getCurrentUserRole();
+  }
+
+  hasRole(roles: string[]): boolean {
+    return roles.includes(this.userRole);
+  }
 
   toggleSubmenu(menu: string): void {
     this.activeSubmenu = this.activeSubmenu === menu ? null : menu;
@@ -25,14 +35,13 @@ export class DashboardComponent {
 
   isSubmenuOpen(menu: string): boolean {
     if (this.activeSubmenu === menu) return true;
-
-    // Auto-abrir el menú si está en una de sus rutas
     const menuRoutes: { [key: string]: string[] } = {
-      equipment: ['/dashboard/equipment-usage'],
       'authorized-personnel': ['/dashboard/authorized-personnel'],
-      // ... otras secciones
+      'laboratories': ['/dashboard/laboratories'],
+      'equipments-patterns': ['/dashboard/equipments-patterns'],
+      'reports': ['/dashboard/reports'],
+      'sessions': ['/dashboard/sessions'],
     };
-
     return (
       menuRoutes[menu]?.some((route) => this.router.url.includes(route)) ||
       false

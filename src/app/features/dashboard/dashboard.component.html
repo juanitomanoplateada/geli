@@ -1,69 +1,204 @@
-<section class="layout">
-  <button class="menu-toggle" (click)="toggleSidebar()">☰</button>
+<section class="dashboard-layout">
+  <button class="dashboard-toggle" (click)="toggleSidebar()">☰</button>
 
-  <div class="sidebar" [class.open]="sidebarOpen">
-    <div class="logos-container">
+  <nav class="dashboard-sidebar" [class.open]="sidebarOpen">
+    <div class="dashboard-logo">
       <img src="/logo_incitema.png" alt="Logo INCITEMA" />
     </div>
 
     <a
       routerLink="/dashboard/home"
-      class="menu-item"
+      class="dashboard-link"
       [class.active]="isExactActive('/dashboard/home')"
+      >Inicio</a
     >
-      Inicio
-    </a>
 
     <div
-      class="menu-item"
-      (click)="toggleSubmenu('authorized-personnel')"
-      [class.active-parent]="isActive('/dashboard/authorized-personnel')"
+      *ngIf="hasRole(['PERSONAL_AUTORIZADO'])"
+      class="dashboard-group"
+      [class.active]="isActive('/dashboard/sessions')"
     >
-      Personal Autorizado
-      <span class="arrow" [class.open]="isSubmenuOpen('authorized-personnel')"
-        >▼</span
-      >
+      <div class="dashboard-link" (click)="toggleSubmenu('sessions')">
+        Sesiones
+        <span class="arrow" [class.open]="isSubmenuOpen('sessions')">▼</span>
+      </div>
+      <div class="dashboard-submenu" [class.open]="isSubmenuOpen('sessions')">
+        <a
+          routerLink="/dashboard/sessions/register-session"
+          [class.active]="
+            isActive('/dashboard/sessions/register-session')
+          "
+          >Nueva Sesión / Sesión Actual</a
+        >
+        <a
+          routerLink="/dashboard/sessions/session-history"
+          [class.active]="
+            isActive(
+              '/dashboard/sessions/session-history'
+            )
+          "
+          >Historial</a
+        >
+      </div>
     </div>
-    <div class="submenu" [class.open]="isSubmenuOpen('authorized-personnel')">
-      <a
-        routerLink="/dashboard/authorized-personnel/search-user"
-        [class.active]="isActive('/dashboard/authorized-personnel/search-user')"
+
+    <div
+      *ngIf="hasRole(['ANALISTA_CALIDAD'])"
+      class="dashboard-group"
+      [class.active]="isActive('/dashboard/authorized-personnel')"
+    >
+      <div
+        class="dashboard-link"
+        (click)="toggleSubmenu('authorized-personnel')"
       >
-        Buscar Usuario
-      </a>
-      <a
-        routerLink="/dashboard/authorized-personnel/register-user"
-        [class.active]="
-          isActive('/dashboard/authorized-personnel/register-user')
-        "
+        Personal Autorizado
+        <span class="arrow" [class.open]="isSubmenuOpen('authorized-personnel')"
+          >▼</span
+        >
+      </div>
+      <div
+        class="dashboard-submenu"
+        [class.open]="isSubmenuOpen('authorized-personnel')"
       >
-        Registrar Usuario
-      </a>
+        <a
+          routerLink="/dashboard/authorized-personnel/search-user"
+          [class.active]="
+            isActive('/dashboard/authorized-personnel/search-user')
+          "
+          >Buscar Usuario</a
+        >
+        <a
+          routerLink="/dashboard/authorized-personnel/register-user"
+          [class.active]="
+            isActive('/dashboard/authorized-personnel/register-user')
+          "
+          >Registrar Usuario</a
+        >
+      </div>
+    </div>
+
+    <div
+      *ngIf="hasRole(['ANALISTA_CALIDAD'])"
+      class="dashboard-group"
+      [class.active]="isActive('/dashboard/laboratories')"
+    >
+      <div class="dashboard-link" (click)="toggleSubmenu('laboratories')">
+        Laboratorios
+        <span class="arrow" [class.open]="isSubmenuOpen('laboratories')"
+          >▼</span
+        >
+      </div>
+      <div
+        class="dashboard-submenu"
+        [class.open]="isSubmenuOpen('laboratories')"
+      >
+        <a
+          routerLink="/dashboard/laboratories/search-laboratory"
+          [class.active]="isActive('/dashboard/laboratories/search-laboratory')"
+          >Buscar Laboratorio</a
+        >
+        <a
+          routerLink="/dashboard/laboratories/register-laboratory"
+          [class.active]="
+            isActive('/dashboard/laboratories/register-laboratory')
+          "
+          >Registrar Laboratorio</a
+        >
+      </div>
+    </div>
+
+    <div
+      *ngIf="hasRole(['ANALISTA_CALIDAD'])"
+      class="dashboard-group"
+      [class.active]="isActive('/dashboard/equipments-patterns')"
+    >
+      <div
+        class="dashboard-link"
+        (click)="toggleSubmenu('equipments-patterns')"
+      >
+        Equipos / Patrones
+        <span class="arrow" [class.open]="isSubmenuOpen('equipments-patterns')"
+          >▼</span
+        >
+      </div>
+      <div
+        class="dashboard-submenu"
+        [class.open]="isSubmenuOpen('equipments-patterns')"
+      >
+        <a
+          routerLink="/dashboard/equipments-patterns/search-equipment-pattern"
+          [class.active]="
+            isActive('/dashboard/equipments-patterns/search-equipment-pattern')
+          "
+          >Buscar Equipo / Patrón</a
+        >
+        <a
+          routerLink="/dashboard/equipments-patterns/register-equipment-pattern"
+          [class.active]="
+            isActive(
+              '/dashboard/equipments-patterns/register-equipment-pattern'
+            )
+          "
+          >Registrar Equipo / Patrón</a
+        >
+      </div>
+    </div>
+
+    <div
+      *ngIf="hasRole(['ANALISTA_CALIDAD'])"
+      class="dashboard-group"
+      [class.active]="isActive('/dashboard/reports')"
+    >
+      <div class="dashboard-link" (click)="toggleSubmenu('reports')">
+        Reportes
+        <span class="arrow" [class.open]="isSubmenuOpen('reports')">▼</span>
+      </div>
+      <div class="dashboard-submenu" [class.open]="isSubmenuOpen('reports')">
+        <a
+          routerLink="/dashboard/reports/report-parameterized"
+          [class.active]="isActive('/dashboard/reports/report-parameterized')"
+          >Reporte Parametrizado</a
+        >
+        <a
+          routerLink="/dashboard/reports/report-users"
+          [class.active]="isActive('/dashboard/reports/report-users')"
+          >Reporte de Usuarios</a
+        >
+        <a
+          routerLink="/dashboard/reports/report-laboratories"
+          [class.active]="isActive('/dashboard/reports/report-laboratories')"
+          >Reporte de Laboratorios</a
+        >
+        <a
+          routerLink="/dashboard/reports/report-equipments-patterns"
+          [class.active]="
+            isActive('/dashboard/reports/report-equipments-patterns')
+          "
+          >Reporte de Equipos / Patrones</a
+        >
+      </div>
     </div>
 
     <a
       routerLink="/dashboard/profile"
-      class="menu-item"
+      class="dashboard-link"
       [class.active]="isExactActive('/dashboard/profile')"
+      >Mi Perfil</a
     >
-      Mi Perfil
-    </a>
-
     <a
       routerLink="/auth/login"
-      class="menu-item"
+      class="dashboard-link"
       [class.active]="isExactActive('/auth/login')"
+      >Cerrar Sesión</a
     >
-      Cerrar Sesión
-    </a>
-  </div>
+  </nav>
 
-  <div class="body">
-    <div class="top-bar">
-      <div class="info">
-        <span>RAMIREZ RAMIREZ RAMIREZ RAMIREZ - AREA DE CALIDAD</span>
-      </div>
-    </div>
+  <main class="dashboard-main">
+    <header class="dashboard-header">
+      <span class="dashboard-user-info"
+        >RAMIREZ RAMIREZ RAMIREZ RAMIREZ - {{ userRole }}</span
+      >
+    </header>
     <router-outlet></router-outlet>
-  </div>
+  </main>
 </section>

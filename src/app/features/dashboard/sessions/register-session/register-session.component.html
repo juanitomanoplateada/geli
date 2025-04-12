@@ -1,0 +1,192 @@
+<div class="session-container">
+  <div class="session-header">
+    <div class="session-row">
+      <h1>REGISTER EQUIPMENT / STANDARD USAGE</h1>
+
+      <!-- LAB SELECTOR -->
+      <div class="dropdown-select">
+        <div class="select-box" (click)="toggleLabDropdown()">
+          {{ selectedLab || "Select a laboratory" }}
+        </div>
+        <div class="dropdown" *ngIf="showLabDropdown">
+          <input
+            type="text"
+            [(ngModel)]="labSearch"
+            placeholder="Search lab..."
+          />
+          <div class="options">
+            <div
+              class="option"
+              *ngFor="let lab of filteredLabs"
+              (click)="selectLab(lab)"
+            >
+              {{ lab.name }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EQUIPMENT SELECTOR -->
+      <div class="dropdown-select" [class.disabled]="!selectedLab">
+        <div
+          class="select-box"
+          (click)="toggleEquipmentDropdown()"
+          [class.disabled]="!selectedLab"
+        >
+          {{ selectedEquipment || "Select equipment / standard" }}
+        </div>
+        <div class="dropdown" *ngIf="showEquipmentDropdown && selectedLab">
+          <input
+            type="text"
+            [(ngModel)]="equipmentSearch"
+            placeholder="Search equipment..."
+          />
+          <div class="options">
+            <div
+              class="option"
+              *ngFor="let equip of filteredEquipments"
+              (click)="selectEquipment(equip)"
+            >
+              {{ equip }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- START BUTTON -->
+      <button
+        class="primary-btn"
+        [disabled]="!selectedLab || !selectedEquipment"
+        (click)="startSession()"
+      >
+        Start
+      </button>
+    </div>
+  </div>
+
+  <div class="session-body">
+    <!-- LEFT PANEL -->
+    <div class="checkin-panel" *ngIf="sessionStarted">
+      <h3>Check-In</h3>
+
+      <div class="info-item">
+        <label>Date:</label>
+        <span>{{ checkIn.date }}</span>
+      </div>
+
+      <div class="info-item">
+        <label>Time:</label>
+        <span>{{ checkIn.time }}</span>
+      </div>
+
+      <div class="info-item">
+        <label>Laboratory:</label>
+        <span>{{ selectedLab }}</span>
+      </div>
+
+      <div class="info-item">
+        <label>Equipment:</label>
+        <span>{{ selectedEquipment }}</span>
+      </div>
+
+      <div class="info-item">
+        <label>Status Verified:</label>
+        <span>YES</span>
+      </div>
+
+      <div class="info-item">
+        <label>Responsible:</label>
+        <span>RAAA</span>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="checkout-panel" *ngIf="sessionStarted">
+      <h3>Check-Out</h3>
+
+      <label>
+        Availability:
+        <select
+          [(ngModel)]="availabilityStatus"
+          (change)="onAvailabilityChange(selectRef.value)"
+          #selectRef
+          class="styled-select"
+        >
+          <option value="">Select an option</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </label>
+
+      <ng-container *ngIf="availabilityStatus === 'Yes'">
+        <label>
+          Usage Duration:
+          <input type="text" [value]="usageDuration" readonly />
+        </label>
+
+        <label>
+          Sample Count:
+          <input type="number" [(ngModel)]="checkOut.sampleCount" />
+        </label>
+
+        <label>Used Functions:</label>
+
+        <div class="functions-container">
+          <div class="dropdown-select">
+            <div class="select-box" (click)="toggleFunctionDropdown()">
+              Search function...
+            </div>
+            <div class="dropdown" *ngIf="showFunctionDropdown">
+              <input
+                type="text"
+                [(ngModel)]="functionSearch"
+                placeholder="Search..."
+              />
+              <div class="options">
+                <div
+                  class="option"
+                  *ngFor="let func of filteredFunctions"
+                  (click)="selectFunction(func)"
+                >
+                  {{ func }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="function-tags">
+            <span class="tag" *ngFor="let func of selectedFunctions">
+              {{ func }}
+              <button class="remove-tag" (click)="removeFunction(func)">
+                ×
+              </button>
+            </span>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="availabilityStatus === 'No'">
+        <div class="alert-box">
+          If "No", please describe in the remarks the reason why the equipment
+          is not available.
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="availabilityStatus">
+        <label>
+          Remarks:
+          <textarea [(ngModel)]="checkOut.remarks"></textarea>
+        </label>
+      </ng-container>
+
+      <button
+        class="finish-btn"
+        [disabled]="!isFormValid"
+        [ngClass]="{ active: isFormValid }"
+        (click)="finishSession()"
+      >
+        Finish Session
+      </button>
+    </div>
+  </div>
+</div>

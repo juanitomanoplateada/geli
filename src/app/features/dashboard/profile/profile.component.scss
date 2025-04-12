@@ -1,52 +1,52 @@
-.student-profile-container {
+.user-profile-container {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 2rem;
   background-color: #f5f5f5;
-  padding: 20px;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .profile-card {
-  background-color: white;
-  border-radius: 8px;
+  background: white;
+  border-radius: 0.5rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 30px;
+  padding: 2rem;
   max-width: 800px;
   width: 100%;
 }
 
 h1 {
-  color: #333;
   text-align: center;
-  margin-bottom: 5px;
+  color: #333;
+  margin-bottom: 0.5rem;
 }
 
 h3 {
   color: #444;
   border-bottom: 1px solid #eee;
-  padding-bottom: 8px;
-  margin-top: 20px;
+  padding-bottom: 0.5rem;
+  margin-top: 2rem;
 }
 
 .profile-section {
-  margin-bottom: 25px;
+  margin-bottom: 2rem;
 }
 
 .profile-data-grid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: 10px;
-  margin-top: 15px;
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
 .profile-data-row {
   display: flex;
-  margin-bottom: 8px;
 }
 
 .data-label {
-  font-weight: bold;
   min-width: 180px;
+  font-weight: bold;
   color: #555;
 }
 
@@ -55,58 +55,84 @@ h3 {
 }
 
 .password-change-form {
-  margin-top: 15px;
+  margin-top: 1rem;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
 }
 
 .form-label {
-  display: block;
-  margin-bottom: 5px;
   font-weight: bold;
+  margin-bottom: 0.25rem;
+  display: block;
   color: #555;
 }
 
 .form-input {
-  width: 100%;
-  padding: 8px;
+  width: 95%;
+  padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  box-sizing: border-box;
 }
 
-.change-password-button {
-  background-color: #4CAF50;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.password-input-wrapper {
+.password-wrapper {
   position: relative;
 }
 
-.password-toggle-icon {
+.password-field {
+  padding-right: 2rem;
+}
+
+.toggle-icon {
   position: absolute;
-  right: 10px;
   top: 50%;
+  right: 0.75rem;
   transform: translateY(-50%);
   cursor: pointer;
   color: #ffc107;
-  -webkit-user-select: none;
-  user-select: none;
 }
 
-.password-field {
-  padding-right: 35px; /* Make space for the eye icon */
-  width: 100%;
+.submit-btn {
+  background-color: #4caf50;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+
+  &:disabled {
+    background: #757575;
+    color: #ccc;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: #45a049;
+  }
 }
 
-.change-password-button:hover {
-  background-color: #45a049;
+.error-message {
+  color: #d32f2f;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.feedback-message {
+  margin-top: 1rem;
+  text-align: center;
+  font-weight: bold;
+  border-radius: 4px;
+  padding: 0.75rem;
+
+  &.success {
+    background-color: #ccffcc;
+    color: #006600;
+  }
+
+  &.error {
+    background-color: #ffcccc;
+    color: #b30000;
+  }
 }

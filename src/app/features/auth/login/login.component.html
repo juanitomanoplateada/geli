@@ -11,6 +11,13 @@
     </div>
     <h2 class="login-title">INICIAR SESIÓN</h2>
     <p>Ingresa tus credenciales</p>
+    <div
+      *ngIf="loginMessage"
+      class="login-message"
+      [ngClass]="{ error: loginError, success: !loginError }"
+    >
+      {{ loginMessage }}
+    </div>
     <form class="login-form" (ngSubmit)="onLogin()">
       <div class="login-username-wrapper">
         <input
@@ -18,9 +25,9 @@
           type="text"
           [(ngModel)]="username"
           name="username"
-          (input)="handleUsernameInput($event)"
           placeholder="Usuario Institucional"
           required
+          appUppercaseNospace
         />
         <span class="login-domain">&#64;uptc.edu.co</span>
       </div>
@@ -40,7 +47,13 @@
           {{ isPasswordVisible ? "🙈" : "👁️" }}
         </span>
       </div>
-      <button class="login-button" type="submit">Acceder</button>
+      <button
+        class="login-button"
+        type="submit"
+        [disabled]="!username || !password"
+      >
+        Acceder
+      </button>
     </form>
     <a routerLink="../forgot-password" class="login-forgot-password"
       >¿Olvidó su contraseña?</a

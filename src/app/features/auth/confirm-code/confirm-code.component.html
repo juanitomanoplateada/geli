@@ -20,6 +20,13 @@
     <p class="confirm-code-instructions">
       Ingresa el código que enviamos a tu correo institucional
     </p>
+    <div
+      *ngIf="feedbackMessage"
+      class="confirm-code-message"
+      [ngClass]="{ error: isError, success: !isError }"
+    >
+      {{ feedbackMessage }}
+    </div>
     <form class="confirm-code-form" (ngSubmit)="login()">
       <div class="confirm-code-code-wrapper">
         <input
@@ -27,12 +34,14 @@
           type="text"
           [(ngModel)]="code"
           name="code"
-          (input)="onCodeInput($event)"
           placeholder="Código de Recuperación"
           required
+          appUppercaseNospace
         />
       </div>
-      <button class="confirm-code-button" type="submit">Continuar</button>
+      <button class="confirm-code-button" type="submit" [disabled]="!code">
+        Continuar
+      </button>
       <button
         class="confirm-code-button resend-button"
         type="button"

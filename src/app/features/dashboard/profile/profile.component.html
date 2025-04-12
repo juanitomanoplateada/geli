@@ -1,7 +1,8 @@
-<div class="student-profile-container">
+<div class="user-profile-container">
   <div class="profile-card">
     <h1>Perfil de Usuario</h1>
 
+    <!-- Sección de datos personales -->
     <div class="profile-section">
       <h3>Información Personal</h3>
       <div class="profile-data-grid">
@@ -28,80 +29,124 @@
       </div>
     </div>
 
+    <!-- Sección para cambio de contraseña -->
     <div class="profile-section">
       <h3>Cambio de Contraseña</h3>
-      <div class="password-change-form">
-        <!-- Current Password Field with Toggle -->
+      <form
+        class="password-change-form"
+        (ngSubmit)="changePassword()"
+        #changePasswordForm="ngForm"
+      >
+        <!-- Contraseña actual -->
         <div class="form-group">
           <label for="currentPassword" class="form-label"
-            >Actual Contraseña:</label
+            >Contraseña Actual:</label
           >
-          <div class="password-input-wrapper">
+          <div class="password-wrapper">
             <input
-              type="{{ isCurrentPasswordVisible ? 'text' : 'password' }}"
+              [type]="showCurrentPassword ? 'text' : 'password'"
               id="currentPassword"
               class="form-input password-field"
+              name="currentPassword"
               [(ngModel)]="currentPassword"
-              placeholder="Ingrese la actual contraseña"
+              (input)="onCurrentPasswordInput()"
+              placeholder="Ingrese la contraseña actual"
               required
             />
             <span
-              class="password-toggle-icon"
+              class="toggle-icon"
               (click)="togglePasswordVisibility('current')"
             >
-              {{ isCurrentPasswordVisible ? "🙈" : "👁️" }}
+              {{ showCurrentPassword ? "🙈" : "👁️" }}
             </span>
           </div>
         </div>
 
-        <!-- New Password Field with Toggle -->
-        <div class="form-group">
-          <label for="newPassword" class="form-label">Nueva Contraseña:</label>
-          <div class="password-input-wrapper">
-            <input
-              type="{{ isNewPasswordVisible ? 'text' : 'password' }}"
-              id="newPassword"
-              class="form-input password-field"
-              [(ngModel)]="newPassword"
-              placeholder="Ingrese la nueva contraseña"
-              required
-            />
-            <span
-              class="password-toggle-icon"
-              (click)="togglePasswordVisibility('new')"
+        <!-- Nueva contraseña y confirmación (se muestran si hay algo ingresado en la actual) -->
+        <div *ngIf="currentPassword.trim()">
+          <div class="form-group">
+            <label for="newPassword" class="form-label"
+              >Nueva Contraseña:</label
             >
-              {{ isNewPasswordVisible ? "🙈" : "👁️" }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Confirm Password Field with Toggle -->
-        <div class="form-group">
-          <label for="confirmPassword" class="form-label"
-            >Confirmar Nueva Contraseña:</label
-          >
-          <div class="password-input-wrapper">
-            <input
-              type="{{ isConfirmPasswordVisible ? 'text' : 'password' }}"
-              id="confirmPassword"
-              class="form-input password-field"
-              [(ngModel)]="confirmPassword"
-              placeholder="Confirme la nueva contraseña"
-              required
-            />
-            <span
-              class="password-toggle-icon"
-              (click)="togglePasswordVisibility('confirm')"
+            <div class="password-wrapper">
+              <input
+                [type]="showNewPassword ? 'text' : 'password'"
+                id="newPassword"
+                class="form-input password-field"
+                name="newPassword"
+                [(ngModel)]="newPassword"
+                (input)="validatePasswordForm()"
+                placeholder="Ingrese la nueva contraseña"
+                required
+              />
+              <span
+                class="toggle-icon"
+                (click)="togglePasswordVisibility('new')"
+              >
+                {{ showNewPassword ? "🙈" : "👁️" }}
+              </span>
+            </div>
+            <div
+              *ngIf="newPassword && !isNewPasswordValid"
+              class="error-message"
             >
-              {{ isConfirmPasswordVisible ? "🙈" : "👁️" }}
-            </span>
+              La contraseña debe tener al menos 8 caracteres, una mayúscula, una
+              minúscula, un número y un carácter especial.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label"
+              >Confirmar Nueva Contraseña:</label
+            >
+            <div class="password-wrapper">
+              <input
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                id="confirmPassword"
+                class="form-input password-field"
+                name="confirmPassword"
+                [(ngModel)]="confirmPassword"
+                (input)="validatePasswordForm()"
+                placeholder="Confirme la nueva contraseña"
+                required
+              />
+              <span
+                class="toggle-icon"
+                (click)="togglePasswordVisibility('confirm')"
+              >
+                {{ showConfirmPassword ? "🙈" : "👁️" }}
+              </span>
+            </div>
+            <div
+              *ngIf="confirmPassword && newPassword !== confirmPassword"
+              class="error-message"
+            >
+              Las contraseñas no coinciden.
+            </div>
           </div>
         </div>
 
-        <button class="change-password-button" (click)="changePassword()">
+        <!-- Botón de acción -->
+        <button
+          class="submit-btn"
+          type="submit"
+          [disabled]="!canSubmitPasswordChange"
+        >
           Cambiar Contraseña
         </button>
-      </div>
+
+        <!-- Mensaje de éxito o error -->
+        <div
+          *ngIf="feedbackMessage"
+          [ngClass]="
+            passwordChangeSuccessful
+              ? 'feedback-message success'
+              : 'feedback-message error'
+          "
+        >
+          {{ feedbackMessage }}
+        </div>
+      </form>
     </div>
   </div>
 </div>

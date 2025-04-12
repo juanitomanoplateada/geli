@@ -139,3 +139,27 @@ body {
   color: #ffc107;
   font-weight: bold;
 }
+
+.confirm-code-message {
+  margin: 15px;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.confirm-code-message.error {
+  background-color: #ffcccc;
+  color: #b30000;
+}
+
+.confirm-code-message.success {
+  background-color: #ccffcc;
+  color: #006600;
+}
+
+.confirm-code-button:disabled {
+  background: #757575;
+  cursor: not-allowed;
+  color: #ccc;
+}

@@ -1,0 +1,121 @@
+<div class="register-container">
+  <h1>Registro de Patrón de Equipo</h1>
+  <p class="subtitle">Ingrese los datos del nuevo patrón de equipo.</p>
+
+  <form [formGroup]="equipmentForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="nombre">Nombre del Patrón</label>
+      <input
+        id="nombre"
+        type="text"
+        formControlName="nombre"
+        placeholder="Ej: Patrón Genérico HP"
+        class="form-control"
+      />
+      <div
+        *ngIf="
+          equipmentForm.get('nombre')?.invalid &&
+          equipmentForm.get('nombre')?.touched
+        "
+        class="error-message"
+      >
+        El nombre es obligatorio
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="marca">Marca</label>
+      <input
+        id="marca"
+        type="text"
+        formControlName="marca"
+        placeholder="Ej: HP, Dell"
+        class="form-control"
+      />
+      <div
+        *ngIf="
+          equipmentForm.get('marca')?.invalid &&
+          equipmentForm.get('marca')?.touched
+        "
+        class="error-message"
+      >
+        La marca es obligatoria
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="numeroInventario">Código de Inventario</label>
+      <input
+        id="numeroInventario"
+        type="text"
+        formControlName="numeroInventario"
+        placeholder="Ej: PAT-001"
+        class="form-control"
+      />
+      <div
+        *ngIf="
+          equipmentForm.get('numeroInventario')?.invalid &&
+          equipmentForm.get('numeroInventario')?.touched
+        "
+        class="error-message"
+      >
+        El código de inventario es obligatorio
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="ubicacionLaboratorio">Laboratorio</label>
+      <select
+        id="ubicacionLaboratorio"
+        formControlName="ubicacionLaboratorio"
+        class="form-control"
+      >
+        <option value="" disabled selected>Seleccione un laboratorio</option>
+        <option *ngFor="let lab of laboratorios" [value]="lab.id">
+          {{ lab.nombre }}
+        </option>
+      </select>
+      <div
+        *ngIf="
+          equipmentForm.get('ubicacionLaboratorio')?.invalid &&
+          equipmentForm.get('ubicacionLaboratorio')?.touched
+        "
+        class="error-message"
+      >
+        Debe seleccionar un laboratorio
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="idFuncion">Función</label>
+      <select id="idFuncion" formControlName="idFuncion" class="form-control">
+        <option value="" disabled selected>Seleccione una función</option>
+        <option *ngFor="let funcion of funciones" [value]="funcion.id">
+          {{ funcion.nombre }}
+        </option>
+      </select>
+      <div
+        *ngIf="
+          equipmentForm.get('idFuncion')?.invalid &&
+          equipmentForm.get('idFuncion')?.touched
+        "
+        class="error-message"
+      >
+        Debe seleccionar una función
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button type="button" class="btn cancel-btn" (click)="onCancel()">
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        class="btn submit-btn"
+        [disabled]="!equipmentForm.valid"
+      >
+        Registrar Patrón
+      </button>
+    </div>
+  </form>
+</div>

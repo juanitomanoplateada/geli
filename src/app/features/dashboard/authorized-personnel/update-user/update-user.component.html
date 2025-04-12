@@ -1,1 +1,111 @@
-<p>update-user works!</p>
+<div class="update-container">
+  <h1>Actualización de Usuario</h1>
+  <p class="subtitle">
+    Modifique los datos de la persona registrada en el sistema.
+  </p>
+
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <!-- Email -->
+    <div class="form-group">
+      <label for="email">Correo Institucional</label>
+      <div class="email-input-group">
+        <input
+          id="email"
+          type="text"
+          formControlName="email"
+          class="form-control email-input"
+          placeholder="Usuario Institucional"
+          appUppercaseNospace
+        />
+        <span class="domain-display">&#64;uptc.edu.co</span>
+      </div>
+    </div>
+
+    <!-- Nombre completo (nombres + apellidos) -->
+    <div class="form-group">
+      <label>Nombre Completo de la Persona</label>
+      <div class="name-split-row">
+        <input
+          type="text"
+          placeholder="Nombres"
+          class="form-control"
+          formControlName="firstName"
+          appUppercase
+        />
+        <input
+          type="text"
+          placeholder="Apellidos"
+          class="form-control"
+          formControlName="lastName"
+          appUppercase
+        />
+      </div>
+    </div>
+
+    <!-- Identificación -->
+    <div class="form-group">
+      <label for="identification">Identificación</label>
+      <input
+        id="identification"
+        type="text"
+        formControlName="identification"
+        class="form-control"
+        placeholder="Número de identificación"
+        appUppercaseNospace
+      />
+    </div>
+
+    <!-- Rol -->
+    <div class="form-group">
+      <label for="role">Rol</label>
+      <select
+        id="role"
+        formControlName="role"
+        class="form-control"
+        (change)="onRoleChange($event)"
+      >
+        <option value="" disabled>Seleccione un rol</option>
+        <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+      </select>
+    </div>
+
+    <!-- Fecha de Asignación -->
+    <div class="form-group" *ngIf="showDateField()">
+      <label for="assignmentDate">Fecha de Asignación</label>
+      <input
+        id="assignmentDate"
+        type="date"
+        formControlName="assignmentDate"
+        class="form-control"
+      />
+    </div>
+
+    <!-- Estado -->
+    <div class="form-group">
+      <label for="status">Estado</label>
+      <select id="status" formControlName="status" class="form-control">
+        <option value="activo">Activo</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+    </div>
+
+    <!-- Feedback -->
+    <div
+      *ngIf="feedbackMessage"
+      [ngClass]="feedbackSuccess ? 'feedback success' : 'feedback error'"
+      class="feedback"
+    >
+      {{ feedbackMessage }}
+    </div>
+
+    <!-- Botones -->
+    <div class="button-group">
+      <button type="button" class="btn cancel-btn" (click)="onCancel()">
+        Cancelar
+      </button>
+      <button type="submit" class="btn submit-btn" [disabled]="!userForm.valid">
+        Guardar Cambios
+      </button>
+    </div>
+  </form>
+</div>

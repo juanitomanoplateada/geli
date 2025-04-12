@@ -128,3 +128,27 @@ body {
 .login-forgot-password:hover {
   text-decoration: underline;
 }
+
+.login-message {
+  margin: 15px;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.login-message.error {
+  background-color: #ffcccc;
+  color: #b30000;
+}
+
+.login-message.success {
+  background-color: #ccffcc;
+  color: #006600;
+}
+
+.login-button:disabled {
+  background: #757575;
+  cursor: not-allowed;
+  color: #ccc;
+}

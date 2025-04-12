@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { Location } from '@angular/common';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
+import { UppercaseNospaceDirective } from '../../../shared/uppercase-nospace.directive';
 
 @Component({
   selector: 'app-confirm-code',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, UppercaseNospaceDirective],
   templateUrl: './confirm-code.component.html',
   styleUrl: './confirm-code.component.scss',
 })
@@ -16,6 +17,8 @@ export class ConfirmCodeComponent implements OnInit, OnDestroy {
   canResend: boolean = false;
   countdown: number = 45;
   private interval: any;
+  feedbackMessage: string = '';
+  isError: boolean = false;
 
   constructor(
     private location: Location,
@@ -36,12 +39,19 @@ export class ConfirmCodeComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
-  onCodeInput(event: any) {
-    this.code = event.target.value.replace(/\s/g, '');
-  }
-
   login() {
-    console.log('Code:', this.code);
+    if (this.code.trim() === '123456') {
+      this.feedbackMessage = 'Código correcto. Puedes continuar.';
+      this.isError = false;
+      // Aquí podrías redirigir o avanzar al siguiente paso
+    } else {
+      this.feedbackMessage = 'El código ingresado no es válido.';
+      this.isError = true;
+    }
+
+    setTimeout(() => {
+      this.feedbackMessage = '';
+    }, 5000);
   }
 
   resendCode() {

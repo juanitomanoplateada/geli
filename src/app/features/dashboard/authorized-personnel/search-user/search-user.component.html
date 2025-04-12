@@ -1,1 +1,145 @@
-<p>search-user works!</p>
+<div class="search-container">
+  <div class="search-bar">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      (keyup)="onKeyUp($event)"
+      placeholder="Buscar por nombre o identificación..."
+      class="search-input"
+      [disabled]="isLoading"
+    />
+
+    <button (click)="onSearch()" class="search-button" [disabled]="isLoading">
+      <span class="search-icon">🔍</span>
+      <span *ngIf="!isLoading">Buscar</span>
+      <span *ngIf="isLoading">Buscando...</span>
+    </button>
+
+    <button
+      (click)="toggleAdvancedSearch()"
+      class="advanced-search-btn"
+      [disabled]="isLoading"
+    >
+      {{ showAdvancedSearch ? "Ocultar filtros" : "Búsqueda avanzada" }}
+    </button>
+  </div>
+
+  <div *ngIf="showAdvancedSearch" class="advanced-search">
+    <div class="filter-group">
+      <label for="estadoFilter">Estado:</label>
+      <select
+        id="estadoFilter"
+        [(ngModel)]="filters.estado"
+        (change)="onSearch()"
+        [disabled]="isLoading"
+      >
+        <option value="">Todos</option>
+        <option value="Activo">Activo</option>
+        <option value="Inactivo">Inactivo</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="rolFilter">Rol:</label>
+      <select
+        id="rolFilter"
+        [(ngModel)]="filters.rol"
+        (change)="onSearch()"
+        [disabled]="isLoading"
+      >
+        <option value="">Todos</option>
+        <option value="Administrador">Administrador</option>
+        <option value="Docente">Docente</option>
+        <option value="Estudiante">Estudiante</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="startDate">Fecha desde:</label>
+      <input
+        type="date"
+        id="startDate"
+        [(ngModel)]="filters.startDate"
+        (change)="onSearch()"
+        [disabled]="isLoading"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label for="endDate">Fecha hasta:</label>
+      <input
+        type="date"
+        id="endDate"
+        [(ngModel)]="filters.endDate"
+        (change)="onSearch()"
+        [disabled]="isLoading"
+      />
+    </div>
+
+    <button
+      (click)="clearFilters()"
+      class="clear-filters-btn"
+      [disabled]="isLoading"
+    >
+      Limpiar filtros
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Buscando usuarios...</p>
+  </div>
+
+  <div *ngIf="!isLoading && searchResults.length > 0" class="results-container">
+    <h3>Resultados ({{ searchResults.length }})</h3>
+    <div class="results-grid">
+      <div class="results-header">
+        <div>Nombre</div>
+        <div>Identificación</div>
+        <div>Estado</div>
+        <div>Rol</div>
+        <div>Fecha de Registro</div>
+        <div>Fecha de Modificación</div>
+        <div>Fecha Asignada</div>
+        <div>Acciones</div>
+      </div>
+
+      <div
+        *ngFor="let user of searchResults; trackBy: trackById"
+        class="result-item"
+      >
+        <div data-label="Nombre">{{ user.nombre }}</div>
+        <div data-label="Identificación">{{ user.identificacion }}</div>
+        <div data-label="Estado">{{ user.estado}}</div>
+        <div data-label="Rol">{{ user.rol.nombre }}</div>
+        <div data-label="Fecha de Registro">
+          {{ user.fechaCreacion | date : "dd/MM/yyyy" }}
+        </div>
+        <div data-label="Fecha de Modificación">
+          {{ user.fechaModificacion | date : "dd/MM/yyyy" }}
+        </div>
+        <div data-label="Fecha Asignada">
+          {{ user.fechaAsignacionPA | date : "dd/MM/yyyy" }}
+        </div>
+        <div data-label="Acciones">
+          <button
+            class="search-button"
+            (click)="goToUpdateUser(user.identificacion)"
+          >
+            Editar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="!isLoading && searchQuery && searchResults.length === 0"
+    class="no-results"
+  >
+    <p>No se encontraron usuarios para "{{ searchQuery }}"</p>
+    <button (click)="clearFilters()" class="try-again-btn">
+      Limpiar búsqueda
+    </button>
+  </div>
+</div>

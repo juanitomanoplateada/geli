@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { ProfileComponent } from './profile/profile.component';
-import { SearchUserComponent } from './authorized-personnel/search-user/search-user.component';
-import { RegisterUserComponent } from './authorized-personnel/register-user/register-user.component';
+import { authorizedPersonnelRoutes } from './authorized-personnel/authorized-personnel.routes';
+import { laboratoriesRoutes } from './laboratories/laboratories.routes';
+import { equipmentsPatternsRoutes } from './equipments-patterns/equipments-patterns.routes';
+import { sessionsRoutes } from './sessions/sessions.routes';
 
 export const dashboardRoutes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -10,9 +12,18 @@ export const dashboardRoutes: Routes = [
   { path: 'profile', component: ProfileComponent },
   {
     path: 'authorized-personnel',
-    children: [
-      { path: 'search-user', component: SearchUserComponent },
-      { path: 'register-user', component: RegisterUserComponent },
-    ],
+    children: authorizedPersonnelRoutes,
   },
+  {
+    path: 'laboratories',
+    children: laboratoriesRoutes,
+  },
+  {
+    path: 'equipments-patterns',
+    children: equipmentsPatternsRoutes,
+  },
+  {
+    path: 'sessions',
+    children: sessionsRoutes,
+  }
 ];
