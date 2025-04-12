@@ -127,11 +127,17 @@ export class RegisterSessionComponent {
     if (!this.availabilityStatus) return false;
 
     if (this.availabilityStatus === 'No') {
-      return this.countWords(this.checkOut.remarks || '') >= 5;
+      return (
+        this.checkOut.sampleCount !== null &&
+        this.selectedFunctions.length > 0 &&
+        this.countWords(this.checkOut.remarks || '') >= 1
+      );
     }
 
     if (this.availabilityStatus === 'Yes') {
-      return !!this.checkOut.sampleCount && this.selectedFunctions.length > 0;
+      return (
+        this.checkOut.sampleCount !== null && this.selectedFunctions.length > 0
+      );
     }
 
     return false;

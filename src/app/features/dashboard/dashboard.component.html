@@ -155,6 +155,11 @@
       </div>
       <div class="dashboard-submenu" [class.open]="isSubmenuOpen('reports')">
         <a
+          routerLink="/dashboard/sessions/session-history"
+          [class.active]="isActive('/dashboard/sessions/session-history')"
+          >Historia de Sesiones</a
+        >
+        <a
           routerLink="/dashboard/reports/report-parameterized"
           [class.active]="isActive('/dashboard/reports/report-parameterized')"
           >Reporte Parametrizado</a

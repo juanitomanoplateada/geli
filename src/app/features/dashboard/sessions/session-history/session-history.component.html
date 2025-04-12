@@ -1,17 +1,85 @@
 <div class="history-container">
-  <div class="history-filters">
+  <!-- Barra de búsqueda -->
+  <div class="search-bar">
     <input
       type="text"
       [(ngModel)]="searchQuery"
-      placeholder="Search by laboratory..."
+      (keyup)="onKeyUp($event)"
+      placeholder="Buscar por laboratorio o equipo..."
+      class="search-input"
+      [disabled]="isLoading"
     />
-    <select [(ngModel)]="selectedFilter" aria-label="Filter by availability">
-      <option value="">All</option>
-      <option value="Yes">Available</option>
-      <option value="No">Not Available</option>
-    </select>
+
+    <button (click)="onSearch()" class="search-button" [disabled]="isLoading">
+      🔍 <span *ngIf="!isLoading">Buscar</span>
+      <span *ngIf="isLoading">Buscando...</span>
+    </button>
+
+    <button
+      (click)="toggleAdvancedSearch()"
+      class="advanced-search-btn"
+      [disabled]="isLoading"
+    >
+      {{ showAdvancedSearch ? "Ocultar filtros" : "Búsqueda avanzada" }}
+    </button>
   </div>
 
+  <!-- Filtros avanzados -->
+  <div *ngIf="showAdvancedSearch" class="advanced-search">
+    <div class="filter-group">
+      <label for="dispFilter">Disponibilidad:</label>
+      <select
+        id="dispFilter"
+        [(ngModel)]="filters.available"
+        (change)="onSearch()"
+        [disabled]="isLoading"
+      >
+        <option value="">Todas</option>
+        <option value="Yes">Disponible</option>
+        <option value="No">No Disponible</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="funcionFilter">Función:</label>
+      <select
+        id="funcionFilter"
+        [(ngModel)]="filters.function"
+        (change)="onSearch()"
+        [disabled]="isLoading"
+      >
+        <option value="">Todas</option>
+        <option *ngFor="let f of availableFunctions" [value]="f">
+          {{ f }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="labFilter">Laboratorio:</label>
+      <select
+        id="labFilter"
+        [(ngModel)]="filters.lab"
+        (change)="onSearch()"
+        [disabled]="isLoading"
+      >
+        <option value="">Todos</option>
+        <option *ngFor="let lab of availableLabs" [value]="lab">
+          {{ lab }}
+        </option>
+      </select>
+    </div>
+
+    <button
+      (click)="clearFilters()"
+      class="clear-filters-btn"
+      [disabled]="isLoading"
+    >
+      Limpiar filtros
+    </button>
+  </div>
+
+  <!-- Contenido de historial -->
   <div class="history-content">
     <aside class="history-sidebar">
       <div
@@ -24,17 +92,39 @@
         <p>{{ session.equipment }}</p>
         <span>{{ session.date }} - {{ session.time }}</span>
       </div>
+
+      <div
+        *ngIf="filteredSessions.length === 0 && !isLoading"
+        class="no-results"
+      >
+        No se encontraron sesiones para mostrar.
+      </div>
     </aside>
 
     <section class="history-detail" *ngIf="selectedSession">
-      <h2>Session Details</h2>
-      <p><strong>Laboratory:</strong> {{ selectedSession.lab }}</p>
-      <p><strong>Equipment:</strong> {{ selectedSession.equipment }}</p>
-      <p><strong>Date:</strong> {{ selectedSession.date }}</p>
-      <p><strong>Time:</strong> {{ selectedSession.time }}</p>
-      <p><strong>User:</strong> {{ selectedSession.user }}</p>
-      <p><strong>Available:</strong> {{ selectedSession.available }}</p>
-      <p><strong>Remarks:</strong> {{ selectedSession.remarks || "N/A" }}</p>
+      <h2>Detalles de la Sesión</h2>
+      <p><strong>Marca Temporal:</strong> {{ selectedSession.lab }}</p>
+      <p><strong>Correo Electrónico:</strong> {{ selectedSession.lab }}</p>
+      <p><strong>Laboratorio:</strong> {{ selectedSession.lab }}</p>
+      <p><strong>Equipo:</strong> {{ selectedSession.equipment }}</p>
+      <p><strong>Fecha:</strong> {{ selectedSession.date }}</p>
+      <p><strong>Hora:</strong> {{ selectedSession.time }}</p>
+      <p><strong>Estado - Verificado:</strong> {{ selectedSession.user }}</p>
+      <p><strong>Estado - Para uso:</strong> {{ selectedSession.user }}</p>
+      <p><strong>Tiempo de uso:</strong> {{ selectedSession.user }}</p>
+      <p>
+        <strong>Cantidad de muestras analizadas:</strong>
+        {{ selectedSession.available }}
+      </p>
+      <p>
+        <strong>Funciones utilizadas:</strong>
+        {{ selectedSession.functionsUsed?.join(", ") || "N/A" }}
+      </p>
+      <p>
+        <strong>Observaciones:</strong>
+        {{ selectedSession.observations || "N/A" }}
+      </p>
+      <p><strong>Responsable a cargo:</strong> {{ selectedSession.time }}</p>
     </section>
   </div>
 </div>
