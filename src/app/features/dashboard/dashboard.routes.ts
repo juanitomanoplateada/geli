@@ -5,6 +5,7 @@ import { authorizedPersonnelRoutes } from './authorized-personnel/authorized-per
 import { laboratoriesRoutes } from './laboratories/laboratories.routes';
 import { equipmentsPatternsRoutes } from './equipments-patterns/equipments-patterns.routes';
 import { sessionsRoutes } from './sessions/sessions.routes';
+import { reportsRoutes } from './reports/reports.routes';
 
 export const dashboardRoutes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -25,5 +26,9 @@ export const dashboardRoutes: Routes = [
   {
     path: 'sessions',
     children: sessionsRoutes,
-  }
+  },
+  {
+    path: 'reports',
+    children: reportsRoutes,
+  },
 ];
