@@ -9,7 +9,11 @@
       [disabled]="isLoading"
     />
 
-    <button (click)="onSearch()" class="search-button" [disabled]="isLoading">
+    <button
+      (click)="performSearch()"
+      class="search-button"
+      [disabled]="isLoading"
+    >
       <span class="search-icon">🔍</span>
       <span *ngIf="!isLoading">Buscar</span>
       <span *ngIf="isLoading">Buscando...</span>
@@ -25,12 +29,13 @@
   </div>
 
   <div *ngIf="showAdvancedSearch" class="advanced-search">
+    <!-- Filtro: Disponibilidad -->
     <div class="filter-group">
-      <label for="dispFilter">Disponibilidad:</label>
+      <label for="availabilityFilter">Disponibilidad:</label>
       <select
-        id="dispFilter"
-        [(ngModel)]="filters.disponibilidad"
-        (change)="onSearch()"
+        id="availabilityFilter"
+        [(ngModel)]="filters.availability"
+        (change)="performSearch()"
         [disabled]="isLoading"
       >
         <option value="">Todas</option>
@@ -39,22 +44,35 @@
       </select>
     </div>
 
-    <div class="filter-group">
-      <label for="ubicacionFilter">Ubicación:</label>
-      <select
-        id="ubicacionFilter"
-        [(ngModel)]="filters.ubicacion"
-        (change)="onSearch()"
-        [disabled]="isLoading"
+    <!-- Filtro: Ubicación con buscador embebido -->
+    <div class="filter-group dropdown-search">
+      <label for="locationDropdown">Ubicación:</label>
+      <div class="select-box" (click)="toggleDropdown()">
+        {{ selectedLocationLabel }}
+      </div>
+
+      <div
+        class="dropdown"
+        *ngIf="dropdownOpen"
+        (click)="$event.stopPropagation()"
       >
-        <option value="">Todas</option>
-        <option
-          *ngFor="let ubicacion of ubicacionesDisponibles"
-          [value]="ubicacion"
-        >
-          {{ ubicacion }}
-        </option>
-      </select>
+        <input
+          type="text"
+          [(ngModel)]="locationSearchTerm"
+          [ngModelOptions]="{ standalone: true }"
+          (input)="filterLocations()"
+          placeholder="Buscar ubicación..."
+        />
+        <div class="options">
+          <div
+            class="option"
+            *ngFor="let loc of filteredLocations"
+            (click)="selectLocation(loc)"
+          >
+            {{ loc }}
+          </div>
+        </div>
+      </div>
     </div>
 
     <button
@@ -71,8 +89,8 @@
     <p>Buscando laboratorios...</p>
   </div>
 
-  <div *ngIf="!isLoading && searchResults.length > 0" class="results-container">
-    <h3>Resultados ({{ searchResults.length }})</h3>
+  <div *ngIf="!isLoading && laboratories.length > 0" class="results-container">
+    <h3>Resultados ({{ laboratories.length }})</h3>
     <div class="results-grid">
       <div class="results-header">
         <div>Nombre</div>
@@ -83,15 +101,15 @@
       </div>
 
       <div
-        *ngFor="let lab of searchResults; trackBy: trackById"
+        *ngFor="let lab of laboratories; trackBy: trackById"
         class="result-item"
       >
-        <div data-label="Nombre">{{ lab.nombre }}</div>
-        <div data-label="Descripción">{{ lab.descripcion }}</div>
-        <div data-label="Disponibilidad">{{ lab.disponibilidad }}</div>
-        <div data-label="Ubicación">{{ lab.ubicacion.nombre }}</div>
+        <div data-label="Nombre">{{ lab.name }}</div>
+        <div data-label="Descripción">{{ lab.description }}</div>
+        <div data-label="Disponibilidad">{{ lab.availability }}</div>
+        <div data-label="Ubicación">{{ lab.location.name }}</div>
         <div data-label="Acciones">
-          <button class="search-button" (click)="goToUpdateLaboratory(lab.id)">
+          <button class="search-button" (click)="navigateToEdit(lab.id)">
             Editar
           </button>
         </div>
@@ -100,7 +118,7 @@
   </div>
 
   <div
-    *ngIf="!isLoading && searchQuery && searchResults.length === 0"
+    *ngIf="!isLoading && searchQuery && laboratories.length === 0"
     class="no-results"
   >
     <p>No se encontraron laboratorios para "{{ searchQuery }}"</p>

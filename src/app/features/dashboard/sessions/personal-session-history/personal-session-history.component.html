@@ -250,32 +250,6 @@
       </div>
     </div>
 
-    <!-- Usuario responsable -->
-    <div class="filter-group">
-      <label>Responsable:</label>
-      <div class="dropdown">
-        <div class="selected" (click)="showUserDropdown = !showUserDropdown">
-          {{ filters.user || "Todos" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showUserDropdown">
-          <input [(ngModel)]="userSearch" placeholder="Buscar responsable..." />
-          <div
-            class="option"
-            (click)="filters.user = ''; showUserDropdown = false; onSearch()"
-          >
-            Todos
-          </div>
-          <div
-            class="option"
-            *ngFor="let user of filteredUsers"
-            (click)="filters.user = user; showUserDropdown = false; onSearch()"
-          >
-            {{ user }}
-          </div>
-        </div>
-      </div>
-    </div>
-
     <button class="clear-filters-btn" (click)="clearFilters()">
       Limpiar filtros
     </button>

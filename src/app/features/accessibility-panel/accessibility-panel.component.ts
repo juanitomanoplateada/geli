@@ -11,19 +11,9 @@ import { CommonModule } from '@angular/common';
 export class AccessibilityPanelComponent {
   isExpanded = false;
   currentFontSize = 16;
-  highContrast = false;
-  highlightLinks = false;
 
   @HostBinding('style.fontSize.px') get fontSize() {
     return this.currentFontSize;
-  }
-
-  @HostBinding('class.high-contrast') get contrastClass() {
-    return this.highContrast;
-  }
-
-  @HostBinding('class.highlight-links') get linksClass() {
-    return this.highlightLinks;
   }
 
   togglePanel() {
@@ -45,16 +35,6 @@ export class AccessibilityPanelComponent {
   resetFont() {
     this.currentFontSize = 16;
     this.applyToDocument('fontSize', `${this.currentFontSize}px`);
-  }
-
-  toggleContrast() {
-    this.highContrast = !this.highContrast;
-    this.applyToDocument('highContrast', this.highContrast.toString());
-  }
-
-  toggleHighlightLinks() {
-    this.highlightLinks = !this.highlightLinks;
-    this.applyToDocument('highlightLinks', this.highlightLinks.toString());
   }
 
   private applyToDocument(key: string, value: string) {

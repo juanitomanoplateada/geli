@@ -5,6 +5,8 @@
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 h1 {
@@ -39,6 +41,11 @@ label {
   transition: border-color 0.3s;
 }
 
+.form-control:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
 .email-input-group {
   display: flex;
   align-items: center;
@@ -60,11 +67,6 @@ label {
   border-top-right-radius: 4px;
   border-bottom-right-radius: 4px;
   color: #495057;
-}
-
-.form-control:focus {
-  border-color: #3498db;
-  outline: none;
 }
 
 .error-message {
@@ -114,7 +116,6 @@ label {
 
 select.form-control {
   appearance: none;
-  background-image: url("data:image/svg+xml,...");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 1rem;
@@ -145,4 +146,48 @@ select.form-control {
 .feedback.error {
   background-color: #f8d7da;
   color: #721c24;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+}
+
+.modal h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+.summary-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.summary-list li {
+  margin: 0.5rem 0;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }

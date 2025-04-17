@@ -7,10 +7,10 @@
 
 .search-bar {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.5rem;
   align-items: center;
-  flex-wrap: wrap;
 
   .search-input {
     flex: 1;
@@ -35,7 +35,7 @@
   .search-button {
     padding: 0.75rem 1.5rem;
     background-color: #1976d2;
-    color: white;
+    color: #fff;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -73,7 +73,7 @@
   border-radius: 8px;
   margin-bottom: 1.5rem;
   display: grid;
-  gap: 1.5rem;
+  gap: 1rem;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 
   .filter-group {
@@ -82,12 +82,12 @@
     gap: 0.5rem;
 
     label {
-      font-weight: bold;
+      font-weight: 600;
       font-size: 0.875rem;
     }
 
     select,
-    input[type="text"] {
+    input[type="date"] {
       padding: 0.5rem;
       font-size: 0.9rem;
       border: 1px solid #ccc;
@@ -102,52 +102,9 @@
     border: 1px solid #bbb;
     border-radius: 4px;
     cursor: pointer;
-  }
-}
 
-/* Dropdown buscador personalizado */
-.dropdown-search {
-  position: relative;
-  width: 100%;
-
-  .select-box {
-    padding: 10px;
-    border: 1px solid #ccc;
-    background-color: white;
-    cursor: pointer;
-    border-radius: 4px;
-  }
-
-  .dropdown {
-    position: absolute;
-    background: white;
-    width: 100%;
-    border: 1px solid #ccc;
-    margin-top: 75px;
-    z-index: 1000;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-
-    input {
-      width: 90%;
-      padding: 8px;
-      margin: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .options {
-      max-height: 150px;
-      overflow-y: auto;
-
-      .option {
-        padding: 10px;
-        cursor: pointer;
-        border-bottom: 1px solid #eee;
-
-        &:hover {
-          background-color: #f0f0f0;
-        }
-      }
+    &:hover {
+      background-color: #e0e0e0;
     }
   }
 }
@@ -191,7 +148,7 @@
     .results-header,
     .result-item {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(8, 1fr);
       padding: 0.75rem 1rem;
       font-size: 0.95rem;
       align-items: center;
@@ -245,6 +202,10 @@
             margin-bottom: 0.25rem;
             color: #555;
           }
+        }
+
+        button {
+          align-self: flex-start;
         }
       }
     }

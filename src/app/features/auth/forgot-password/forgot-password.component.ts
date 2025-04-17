@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Location } from '@angular/common';
 import { CommonModule } from '@angular/common';
-import { UppercaseNospaceDirective } from '../../../shared/uppercase-nospace.directive';
+import { UppercaseNospaceDirective } from '../../../shared/uppercase-nospace/uppercase-nospace.directive';
 
 @Component({
   selector: 'app-forgot-password',

@@ -21,18 +21,20 @@ interface SessionRecord {
 }
 
 @Component({
-  selector: 'app-session-history',
+  selector: 'app-personal-session-history',
   standalone: true,
   imports: [CommonModule, FormsModule, IntegerOnlyDirective, UppercaseDirective],
-  templateUrl: './session-history.component.html',
-  styleUrls: ['./session-history.component.scss'],
+  templateUrl: './personal-session-history.component.html',
+  styleUrls: ['./personal-session-history.component.scss'],
 })
-export class SessionHistoryComponent {
+export class PersonalSessionHistoryComponent {
+  // Estado general
   searchQuery = '';
   isLoading = false;
   showAdvancedSearch = false;
   selectedSession: SessionRecord | null = null;
 
+  // Filtros avanzados
   filters = {
     lab: '',
     equipment: '',
@@ -47,9 +49,9 @@ export class SessionHistoryComponent {
     sampleCountMin: null as number | null,
     sampleCountMax: null as number | null,
     function: '',
-    user: '',
   };
 
+  // Registros de sesiones
   sessionRecords: SessionRecord[] = [
     {
       id: 1,
@@ -83,6 +85,15 @@ export class SessionHistoryComponent {
     },
   ];
 
+  // Dropdowns dinámicos
+  showLabDropdown = false;
+  showEquipmentDropdown = false;
+  showFunctionDropdown = false;
+
+  labSearch = '';
+  equipmentSearch = '';
+  functionSearch = '';
+
   availableLabs = ['Laboratorio de DRX', 'Laboratorio de Electrónica'];
   availableEquipments = [
     'Difractómetro PANalytical',
@@ -90,20 +101,8 @@ export class SessionHistoryComponent {
     'Osciloscopio Tektronix',
   ];
   availableFunctions = ['Medición', 'Calibración', 'Alimentación continua'];
-  availableUsers = Array.from(
-    new Set(this.sessionRecords.map((s) => s.responsible))
-  );
 
-  labSearch = '';
-  equipmentSearch = '';
-  functionSearch = '';
-  userSearch = '';
-
-  showLabDropdown = false;
-  showEquipmentDropdown = false;
-  showFunctionDropdown = false;
-  showUserDropdown = false;
-
+  // Filtros con buscador
   get filteredLabs() {
     return this.availableLabs.filter((lab) =>
       lab.toLowerCase().includes(this.labSearch.toLowerCase())
@@ -122,12 +121,7 @@ export class SessionHistoryComponent {
     );
   }
 
-  get filteredUsers() {
-    return this.availableUsers.filter((u) =>
-      u.toLowerCase().includes(this.userSearch.toLowerCase())
-    );
-  }
-
+  // Aplicar filtros sobre las sesiones
   get filteredSessions(): SessionRecord[] {
     return this.sessionRecords.filter((session) => {
       const matchesQuery =
@@ -185,10 +179,6 @@ export class SessionHistoryComponent {
           (f) => f.toLowerCase() === this.filters.function.toLowerCase()
         );
 
-      const matchesUser =
-        !this.filters.user ||
-        session.responsible.toLowerCase() === this.filters.user.toLowerCase();
-
       return (
         matchesQuery &&
         matchesLab &&
@@ -201,29 +191,33 @@ export class SessionHistoryComponent {
         matchesUsageStatus &&
         matchesUsageDuration &&
         matchesSampleCount &&
-        matchesFunction &&
-        matchesUser
+        matchesFunction
       );
     });
   }
 
+  // Buscar manualmente o por cambio
   onSearch() {
     this.isLoading = true;
     setTimeout(() => (this.isLoading = false), 300);
   }
 
+  // Buscar con Enter
   onKeyUp(event: KeyboardEvent) {
     if (event.key === 'Enter') this.onSearch();
   }
 
+  // Mostrar/Ocultar filtros
   toggleAdvancedSearch() {
     this.showAdvancedSearch = !this.showAdvancedSearch;
   }
 
+  // Seleccionar sesión para mostrar detalles
   selectSession(session: SessionRecord) {
     this.selectedSession = session;
   }
 
+  // Limpiar todos los filtros y cerrar dropdowns
   clearFilters() {
     this.filters = {
       lab: '',
@@ -239,16 +233,13 @@ export class SessionHistoryComponent {
       sampleCountMin: null,
       sampleCountMax: null,
       function: '',
-      user: '',
     };
     this.labSearch = '';
     this.equipmentSearch = '';
     this.functionSearch = '';
-    this.userSearch = '';
     this.showLabDropdown = false;
     this.showEquipmentDropdown = false;
     this.showFunctionDropdown = false;
-    this.showUserDropdown = false;
     this.searchQuery = '';
     this.onSearch();
   }

@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Location } from '@angular/common';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
-import { UppercaseNospaceDirective } from '../../../shared/uppercase-nospace.directive';
+import { UppercaseNospaceDirective } from '../../../shared/uppercase-nospace/uppercase-nospace.directive';
 
 @Component({
   selector: 'app-confirm-code',

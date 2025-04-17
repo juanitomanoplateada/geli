@@ -1,0 +1,26 @@
+<div class="dropdown-search">
+  <div class="select-box" (click)="toggleDropdown()">
+    {{ selectedLabel }}
+  </div>
+
+  <div class="dropdown" *ngIf="dropdownOpen" (click)="$event.stopPropagation()">
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      name="locationSearch"
+      [ngModelOptions]="{ standalone: true }"
+      (input)="filter(searchTerm)"
+      placeholder="Buscar..."
+      title="Buscar elemento"
+    />
+    <div class="options">
+      <div
+        class="option"
+        *ngFor="let item of filteredItems"
+        (click)="selectItem(item)"
+      >
+        {{ item[displayField] }}
+      </div>
+    </div>
+  </div>
+</div>

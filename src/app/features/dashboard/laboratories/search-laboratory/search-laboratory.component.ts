@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,89 +10,117 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './search-laboratory.component.html',
   styleUrls: ['./search-laboratory.component.scss'],
 })
-export class SearchLaboratoryComponent {
+export class SearchLaboratoryComponent implements OnInit {
   constructor(private router: Router) {}
 
-  searchQuery = '';
-  showAdvancedSearch = false;
-  isLoading = false;
-  ubicacionesDisponibles: string[] = [
-    'Edificio A - Piso 2',
-    'Edificio B - Piso 1',
-  ];
+  searchQuery: string = '';
+  showAdvancedSearch: boolean = false;
+  isLoading: boolean = false;
+
+  // Ubicación con dropdown independiente
+  availableLocations: string[] = ['Edificio A - Piso 2', 'Edificio B - Piso 1'];
+  filteredLocations: string[] = [];
+  locationSearchTerm: string = '';
+  dropdownOpen: boolean = false;
+  selectedLocationLabel: string = 'Todas';
 
   filters = {
-    disponibilidad: '',
-    ubicacion: '',
+    availability: '',
+    location: '',
   };
 
-  searchResults: any[] = [];
+  laboratories: any[] = [];
 
-  onKeyUp(event: KeyboardEvent) {
-    if (event.key === 'Enter') this.onSearch();
+  ngOnInit(): void {
+    this.filteredLocations = [...this.availableLocations];
   }
 
-  onSearch() {
+  onKeyUp(event: KeyboardEvent): void {
+    if (event.key === 'Enter') this.performSearch();
+  }
+
+  performSearch(): void {
     this.isLoading = true;
 
     const allLabs = [
       {
         id: 1,
-        nombre: 'Lab Redes',
-        descripcion: 'Laboratorio de Redes y Comunicaciones',
-        disponibilidad: 'Disponible',
-        ubicacion: { nombre: 'Edificio A - Piso 2' },
-        equipos: [],
+        name: 'Lab Redes',
+        description: 'Laboratorio de Redes y Comunicaciones',
+        availability: 'Disponible',
+        location: { name: 'Edificio A - Piso 2' },
       },
       {
         id: 2,
-        nombre: 'Lab Electrónica',
-        descripcion: 'Laboratorio de circuitos',
-        disponibilidad: 'No disponible',
-        ubicacion: { nombre: 'Edificio B - Piso 1' },
-        equipos: [],
+        name: 'Lab Electrónica',
+        description: 'Laboratorio de circuitos',
+        availability: 'No disponible',
+        location: { name: 'Edificio B - Piso 1' },
       },
     ];
 
     setTimeout(() => {
       const query = this.searchQuery.toLowerCase();
-      const { disponibilidad, ubicacion } = this.filters;
+      const { availability, location } = this.filters;
 
-      this.searchResults = allLabs.filter((lab) => {
+      this.laboratories = allLabs.filter((lab) => {
         const matchesQuery =
           !query ||
-          lab.nombre.toLowerCase().includes(query) ||
-          lab.descripcion.toLowerCase().includes(query);
+          lab.name.toLowerCase().includes(query) ||
+          lab.description.toLowerCase().includes(query);
 
-        const matchesDisponibilidad =
-          !disponibilidad || lab.disponibilidad === disponibilidad;
+        const matchesAvailability =
+          !availability || lab.availability === availability;
 
-        const matchesUbicacion =
-          !ubicacion ||
-          lab.ubicacion.nombre.toLowerCase().includes(ubicacion.toLowerCase());
+        const matchesLocation =
+          !location ||
+          lab.location.name.toLowerCase().includes(location.toLowerCase());
 
-        return matchesQuery && matchesDisponibilidad && matchesUbicacion;
+        return matchesQuery && matchesAvailability && matchesLocation;
       });
 
       this.isLoading = false;
-    }, 500);
+    }, 400);
   }
 
-  toggleAdvancedSearch() {
+  toggleDropdown(): void {
+    this.dropdownOpen = !this.dropdownOpen;
+    this.filteredLocations = [...this.availableLocations];
+    this.locationSearchTerm = '';
+  }
+
+  filterLocations(): void {
+    const term = this.locationSearchTerm.toLowerCase();
+    this.filteredLocations = this.availableLocations.filter((loc) =>
+      loc.toLowerCase().includes(term)
+    );
+  }
+
+  selectLocation(location: string): void {
+    this.filters.location = location;
+    this.selectedLocationLabel = location;
+    this.dropdownOpen = false;
+    this.performSearch();
+  }
+
+  toggleAdvancedSearch(): void {
     this.showAdvancedSearch = !this.showAdvancedSearch;
   }
 
-  clearFilters() {
+  clearFilters(): void {
     this.searchQuery = '';
-    this.filters = { disponibilidad: '', ubicacion: '' };
-    this.searchResults = [];
+    this.filters = { availability: '', location: '' };
+    this.selectedLocationLabel = 'Todas';
+    this.locationSearchTerm = '';
+    this.filteredLocations = [...this.availableLocations];
+    this.laboratories = [];
   }
 
-  trackById(index: number, item: any) {
+  trackById(index: number, item: any): number {
     return item.id;
   }
 
-  goToUpdateLaboratory(id: number) {
+  navigateToEdit(id: number): void {
     this.router.navigate(['/dashboard/update-laboratory', id]);
   }
 }

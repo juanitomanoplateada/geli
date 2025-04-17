@@ -25,17 +25,13 @@
       <div class="dashboard-submenu" [class.open]="isSubmenuOpen('sessions')">
         <a
           routerLink="/dashboard/sessions/register-session"
-          [class.active]="
-            isActive('/dashboard/sessions/register-session')
-          "
-          >Nueva Sesión / Sesión Actual</a
+          [class.active]="isActive('/dashboard/sessions/register-session')"
+          >Registrar Uso</a
         >
         <a
-          routerLink="/dashboard/sessions/session-history"
+          routerLink="/dashboard/sessions/personal-session-history"
           [class.active]="
-            isActive(
-              '/dashboard/sessions/session-history'
-            )
+            isActive('/dashboard/sessions/personal-session-history')
           "
           >Historial</a
         >
@@ -45,33 +41,21 @@
     <div
       *ngIf="hasRole(['ANALISTA_CALIDAD'])"
       class="dashboard-group"
-      [class.active]="isActive('/dashboard/authorized-personnel')"
+      [class.active]="isActive('/dashboard/users')"
     >
-      <div
-        class="dashboard-link"
-        (click)="toggleSubmenu('authorized-personnel')"
-      >
-        Personal Autorizado
-        <span class="arrow" [class.open]="isSubmenuOpen('authorized-personnel')"
-          >▼</span
-        >
+      <div class="dashboard-link" (click)="toggleSubmenu('users')">
+        Usuarios
+        <span class="arrow" [class.open]="isSubmenuOpen('users')">▼</span>
       </div>
-      <div
-        class="dashboard-submenu"
-        [class.open]="isSubmenuOpen('authorized-personnel')"
-      >
+      <div class="dashboard-submenu" [class.open]="isSubmenuOpen('users')">
         <a
-          routerLink="/dashboard/authorized-personnel/search-user"
-          [class.active]="
-            isActive('/dashboard/authorized-personnel/search-user')
-          "
+          routerLink="/dashboard/users/search-user"
+          [class.active]="isActive('/dashboard/users/search-user')"
           >Buscar Usuario</a
         >
         <a
-          routerLink="/dashboard/authorized-personnel/register-user"
-          [class.active]="
-            isActive('/dashboard/authorized-personnel/register-user')
-          "
+          routerLink="/dashboard/users/register-user"
+          [class.active]="isActive('/dashboard/users/register-user')"
           >Registrar Usuario</a
         >
       </div>
@@ -144,6 +128,13 @@
       </div>
     </div>
 
+    <a
+      routerLink="/dashboard/sessions/session-history"
+      class="dashboard-link"
+      [class.active]="isExactActive('/dashboard/sessions/session-history')"
+      >Historial de Sesiones</a
+    >
+
     <div
       *ngIf="hasRole(['ANALISTA_CALIDAD'])"
       class="dashboard-group"
@@ -185,10 +176,10 @@
     </div>
 
     <a
-      routerLink="/dashboard/profile"
+      routerLink="/dashboard/user-profile"
       class="dashboard-link"
-      [class.active]="isExactActive('/dashboard/profile')"
-      >Mi Perfil</a
+      [class.active]="isExactActive('/dashboard/user-profile')"
+      >Perfil de Usuario</a
     >
     <a
       routerLink="/auth/login"
@@ -204,6 +195,7 @@
         >RAMIREZ RAMIREZ RAMIREZ RAMIREZ - {{ userRole }}</span
       >
     </header>
+
     <router-outlet></router-outlet>
   </main>
 </section>

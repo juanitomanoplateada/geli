@@ -1,116 +1,97 @@
-<div class="session-container">
-  <div class="session-header">
-    <div class="session-row">
-      <h1>REGISTRAR USO DE EQUIPO / PATRÓN</h1>
+<div class="session-wrapper">
+  <div class="header-section">
+    <h1>Registrar Uso de Equipo / Patrón</h1>
 
-      <!-- LAB SELECTOR -->
-      <div class="dropdown-select">
-        <div class="select-box" (click)="toggleLabDropdown()">
+    <div class="dropdown-group">
+      <div class="dropdown" [class.disabled]="sessionActive">
+        <div class="selected" (click)="toggleLabDropdown()">
           {{ selectedLab || "Seleccione un laboratorio" }}
         </div>
-        <div class="dropdown" *ngIf="showLabDropdown">
+        <div class="dropdown-list" *ngIf="showLabDropdown">
           <input
             type="text"
             [(ngModel)]="labSearch"
             placeholder="Buscar laboratorio..."
           />
-          <div class="options">
-            <div
-              class="option"
-              *ngFor="let lab of filteredLabs"
-              (click)="selectLab(lab)"
-            >
-              {{ lab.name }}
-            </div>
+          <div
+            class="option"
+            *ngFor="let lab of filteredLabs"
+            (click)="selectLab(lab)"
+          >
+            {{ lab.name }}
           </div>
         </div>
       </div>
 
-      <!-- EQUIPMENT SELECTOR -->
-      <div class="dropdown-select" [class.disabled]="!selectedLab">
-        <div
-          class="select-box"
-          (click)="toggleEquipmentDropdown()"
-          [class.disabled]="!selectedLab"
-        >
+      <div class="dropdown" [class.disabled]="!selectedLab || sessionActive">
+        <div class="selected" (click)="toggleEquipmentDropdown()">
           {{ selectedEquipment || "Seleccione un equipo / patrón" }}
         </div>
-        <div class="dropdown" *ngIf="showEquipmentDropdown && selectedLab">
+        <div class="dropdown-list" *ngIf="showEquipmentDropdown && selectedLab">
           <input
             type="text"
             [(ngModel)]="equipmentSearch"
             placeholder="Buscar equipo / patrón..."
           />
-          <div class="options">
-            <div
-              class="option"
-              *ngFor="let equip of filteredEquipments"
-              (click)="selectEquipment(equip)"
-            >
-              {{ equip }}
-            </div>
+          <div
+            class="option"
+            *ngFor="let equip of filteredEquipments"
+            (click)="selectEquipment(equip)"
+          >
+            {{ equip }}
           </div>
         </div>
       </div>
 
-      <!-- START BUTTON -->
       <button
-        class="primary-btn"
-        [disabled]="!selectedLab || !selectedEquipment"
-        (click)="startSession()"
+        class="start-btn"
+        [disabled]="!selectedLab || !selectedEquipment || sessionActive"
+        (click)="onStartSessionClick()"
       >
-        Registrar Uso
+        Iniciar Sesión
       </button>
     </div>
   </div>
 
-  <div class="session-body">
-    <!-- LEFT PANEL -->
-    <div class="checkin-panel" *ngIf="sessionStarted">
-      <h3>Registro de Entrada</h3>
-
-      <div class="info-item">
-        <label>Fecha:</label>
-        <span>{{ checkIn.date }}</span>
-      </div>
-
-      <div class="info-item">
-        <label>Hora:</label>
-        <span>{{ checkIn.time }}</span>
-      </div>
-
-      <div class="info-item">
-        <label>Laboratorio:</label>
-        <span>{{ selectedLab }}</span>
-      </div>
-
-      <div class="info-item">
-        <label>Equipo / Patrón:</label>
-        <span>{{ selectedEquipment }}</span>
-      </div>
-
-      <div class="info-item">
-        <label>Estado - Verificado:</label>
-        <span>YES</span>
-      </div>
-
-      <div class="info-item">
-        <label>Responsable a cargo:</label>
-        <span>RAAA</span>
+  <div class="modal-backdrop" *ngIf="showConfirmationModal">
+    <div class="modal-box">
+      <h3>¿Confirmar inicio de sesión?</h3>
+      <p>
+        Se va a registrar el uso del equipo
+        <strong>{{ selectedEquipment }}</strong> en el laboratorio
+        <strong>{{ selectedLab }}</strong
+        >.
+      </p>
+      <div class="modal-actions">
+        <button class="confirm-btn" (click)="confirmStartSession()">
+          Sí, iniciar
+        </button>
+        <button class="cancel-btn" (click)="cancelStartSession()">
+          Cancelar
+        </button>
       </div>
     </div>
+  </div>
 
-    <!-- RIGHT PANEL -->
-    <div class="checkout-panel" *ngIf="sessionStarted">
-      <h3>Registro de Salida</h3>
+  <div *ngIf="sessionActive" class="session-body">
+    <div class="panel">
+      <h2>Entrada</h2>
+      <p><strong>Fecha:</strong> {{ checkIn.date }}</p>
+      <p><strong>Hora:</strong> {{ checkIn.time }}</p>
+      <p><strong>Laboratorio:</strong> {{ selectedLab }}</p>
+      <p><strong>Equipo / Patrón:</strong> {{ selectedEquipment }}</p>
+      <p><strong>Estado - Verificado: </strong> SI</p>
+      <p><strong>Responsable:</strong> {{ checkIn.user }}</p>
+    </div>
+
+    <div class="panel">
+      <h2>Salida</h2>
 
       <label>
         Estado - Para uso:
         <select
           [(ngModel)]="availabilityStatus"
-          (change)="onAvailabilityChange(selectRef.value)"
-          #selectRef
-          class="styled-select"
+          (change)="onAvailabilityChange()"
         >
           <option value="">Seleccione una opción</option>
           <option value="Yes">SI</option>
@@ -119,69 +100,64 @@
       </label>
 
       <ng-container *ngIf="availabilityStatus">
-        <ng-container *ngIf="availabilityStatus === 'No'">
-          <div class="alert-box">
-            Si la respuesta es negativa por favor incluya en las observaciones
-            los motivos por el cual el equipo de medición no está disponible
-            para uso.
-          </div>
-        </ng-container>
+        <div *ngIf="availabilityStatus === 'No'" class="alert">
+          Ingrese el motivo por el cual el equipo no está disponible en las
+          observaciones.
+        </div>
 
         <label>
-          Condiciones de uso - Tiempo de uso:
+          Tiempo de uso:
           <input type="text" [value]="usageDuration" readonly />
         </label>
 
         <label>
-          Condiciones de uso - Cantidad de muestras analizadas:
+          Cantidad de muestras:
           <input type="number" [(ngModel)]="checkOut.sampleCount" />
         </label>
 
-        <label>Condiciones de uso - Funciones utilizadas:</label>
-
-        <div class="functions-container">
-          <div class="dropdown-select">
-            <div class="select-box" (click)="toggleFunctionDropdown()">
-              Seleccione las funciones
+        <label>Funciones utilizadas:</label>
+        <div class="functions-wrapper">
+          <div class="dropdown">
+            <div class="selected" (click)="toggleFunctionDropdown()">
+              Seleccionar funciones
             </div>
-            <div class="dropdown" *ngIf="showFunctionDropdown">
+            <div class="dropdown-list" *ngIf="showFunctionDropdown">
               <input
                 type="text"
                 [(ngModel)]="functionSearch"
-                placeholder="Buscar función..."
+                placeholder="Buscar..."
               />
-              <div class="options">
-                <div
-                  class="option"
-                  *ngFor="let func of filteredFunctions"
-                  (click)="selectFunction(func)"
-                >
-                  {{ func }}
-                </div>
+              <div
+                class="option"
+                *ngFor="let func of filteredFunctions"
+                (click)="selectFunction(func)"
+              >
+                {{ func }}
               </div>
             </div>
           </div>
 
-          <div class="function-tags">
+          <div class="tags">
             <span class="tag" *ngFor="let func of selectedFunctions">
               {{ func }}
-              <button class="remove-tag" (click)="removeFunction(func)">
-                ×
-              </button>
+              <button (click)="removeFunction(func)">×</button>
             </span>
           </div>
         </div>
 
         <label>
           Observaciones:
-          <textarea [(ngModel)]="checkOut.remarks"></textarea>
+          <textarea
+            [(ngModel)]="checkOut.remarks"
+            (input)="autoResizeTextarea($event)"
+            #remarksArea
+          ></textarea>
         </label>
       </ng-container>
 
       <button
         class="finish-btn"
         [disabled]="!isFormValid"
-        [ngClass]="{ active: isFormValid }"
         (click)="finishSession()"
       >
         Finalizar Sesión

@@ -7,8 +7,8 @@ import {
   FormsModule,
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { UppercaseDirective } from '../../../../shared/uppercase.directive';
-import { UppercaseNospaceDirective } from '../../../../shared/uppercase-nospace.directive';
+import { UppercaseDirective } from '../../../../shared/uppercase/uppercase.directive';
+import { UppercaseNospaceDirective } from '../../../../shared/uppercase-nospace/uppercase-nospace.directive';
 import { Router } from '@angular/router';
 
 @Component({

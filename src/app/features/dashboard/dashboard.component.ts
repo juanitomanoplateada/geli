@@ -36,11 +36,11 @@ export class DashboardComponent {
   isSubmenuOpen(menu: string): boolean {
     if (this.activeSubmenu === menu) return true;
     const menuRoutes: { [key: string]: string[] } = {
-      'authorized-personnel': ['/dashboard/authorized-personnel'],
-      'laboratories': ['/dashboard/laboratories'],
+      users: ['/dashboard/users'],
+      laboratories: ['/dashboard/laboratories'],
       'equipments-patterns': ['/dashboard/equipments-patterns'],
-      'reports': ['/dashboard/reports'],
-      'sessions': ['/dashboard/sessions'],
+      reports: ['/dashboard/reports'],
+      sessions: ['/dashboard/sessions'],
     };
     return (
       menuRoutes[menu]?.some((route) => this.router.url.includes(route)) ||

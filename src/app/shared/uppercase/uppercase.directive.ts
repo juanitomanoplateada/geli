@@ -8,19 +8,21 @@ export class UppercaseDirective {
   constructor(private el: ElementRef<HTMLInputElement>) {}
 
   @HostListener('input', ['$event'])
-  onInput(event: Event) {
+  onInput(event: Event): void {
     const input = this.el.nativeElement;
+
     const start = input.selectionStart;
     const end = input.selectionEnd;
 
-    const upperValue = input.value.toUpperCase();
-    input.value = upperValue;
+    const originalValue = input.value;
+    const uppercasedValue = originalValue.toUpperCase();
 
-    const eventInput = new Event('input', { bubbles: true });
-    input.dispatchEvent(eventInput);
+    if (originalValue !== uppercasedValue) {
+      input.value = uppercasedValue;
 
-    if (start !== null && end !== null) {
-      input.setSelectionRange(start, end);
+      if (start !== null && end !== null) {
+        input.setSelectionRange(start, end);
+      }
     }
   }
 }

@@ -4,7 +4,7 @@
     Ingrese los datos de la persona a registrar en el sistema.
   </p>
 
-  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="userForm" (ngSubmit)="submitForm()">
     <!-- Correo institucional -->
     <div class="form-group">
       <label for="email">Correo Institucional</label>
@@ -16,21 +16,22 @@
           placeholder="Usuario Institucional"
           class="form-control email-input"
           appUppercaseNospace
+          (input)="checkEmailExists()"
         />
         <span class="domain-display">&#64;uptc.edu.co</span>
       </div>
       <div
-        *ngIf="
-          registerForm.get('email')?.invalid &&
-          registerForm.get('email')?.touched
-        "
+        *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched"
         class="error-message"
       >
         Ingrese un usuario institucional válido
       </div>
+      <div *ngIf="emailAlreadyExists" class="error-message">
+        El correo institucional ya está registrado en el sistema
+      </div>
     </div>
 
-    <!-- Nombre completo (nombres + apellidos) -->
+    <!-- Nombres y apellidos -->
     <div class="form-group">
       <label>Nombre Completo de la Persona</label>
       <div class="name-split-row">
@@ -51,8 +52,8 @@
       </div>
       <div
         *ngIf="
-          registerForm.get('firstName')?.invalid &&
-          registerForm.get('firstName')?.touched
+          userForm.get('firstName')?.invalid &&
+          userForm.get('firstName')?.touched
         "
         class="error-message"
       >
@@ -60,8 +61,7 @@
       </div>
       <div
         *ngIf="
-          registerForm.get('lastName')?.invalid &&
-          registerForm.get('lastName')?.touched
+          userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched
         "
         class="error-message"
       >
@@ -69,22 +69,21 @@
       </div>
     </div>
 
-    <!-- Identificación sin espacios -->
+    <!-- Identificación -->
     <div class="form-group">
       <label for="identification">Identificación</label>
       <input
         id="identification"
         type="text"
         formControlName="identification"
-        (input)="onIdentificationInput($event)"
         placeholder="Número de identificación"
         class="form-control"
         appUppercaseNospace
       />
       <div
         *ngIf="
-          registerForm.get('identification')?.invalid &&
-          registerForm.get('identification')?.touched
+          userForm.get('identification')?.invalid &&
+          userForm.get('identification')?.touched
         "
         class="error-message"
       >
@@ -99,42 +98,46 @@
         id="role"
         formControlName="role"
         class="form-control"
-        (change)="onRoleChange($event)"
+        (change)="handleRoleChange($event)"
       >
         <option value="" disabled selected>Seleccione un rol</option>
-        <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        <option *ngFor="let role of availableRoles" [value]="role">
+          {{ role }}
+        </option>
       </select>
       <div
-        *ngIf="
-          registerForm.get('role')?.invalid && registerForm.get('role')?.touched
-        "
+        *ngIf="userForm.get('role')?.invalid && userForm.get('role')?.touched"
         class="error-message"
       >
         Debe seleccionar un rol
       </div>
     </div>
 
-    <!-- Fecha de asignación (solo para Personal Autorizado) -->
-    <div class="form-group" *ngIf="showDateField()">
+    <!-- Fecha de asignación -->
+    <div class="form-group" *ngIf="showAssignmentDateField()">
       <label for="assignmentDate">Fecha de Asignación</label>
       <input
         id="assignmentDate"
         type="date"
         formControlName="assignmentDate"
         class="form-control"
+        [min]="todayDate"
       />
       <div
-        *ngIf="
-          registerForm.get('assignmentDate')?.invalid &&
-          registerForm.get('assignmentDate')?.touched
-        "
+        *ngIf="userForm.get('assignmentDate')?.errors?.['required'] && userForm.get('assignmentDate')?.touched"
         class="error-message"
       >
         Debe seleccionar una fecha
       </div>
+      <div
+        *ngIf="userForm.get('assignmentDate')?.errors?.['pastDate'] && userForm.get('assignmentDate')?.touched"
+        class="error-message"
+      >
+        La fecha debe ser hoy o una futura
+      </div>
     </div>
 
-    <!-- Feedback -->
+    <!-- Mensaje de retroalimentación -->
     <div
       *ngIf="feedbackMessage"
       [ngClass]="feedbackSuccess ? 'feedback success' : 'feedback error'"
@@ -145,16 +148,55 @@
 
     <!-- Botones -->
     <div class="button-group">
-      <button type="button" class="btn cancel-btn" (click)="onCancel()">
+      <button type="button" class="btn cancel-btn" (click)="resetForm()">
         Cancelar
       </button>
       <button
         type="submit"
         class="btn submit-btn"
-        [disabled]="!registerForm.valid"
+        [disabled]="!userForm.valid || emailAlreadyExists"
       >
         Registrar Persona
       </button>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div class="modal-backdrop" *ngIf="showConfirmationModal">
+      <div class="modal">
+        <h2>Confirmar Registro</h2>
+        <p>Por favor confirme la información antes de registrar:</p>
+        <ul class="summary-list">
+          <li><strong>Correo:</strong> {{ institutionalEmail }}</li>
+          <li>
+            <strong>Nombre completo:</strong> {{ userForm.value.firstName }}
+            {{ userForm.value.lastName }}
+          </li>
+          <li>
+            <strong>Identificación:</strong> {{ userForm.value.identification }}
+          </li>
+          <li><strong>Rol:</strong> {{ userForm.value.role }}</li>
+          <li *ngIf="userForm.value.role === 'Personal Autorizado'">
+            <strong>Fecha de asignación:</strong>
+            {{ userForm.value.assignmentDate }}
+          </li>
+        </ul>
+        <div class="modal-buttons">
+          <button
+            type="button"
+            class="btn cancel-btn"
+            (click)="cancelConfirmation()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn submit-btn"
+            (click)="confirmRegistration()"
+          >
+            Confirmar
+          </button>
+        </div>
+      </div>
     </div>
   </form>
 </div>

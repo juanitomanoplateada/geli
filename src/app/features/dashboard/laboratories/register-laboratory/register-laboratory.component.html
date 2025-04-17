@@ -2,46 +2,89 @@
   <h1>Registro de Laboratorio</h1>
   <p class="subtitle">Ingrese los datos del nuevo laboratorio.</p>
 
-  <form [formGroup]="labForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="labForm" (ngSubmit)="submitForm()">
+    <!-- Nombre -->
     <div class="form-group">
-      <label for="nombre">Nombre del Laboratorio</label>
+      <label for="labName">Nombre del Laboratorio</label>
       <input
-        id="nombre"
+        id="labName"
         type="text"
-        formControlName="nombre"
-        placeholder="Ej: Laboratorio de Física"
+        formControlName="labName"
         class="form-control"
+        appUppercase
+        placeholder="Ej: Laboratorio de Física"
       />
       <div
-        *ngIf="labForm.get('nombre')?.invalid && labForm.get('nombre')?.touched"
+        *ngIf="
+          labForm.get('labName')?.invalid && labForm.get('labName')?.touched
+        "
         class="error-message"
       >
         El nombre es obligatorio
       </div>
     </div>
 
+    <!-- Descripción -->
     <div class="form-group">
-      <label for="descripcion">Descripción</label>
+      <label for="description">Descripción</label>
       <textarea
-        id="descripcion"
-        formControlName="descripcion"
-        rows="4"
-        placeholder="Opcional"
-        class="form-control"
+        id="description"
+        formControlName="description"
+        class="form-control auto-expand"
+        rows="1"
+        placeholder="Describa el laboratorio"
+        appUppercase
+        (input)="autoResize($event)"
       ></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="lugar">Lugar</label>
-      <select id="lugar" formControlName="lugarId" class="form-control">
-        <option value="" disabled selected>Seleccione un lugar</option>
-        <option *ngFor="let lugar of lugares" [value]="lugar.id">
-          {{ lugar.nombre }}
-        </option>
-      </select>
       <div
         *ngIf="
-          labForm.get('lugarId')?.invalid && labForm.get('lugarId')?.touched
+          labForm.get('description')?.invalid &&
+          labForm.get('description')?.touched
+        "
+        class="error-message"
+      >
+        La descripción es obligatoria
+      </div>
+    </div>
+
+    <!-- Lugar con buscador -->
+    <div class="form-group custom-select">
+      <label for="location">Lugar</label>
+
+      <div class="select-box" (click)="toggleLocationDropdown()">
+        {{ selectedLocationName }}
+      </div>
+
+      <div
+        class="dropdown"
+        *ngIf="showLocationDropdown"
+        (click)="$event.stopPropagation()"
+      >
+        <input
+          type="text"
+          [(ngModel)]="locationSearchTerm"
+          name="locationSearch"
+          [ngModelOptions]="{ standalone: true }"
+          (input)="filterLocations(locationSearchTerm)"
+          class="form-control"
+          placeholder="Buscar lugar..."
+          title="Buscar lugar"
+        />
+        <div class="options">
+          <div
+            class="option"
+            *ngFor="let location of filteredLocations"
+            (click)="selectLocation(location)"
+          >
+            {{ location.name }}
+          </div>
+        </div>
+      </div>
+
+      <div
+        *ngIf="
+          labForm.get('locationId')?.invalid &&
+          labForm.get('locationId')?.touched
         "
         class="error-message"
       >
@@ -49,20 +92,9 @@
       </div>
     </div>
 
-    <div class="form-group">
-      <label for="disponibilidad">Disponibilidad</label>
-      <select
-        id="disponibilidad"
-        formControlName="disponibilidad"
-        class="form-control"
-      >
-        <option [value]="true">Disponible</option>
-        <option [value]="false">No disponible</option>
-      </select>
-    </div>
-
+    <!-- Botones -->
     <div class="button-group">
-      <button type="button" class="btn cancel-btn" (click)="onCancel()">
+      <button type="button" class="btn cancel-btn" (click)="resetForm()">
         Cancelar
       </button>
       <button type="submit" class="btn submit-btn" [disabled]="!labForm.valid">
@@ -70,4 +102,27 @@
       </button>
     </div>
   </form>
+
+  <!-- Modal de confirmación -->
+  <div class="modal-overlay" *ngIf="showConfirmationModal">
+    <div class="modal">
+      <h2>Confirmar Registro</h2>
+      <p><strong>Nombre:</strong> {{ labForm.value.labName }}</p>
+      <p><strong>Descripción:</strong> {{ labForm.value.description }}</p>
+      <p><strong>Lugar:</strong> {{ selectedLocationName }}</p>
+      <p>
+        <strong>Disponible:</strong>
+        {{ labForm.value.availability ? "Sí" : "No" }}
+      </p>
+
+      <div class="modal-buttons">
+        <button class="btn cancel-btn" (click)="showConfirmationModal = false">
+          Cancelar
+        </button>
+        <button class="btn submit-btn" (click)="confirmSubmit()">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

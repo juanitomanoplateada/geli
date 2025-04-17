@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -9,72 +9,79 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './register-session.component.html',
   styleUrls: ['./register-session.component.scss'],
 })
-export class RegisterSessionComponent {
-  sessionStarted = false;
-  showLabDropdown = false;
-  showEquipmentDropdown = false;
+export class RegisterSessionComponent implements AfterViewInit {
+  private isBrowser = false;
+
+  sessionActive = false;
 
   selectedLab: string | null = null;
   selectedEquipment: string | null = null;
 
+  showLabDropdown = false;
+  showEquipmentDropdown = false;
+
   labSearch = '';
   equipmentSearch = '';
 
+  laboratories = [
+    {
+      name: 'Laboratorio DRX',
+      equipments: ['Difractómetro PANalytical', 'Detector Si(Li)'],
+    },
+    {
+      name: 'Laboratorio Electrónica',
+      equipments: ['Osciloscopio Tektronix', 'Fuente DC BK Precision'],
+    },
+  ];
+
+  showConfirmationModal = false;
+
+  checkIn = { date: '', time: '', user: 'RAAA' };
+  checkOut = { sampleCount: null, functions: '', remarks: '' };
+
   availabilityStatus = '';
   showCheckoutFields = false;
-
   checkInTime: Date | null = null;
   usageDuration = '';
 
-  laboratories = [
-    {
-      name: 'DRX Laboratory',
-      equipments: ['PANalytical Diffractometer', 'Si(Li) Detector'],
-    },
-    {
-      name: 'Electronics Laboratory',
-      equipments: ['Tektronix Oscilloscope', 'BK Precision DC Power Supply'],
-    },
-  ];
-
-  checkIn = {
-    date: '',
-    time: '',
-    user: 'Current User',
-  };
-
-  checkOut = {
-    sampleCount: null,
-    functions: '',
-    remarks: '',
-  };
-
   availableFunctions: string[] = [
-    'Calibration',
-    'Sample Measurement',
-    'Spectrum Review',
-    'Equipment Setup',
-    'Data Analysis',
-    'Parameter Adjustment',
+    'Calibración',
+    'Medición de Muestra',
+    'Revisión de Espectro',
+    'Configuración de Equipo',
+    'Análisis de Datos',
+    'Ajuste de Parámetros',
   ];
 
   selectedFunctions: string[] = [];
-
   showFunctionDropdown = false;
   functionSearch = '';
 
-  get filteredLabs() {
-    return this.laboratories.filter((lab) =>
-      lab.name.toLowerCase().includes(this.labSearch.toLowerCase())
-    );
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
-  get filteredEquipments() {
-    const lab = this.laboratories.find((l) => l.name === this.selectedLab);
-    if (!lab) return [];
-    return lab.equipments.filter((e) =>
-      e.toLowerCase().includes(this.equipmentSearch.toLowerCase())
-    );
+  ngAfterViewInit(): void {
+    if (this.isBrowser) {
+      setInterval(() => this.updateUsageTime(), 1000);
+    }
+  }
+
+  onStartSessionClick() {
+    this.showConfirmationModal = true;
+  }
+
+  confirmStartSession() {
+    const now = new Date();
+    this.checkIn.date = now.toLocaleDateString();
+    this.checkIn.time = now.toLocaleTimeString();
+    this.checkInTime = now;
+    this.sessionActive = true;
+    this.showConfirmationModal = false;
+  }
+
+  cancelStartSession() {
+    this.showConfirmationModal = false;
   }
 
   toggleLabDropdown() {
@@ -98,56 +105,57 @@ export class RegisterSessionComponent {
     this.showEquipmentDropdown = false;
   }
 
-  startSession() {
-    const now = new Date();
-    this.checkIn.date = now.toLocaleDateString();
-    this.checkIn.time = now.toLocaleTimeString();
-    this.checkInTime = now;
-    this.sessionStarted = true;
+  get filteredLabs() {
+    return this.laboratories.filter((lab) =>
+      lab.name.toLowerCase().includes(this.labSearch.toLowerCase())
+    );
   }
 
-  onAvailabilityChange(value: string) {
-    this.availabilityStatus = value;
-    this.showCheckoutFields = value === 'Yes';
-    this.calculateUsageTime();
+  get filteredEquipments() {
+    const lab = this.laboratories.find((l) => l.name === this.selectedLab);
+    if (!lab) return [];
+    return lab.equipments.filter((e) =>
+      e.toLowerCase().includes(this.equipmentSearch.toLowerCase())
+    );
   }
 
-  calculateUsageTime() {
-    if (this.checkInTime) {
+  confirmSessionStart() {
+    const confirmStart = confirm(
+      '¿Desea iniciar la sesión con el equipo/patrón seleccionado?'
+    );
+    if (confirmStart) {
+      const now = new Date();
+      this.checkIn.date = now.toLocaleDateString();
+      this.checkIn.time = now.toLocaleTimeString();
+      this.checkInTime = now;
+      this.sessionActive = true;
+    }
+  }
+
+  updateUsageTime() {
+    if (this.sessionActive && this.checkInTime) {
       const now = new Date();
       const delta = new Date(now.getTime() - this.checkInTime.getTime());
-      const hours = delta.getUTCHours().toString().padStart(2, '0');
-      const minutes = delta.getUTCMinutes().toString().padStart(2, '0');
-      const seconds = delta.getUTCSeconds().toString().padStart(2, '0');
-      this.usageDuration = `${hours}:${minutes}:${seconds}`;
+      const h = delta.getUTCHours().toString().padStart(2, '0');
+      const m = delta.getUTCMinutes().toString().padStart(2, '0');
+      const s = delta.getUTCSeconds().toString().padStart(2, '0');
+      this.usageDuration = `${h}:${m}:${s}`;
     }
+  }
+
+  onAvailabilityChange() {
+    this.showCheckoutFields = this.availabilityStatus === 'Yes';
+    this.updateUsageTime();
   }
 
   get isFormValid(): boolean {
     if (!this.availabilityStatus) return false;
+    const hasSamples = this.checkOut.sampleCount !== null;
+    const hasFunctions = this.selectedFunctions.length > 0;
+    const hasRemarks = this.checkOut.remarks.trim().length > 0;
 
-    if (this.availabilityStatus === 'No') {
-      return (
-        this.checkOut.sampleCount !== null &&
-        this.selectedFunctions.length > 0 &&
-        this.countWords(this.checkOut.remarks || '') >= 1
-      );
-    }
-
-    if (this.availabilityStatus === 'Yes') {
-      return (
-        this.checkOut.sampleCount !== null && this.selectedFunctions.length > 0
-      );
-    }
-
-    return false;
-  }
-
-  countWords(text: string): number {
-    return text
-      .trim()
-      .split(/\s+/)
-      .filter((word) => word.length > 0).length;
+    if (this.availabilityStatus === 'Yes') return hasSamples && hasFunctions;
+    return hasSamples && hasFunctions && hasRemarks;
   }
 
   get filteredFunctions(): string[] {
@@ -173,29 +181,30 @@ export class RegisterSessionComponent {
     this.selectedFunctions = this.selectedFunctions.filter((f) => f !== func);
   }
 
+  autoResizeTextarea(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }
+
   finishSession() {
-    this.calculateUsageTime();
-
-    console.log('Check-in:', this.checkIn);
-    console.log('Check-out:', {
-      usageTime: this.usageDuration,
-      ...this.checkOut,
+    this.updateUsageTime();
+    alert('Sesión finalizada exitosamente.');
+    console.log('Entrada:', this.checkIn);
+    console.log('Salida:', {
+      uso: this.usageDuration,
+      muestras: this.checkOut.sampleCount,
+      funciones: this.selectedFunctions,
+      observaciones: this.checkOut.remarks,
     });
-    alert('Session finished successfully.');
-    this.sessionStarted = false;
 
-    // Reset
-    this.availabilityStatus = '';
-    this.showCheckoutFields = false;
-    this.checkOut = {
-      sampleCount: null,
-      functions: '',
-      remarks: '',
-    };
+    this.sessionActive = false;
     this.selectedLab = null;
     this.selectedEquipment = null;
-    this.usageDuration = '';
+    this.availabilityStatus = '';
     this.checkInTime = null;
+    this.usageDuration = '';
+    this.checkOut = { sampleCount: null, functions: '', remarks: '' };
     this.selectedFunctions = [];
   }
 }

@@ -10,18 +10,19 @@ export class UppercaseNospaceDirective {
   @HostListener('input', ['$event'])
   onInput(event: Event) {
     const input = this.el.nativeElement;
+
     const start = input.selectionStart;
     const end = input.selectionEnd;
 
-    // Convierte a mayúsculas y elimina espacios
-    const processedValue = input.value.toUpperCase().replace(/\s/g, '');
-    input.value = processedValue;
+    const originalValue = input.value;
+    const transformedValue = originalValue.toUpperCase().replace(/\s/g, '');
 
-    const inputEvent = new Event('input', { bubbles: true });
-    input.dispatchEvent(inputEvent);
+    if (originalValue !== transformedValue) {
+      input.value = transformedValue;
 
-    if (start !== null && end !== null) {
-      input.setSelectionRange(start, end);
+      if (start !== null && end !== null) {
+        input.setSelectionRange(start, end);
+      }
     }
   }
 }
