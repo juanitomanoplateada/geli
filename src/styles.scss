@@ -15,7 +15,8 @@ p,
 a,
 span,
 select,
-button {
+button,
+textarea {
   font-size: var(--accessibility-fontSize, 16px);
   font-family: Arial, Helvetica, sans-serif;
 }

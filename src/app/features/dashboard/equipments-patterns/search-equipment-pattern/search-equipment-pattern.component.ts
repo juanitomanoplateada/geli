@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,103 +10,152 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './search-equipment-pattern.component.html',
   styleUrls: ['./search-equipment-pattern.component.scss'],
 })
-export class SearchEquipmentPatternComponent {
+export class SearchEquipmentPatternComponent implements OnInit {
   constructor(private router: Router) {}
 
   searchQuery = '';
   showAdvancedSearch = false;
   isLoading = false;
 
+  availabilityOptions = ['Disponible', 'No disponible'];
+  functionOptions = ['Medición', 'Calibración', 'Análisis'];
+  laboratoryOptions = ['Lab Física', 'Lab Química', 'Lab Electrónica'];
+
   filters = {
-    disponibilidad: '',
-    funcion: '',
-    laboratorio: '',
+    availability: '',
+    function: '',
+    laboratory: '',
   };
 
-  funcionesDisponibles: string[] = ['Medición', 'Computación', 'Proyección'];
-  disponibilidades: string[] = ['Disponible', 'No disponible'];
-  laboratoriosDisponibles: string[] = ['Lab Redes', 'Lab Electrónica'];
+  filteredFunctions: string[] = [];
+  filteredLabs: string[] = [];
+  functionSearchTerm = '';
+  labSearchTerm = '';
 
-  searchResults: any[] = [];
+  functionDropdownOpen = false;
+  labDropdownOpen = false;
+  selectedFunctionLabel = 'Todas';
+  selectedLabLabel = 'Todos';
 
-  onKeyUp(event: KeyboardEvent) {
-    if (event.key === 'Enter') this.onSearch();
+  equipmentResults: any[] = [];
+
+  ngOnInit(): void {
+    this.filteredFunctions = [...this.functionOptions];
+    this.filteredLabs = [...this.laboratoryOptions];
   }
 
-  onSearch() {
+  onKeyUp(event: KeyboardEvent): void {
+    if (event.key === 'Enter') this.performSearch();
+  }
+
+  performSearch(): void {
     this.isLoading = true;
 
-    const allEquipments = [
+    const allEquipment = [
       {
         id: 1,
-        nombre: 'Multímetro',
-        marca: 'Fluke',
-        numeroInventario: 'INV-001',
-        disponibilidad: 'Disponible',
-        funcion: { nombre: 'Medición' },
-        laboratorio: { nombre: 'Lab Electrónica' },
+        name: 'Multímetro',
+        brand: 'Fluke',
+        inventoryCode: 'EQ-001',
+        availability: 'Disponible',
+        function: { name: 'Medición' },
+        laboratory: { name: 'Lab Electrónica' },
       },
       {
         id: 2,
-        nombre: 'Computador HP',
-        marca: 'HP',
-        numeroInventario: 'INV-002',
-        disponibilidad: 'No disponible',
-        funcion: { nombre: 'Computación' },
-        laboratorio: { nombre: 'Lab Redes' },
+        name: 'Analizador',
+        brand: 'Keysight',
+        inventoryCode: 'EQ-002',
+        availability: 'No disponible',
+        function: { name: 'Análisis' },
+        laboratory: { name: 'Lab Química' },
       },
     ];
 
     setTimeout(() => {
       const query = this.searchQuery.toLowerCase();
-      const { disponibilidad, funcion, laboratorio } = this.filters;
+      const { availability, function: func, laboratory } = this.filters;
 
-      this.searchResults = allEquipments.filter((equipo) => {
-        const matchesQuery =
+      this.equipmentResults = allEquipment.filter((eq) => {
+        const matchQuery =
           !query ||
-          equipo.nombre.toLowerCase().includes(query) ||
-          equipo.marca.toLowerCase().includes(query) ||
-          equipo.numeroInventario.toLowerCase().includes(query);
+          eq.name.toLowerCase().includes(query) ||
+          eq.brand.toLowerCase().includes(query) ||
+          eq.inventoryCode.toLowerCase().includes(query);
 
-        const matchesDisponibilidad =
-          !disponibilidad || equipo.disponibilidad === disponibilidad;
+        const matchAvailability =
+          !availability || eq.availability === availability;
+        const matchFunction = !func || eq.function.name === func;
+        const matchLab = !laboratory || eq.laboratory.name === laboratory;
 
-        const matchesFuncion = !funcion || equipo.funcion.nombre === funcion;
-
-        const matchesLaboratorio =
-          !laboratorio || equipo.laboratorio.nombre === laboratorio;
-
-        return (
-          matchesQuery &&
-          matchesDisponibilidad &&
-          matchesFuncion &&
-          matchesLaboratorio
-        );
+        return matchQuery && matchAvailability && matchFunction && matchLab;
       });
 
       this.isLoading = false;
-    }, 500);
+    }, 400);
   }
 
-  toggleAdvancedSearch() {
+  toggleAdvancedSearch(): void {
     this.showAdvancedSearch = !this.showAdvancedSearch;
   }
 
-  clearFilters() {
+  clearFilters(): void {
     this.searchQuery = '';
-    this.filters = {
-      disponibilidad: '',
-      funcion: '',
-      laboratorio: '',
-    };
-    this.searchResults = [];
+    this.filters = { availability: '', function: '', laboratory: '' };
+    this.functionSearchTerm = '';
+    this.labSearchTerm = '';
+    this.selectedFunctionLabel = 'Todas';
+    this.selectedLabLabel = 'Todos';
+    this.filteredFunctions = [...this.functionOptions];
+    this.filteredLabs = [...this.laboratoryOptions];
+    this.equipmentResults = [];
   }
 
-  trackById(index: number, item: any) {
+  toggleFunctionDropdown(): void {
+    this.functionDropdownOpen = !this.functionDropdownOpen;
+    this.filteredFunctions = [...this.functionOptions];
+    this.functionSearchTerm = '';
+  }
+
+  filterFunctions(): void {
+    const term = this.functionSearchTerm.toLowerCase();
+    this.filteredFunctions = this.functionOptions.filter((f) =>
+      f.toLowerCase().includes(term)
+    );
+  }
+
+  selectFunction(func: string): void {
+    this.filters.function = func;
+    this.selectedFunctionLabel = func || 'Todas';
+    this.functionDropdownOpen = false;
+    this.performSearch();
+  }
+
+  toggleLabDropdown(): void {
+    this.labDropdownOpen = !this.labDropdownOpen;
+    this.filteredLabs = [...this.laboratoryOptions];
+    this.labSearchTerm = '';
+  }
+
+  filterLabs(): void {
+    const term = this.labSearchTerm.toLowerCase();
+    this.filteredLabs = this.laboratoryOptions.filter((l) =>
+      l.toLowerCase().includes(term)
+    );
+  }
+
+  selectLab(lab: string): void {
+    this.filters.laboratory = lab;
+    this.selectedLabLabel = lab || 'Todos';
+    this.labDropdownOpen = false;
+    this.performSearch();
+  }
+
+  trackById(index: number, item: any): number {
     return item.id;
   }
 
-  goToUpdateEquipment(id: number) {
+  navigateToEdit(id: number): void {
     this.router.navigate(['/dashboard/update-equipment', id]);
   }
 }

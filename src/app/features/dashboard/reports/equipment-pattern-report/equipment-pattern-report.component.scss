@@ -1,4 +1,4 @@
-.user-report-wrapper {
+.equipment-pattern-report-wrapper {
   padding: 2rem;
   background-color: #f9fbfc;
   display: flex;
@@ -25,7 +25,6 @@
   font-weight: 500;
 }
 
-/* Filtros */
 .filter-panel {
   flex-wrap: wrap;
 
@@ -83,7 +82,6 @@
   }
 }
 
-/* Grid principal */
 .dashboard-grid {
   display: flex;
   flex-direction: row;
@@ -103,7 +101,6 @@
   flex: 1;
 }
 
-/* 🟨 Tabla vertical para móviles */
 .table-section {
   width: 100%;
 
@@ -160,7 +157,6 @@
   }
 }
 
-/* 📊 Gráficos adaptables verticales */
 .chart-tabs {
   .tab-buttons {
     display: flex;
@@ -199,7 +195,7 @@
   display: none !important;
 }
 
-/* 📱 Comportamiento móvil */
+/* Responsive extra */
 @media (max-width: 768px) {
   .filter-panel,
   .summary-panel {

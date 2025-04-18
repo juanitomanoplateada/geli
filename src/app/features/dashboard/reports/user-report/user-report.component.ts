@@ -18,13 +18,13 @@ import autoTable from 'jspdf-autotable';
 (jsPDF as any).autoTable = autoTable;
 
 @Component({
-  selector: 'app-report-users',
+  selector: 'app-user-report',
   standalone: true,
   imports: [CommonModule, FormsModule, NgChartsModule],
-  templateUrl: './report-users.component.html',
-  styleUrls: ['./report-users.component.scss'],
+  templateUrl: './user-report.component.html',
+  styleUrls: ['./user-report.component.scss'],
 })
-export class ReportUsersComponent implements OnInit {
+export class UserReportComponent implements OnInit {
   activeTab = 'status';
   dateFilterType: 'creation' | 'modification' | 'assignment' = 'creation';
   isBrowser = false;
@@ -154,12 +154,10 @@ export class ReportUsersComponent implements OnInit {
       (label) =>
         this.filteredUsers.filter((user) => user[field] === label).length
     );
-
     const chartData: ChartData = {
       labels,
       datasets: type === 'bar' ? [{ label: 'Cantidad', data }] : [{ data }],
     };
-
     return chartData as ChartData<T>;
   }
 
@@ -226,8 +224,8 @@ export class ReportUsersComponent implements OnInit {
         Modificación: user.modificationDate.toLocaleDateString(),
       }))
     );
-    const csvBlob = XLSX.utils.sheet_to_csv(worksheet);
-    saveAs(new Blob([csvBlob], { type: 'text/csv;charset=utf-8;' }), fileName);
+    const csv = XLSX.utils.sheet_to_csv(worksheet);
+    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), fileName);
   }
 
   generateFileName(ext: string): string {
@@ -245,26 +243,25 @@ export class ReportUsersComponent implements OnInit {
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(18);
-    doc.setTextColor(40);
     doc.text('Reporte de Usuarios', pageWidth / 2, y, { align: 'center' });
 
     y += 10;
     doc.setFontSize(10);
-    doc.setTextColor(100);
     doc.text(
       `Generado: ${new Date().toLocaleString()}`,
       pageWidth - margin,
       y,
-      { align: 'right' }
+      {
+        align: 'right',
+      }
     );
 
     y += 15;
     doc.setFontSize(12);
-    doc.setTextColor(40);
     doc.text('Filtros Aplicados:', margin, y);
     y += 8;
 
-    const dateTypeLabelMap: Record<typeof this.dateFilterType, string> = {
+    const labelMap = {
       creation: 'Creación',
       modification: 'Modificación',
       assignment: 'Asignación',
@@ -273,38 +270,34 @@ export class ReportUsersComponent implements OnInit {
     const filters = [
       `• Estado: ${this.selectedStatus || 'Todos'}`,
       `• Rol: ${this.selectedRole || 'Todos'}`,
-      `• Rango de Fechas (${dateTypeLabelMap[this.dateFilterType]}): ${
+      `• Rango de Fechas (${labelMap[this.dateFilterType]}): ${
         this.startDate || 'N/A'
       } - ${this.endDate || 'N/A'}`,
     ];
 
-    doc.setFontSize(10);
-    filters.forEach((filter) => {
-      doc.text(filter, margin, y);
+    filters.forEach((f) => {
+      doc.text(f, margin, y);
       y += 6;
     });
 
     y += 10;
-    doc.setFontSize(12);
     doc.text('Resumen:', margin, y);
     y += 8;
 
     const stats = [
       `• Activos: ${this.getChartValue(this.statusChart, 0)}`,
       `• Inactivos: ${this.getChartValue(this.statusChart, 1)}`,
-      `• Usuarios Totales: ${this.filteredUsers.length}`,
+      `• Total: ${this.filteredUsers.length}`,
       `• Analistas de Calidad: ${this.getChartValue(this.roleChart, 0)}`,
       `• Personal Autorizado: ${this.getChartValue(this.roleChart, 1)}`,
     ];
 
-    doc.setFontSize(10);
     stats.forEach((stat) => {
       doc.text(stat, margin, y);
       y += 6;
     });
 
     y += 10;
-    doc.setFontSize(12);
     doc.text('Lista de Usuarios:', margin, y);
     y += 5;
 
@@ -322,15 +315,15 @@ export class ReportUsersComponent implements OnInit {
           'Asignación',
         ],
       ],
-      body: this.filteredUsers.map((user) => [
-        user.id.toString(),
-        user.name,
-        user.idNumber,
-        user.status,
-        user.role,
-        user.creationDate.toLocaleDateString(),
-        user.modificationDate.toLocaleDateString(),
-        user.assignmentDate.toLocaleDateString(),
+      body: this.filteredUsers.map((u) => [
+        u.id.toString(),
+        u.name,
+        u.idNumber,
+        u.status,
+        u.role,
+        u.creationDate.toLocaleDateString(),
+        u.modificationDate.toLocaleDateString(),
+        u.assignmentDate.toLocaleDateString(),
       ]),
       margin: { left: margin },
       styles: { fontSize: 8, cellPadding: 2 },
@@ -344,8 +337,10 @@ export class ReportUsersComponent implements OnInit {
         6: { cellWidth: 20 },
         7: { cellWidth: 20 },
       },
-      didDrawPage: (data: any) => {
-        y = data.cursor.y + 10;
+      didDrawPage: (data) => {
+        if (data?.cursor?.y != null) {
+          y = data.cursor.y + 10;
+        }
       },
     });
 
@@ -367,64 +362,20 @@ export class ReportUsersComponent implements OnInit {
 
     for (const chart of canvasRefs) {
       try {
-        const imageData = chart.ref.nativeElement.toDataURL('image/png');
-
-        let labels: string[] = [];
-        let data: number[] = [];
-        switch (chart.title) {
-          case 'Distribución por Estados':
-            labels = this.statusChart.labels as string[];
-            data = this.statusChart.datasets[0].data as number[];
-            break;
-          case 'Distribución por Roles':
-            labels = this.roleChart.labels as string[];
-            data = this.roleChart.datasets[0].data as number[];
-            break;
-          case 'Usuarios por Fecha de Creación':
-            labels = this.creationChart.labels as string[];
-            data = this.creationChart.datasets[0].data as number[];
-            break;
-          case 'Usuarios por Fecha de Modificación':
-            labels = this.modificationChart.labels as string[];
-            data = this.modificationChart.datasets[0].data as number[];
-            break;
-          case 'Usuarios por Fecha de Asignación':
-            labels = this.assignmentChart.labels as string[];
-            data = this.assignmentChart.datasets[0].data as number[];
-            break;
-        }
-
+        const img = chart.ref.nativeElement.toDataURL('image/png');
         doc.addPage();
         doc.setFontSize(14);
-        doc.setTextColor(40);
         doc.text(chart.title, margin, margin);
-
-        const imageHeight = 80;
-        const imageY = margin + 5;
         doc.addImage(
-          imageData,
+          img,
           'PNG',
           margin,
-          imageY,
+          margin + 5,
           pageWidth - margin * 2,
-          imageHeight
+          80
         );
-
-        const labelYStart = imageY + imageHeight + 10;
-        doc.setFontSize(10);
-        doc.setTextColor(80);
-        doc.text('Etiquetas:', margin, labelYStart);
-
-        labels.forEach((label, index) => {
-          const value = data[index] ?? 0;
-          doc.text(
-            `• ${label}: ${value}`,
-            margin + 5,
-            labelYStart + 6 * (index + 1)
-          );
-        });
       } catch (err) {
-        console.warn(`⚠️ Failed to capture chart: ${chart.title}`, err);
+        console.warn(`⚠️ No se pudo capturar el gráfico: ${chart.title}`, err);
       }
     }
 

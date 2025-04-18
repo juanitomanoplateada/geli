@@ -9,7 +9,11 @@
       [disabled]="isLoading"
     />
 
-    <button (click)="onSearch()" class="search-button" [disabled]="isLoading">
+    <button
+      (click)="performSearch()"
+      class="search-button"
+      [disabled]="isLoading"
+    >
       <span class="search-icon">🔍</span>
       <span *ngIf="!isLoading">Buscar</span>
       <span *ngIf="isLoading">Buscando...</span>
@@ -25,47 +29,82 @@
   </div>
 
   <div *ngIf="showAdvancedSearch" class="advanced-search">
+    <!-- Filtro de Disponibilidad -->
     <div class="filter-group">
-      <label for="dispFilter">Disponibilidad:</label>
+      <label for="availability">Disponibilidad:</label>
       <select
-        id="dispFilter"
-        [(ngModel)]="filters.disponibilidad"
-        (change)="onSearch()"
+        id="availability"
+        [(ngModel)]="filters.availability"
+        (change)="performSearch()"
         [disabled]="isLoading"
       >
         <option value="">Todas</option>
-        <option *ngFor="let d of disponibilidades" [value]="d">{{ d }}</option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label for="funcionFilter">Función:</label>
-      <select
-        id="funcionFilter"
-        [(ngModel)]="filters.funcion"
-        (change)="onSearch()"
-        [disabled]="isLoading"
-      >
-        <option value="">Todas</option>
-        <option *ngFor="let f of funcionesDisponibles" [value]="f">
-          {{ f }}
+        <option *ngFor="let status of availabilityOptions" [value]="status">
+          {{ status }}
         </option>
       </select>
     </div>
 
-    <div class="filter-group">
-      <label for="labFilter">Laboratorio:</label>
-      <select
-        id="labFilter"
-        [(ngModel)]="filters.laboratorio"
-        (change)="onSearch()"
-        [disabled]="isLoading"
+    <!-- Filtro: Función con buscador -->
+    <div class="filter-group dropdown-search">
+      <label for="functionDropdown">Función:</label>
+      <div class="select-box" (click)="toggleFunctionDropdown()">
+        {{ selectedFunctionLabel }}
+      </div>
+      <div
+        class="dropdown"
+        *ngIf="functionDropdownOpen"
+        (click)="$event.stopPropagation()"
       >
-        <option value="">Todos</option>
-        <option *ngFor="let lab of laboratoriosDisponibles" [value]="lab">
-          {{ lab }}
-        </option>
-      </select>
+        <input
+          type="text"
+          [(ngModel)]="functionSearchTerm"
+          [ngModelOptions]="{ standalone: true }"
+          (input)="filterFunctions()"
+          placeholder="Buscar función..."
+        />
+        <div class="options">
+          <div class="option" (click)="selectFunction('')">Todas</div>
+          <div
+            class="option"
+            *ngFor="let func of filteredFunctions"
+            (click)="selectFunction(func)"
+          >
+            {{ func }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtro: Laboratorio con buscador -->
+    <div class="filter-group dropdown-search">
+      <label for="labDropdown">Laboratorio:</label>
+      <div class="select-box" (click)="toggleLabDropdown()">
+        {{ selectedLabLabel }}
+      </div>
+      <div
+        class="dropdown"
+        *ngIf="labDropdownOpen"
+        (click)="$event.stopPropagation()"
+      >
+        <input
+          type="text"
+          [(ngModel)]="labSearchTerm"
+          [ngModelOptions]="{ standalone: true }"
+          (input)="filterLabs()"
+          placeholder="Buscar laboratorio..."
+        />
+        <div class="options">
+          <div class="option" (click)="selectLab('')">Todos</div>
+          <div
+            class="option"
+            *ngFor="let lab of filteredLabs"
+            (click)="selectLab(lab)"
+          >
+            {{ lab }}
+          </div>
+        </div>
+      </div>
     </div>
 
     <button
@@ -82,8 +121,11 @@
     <p>Buscando equipos...</p>
   </div>
 
-  <div *ngIf="!isLoading && searchResults.length > 0" class="results-container">
-    <h3>Resultados ({{ searchResults.length }})</h3>
+  <div
+    *ngIf="!isLoading && equipmentResults.length > 0"
+    class="results-container"
+  >
+    <h3>Resultados ({{ equipmentResults.length }})</h3>
     <div class="results-grid">
       <div class="results-header">
         <div>Nombre</div>
@@ -96,20 +138,17 @@
       </div>
 
       <div
-        *ngFor="let equipo of searchResults; trackBy: trackById"
         class="result-item"
+        *ngFor="let item of equipmentResults; trackBy: trackById"
       >
-        <div data-label="Nombre">{{ equipo.nombre }}</div>
-        <div data-label="Marca">{{ equipo.marca }}</div>
-        <div data-label="Inventario">{{ equipo.numeroInventario }}</div>
-        <div data-label="Disponibilidad">{{ equipo.disponibilidad }}</div>
-        <div data-label="Función">{{ equipo.funcion.nombre }}</div>
-        <div data-label="Laboratorio">{{ equipo.laboratorio.nombre }}</div>
+        <div data-label="Nombre">{{ item.name }}</div>
+        <div data-label="Marca">{{ item.brand }}</div>
+        <div data-label="Inventario">{{ item.inventoryCode }}</div>
+        <div data-label="Disponibilidad">{{ item.availability }}</div>
+        <div data-label="Función">{{ item.function.name }}</div>
+        <div data-label="Laboratorio">{{ item.laboratory.name }}</div>
         <div data-label="Acciones">
-          <button
-            class="search-button"
-            (click)="goToUpdateEquipment(equipo.id)"
-          >
+          <button class="search-button" (click)="navigateToEdit(item.id)">
             Editar
           </button>
         </div>
@@ -118,7 +157,7 @@
   </div>
 
   <div
-    *ngIf="!isLoading && searchQuery && searchResults.length === 0"
+    *ngIf="!isLoading && searchQuery && equipmentResults.length === 0"
     class="no-results"
   >
     <p>No se encontraron equipos para "{{ searchQuery }}"</p>

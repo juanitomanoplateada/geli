@@ -146,29 +146,19 @@
       </div>
       <div class="dashboard-submenu" [class.open]="isSubmenuOpen('reports')">
         <a
-          routerLink="/dashboard/sessions/session-history"
-          [class.active]="isActive('/dashboard/sessions/session-history')"
-          >Historial de Sesiones</a
-        >
-        <a
-          routerLink="/dashboard/reports/report-parameterized"
-          [class.active]="isActive('/dashboard/reports/report-parameterized')"
-          >Reporte Parametrizado</a
-        >
-        <a
-          routerLink="/dashboard/reports/report-users"
-          [class.active]="isActive('/dashboard/reports/report-users')"
+          routerLink="/dashboard/reports/user-report"
+          [class.active]="isActive('/dashboard/reports/user-report')"
           >Reporte de Usuarios</a
         >
         <a
-          routerLink="/dashboard/reports/report-laboratories"
-          [class.active]="isActive('/dashboard/reports/report-laboratories')"
+          routerLink="/dashboard/reports/laboratory-report"
+          [class.active]="isActive('/dashboard/reports/laboratory-report')"
           >Reporte de Laboratorios</a
         >
         <a
-          routerLink="/dashboard/reports/report-equipments-patterns"
+          routerLink="/dashboard/reports/equipment-pattern-report"
           [class.active]="
-            isActive('/dashboard/reports/report-equipments-patterns')
+            isActive('/dashboard/reports/equipment-pattern-report')
           "
           >Reporte de Equipos / Patrones</a
         >

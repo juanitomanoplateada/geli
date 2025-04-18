@@ -1,49 +1,206 @@
-import { Component } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import {
   FormBuilder,
   Validators,
   ReactiveFormsModule,
   FormsModule,
 } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { UppercaseNospaceDirective } from '../../../../shared/uppercase-nospace/uppercase-nospace.directive';
+import { UppercaseDirective } from '../../../../shared/uppercase/uppercase.directive';
+
+interface LabOption {
+  id: string;
+  name: string;
+}
+
+interface FunctionOption {
+  id: string;
+  name: string;
+}
 
 @Component({
   selector: 'app-register-equipment-pattern',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, UppercaseDirective, UppercaseNospaceDirective],
   templateUrl: './register-equipment-pattern.component.html',
   styleUrls: ['./register-equipment-pattern.component.scss'],
 })
-export class RegisterEquipmentPatternComponent {
-  laboratorios = [
-    { id: 1, nombre: 'Laboratorio de Redes' },
-    { id: 2, nombre: 'Laboratorio de Electrónica' },
+export class RegisterEquipmentPatternComponent implements OnInit {
+  // === Datos de prueba ===
+  labOptions: LabOption[] = [
+    { id: '1', name: 'Laboratorio de Redes' },
+    { id: '2', name: 'Laboratorio de Electrónica' },
   ];
 
-  funciones = [
-    { id: 1, nombre: 'Procesamiento de datos' },
-    { id: 2, nombre: 'Control de dispositivos' },
+  functionOptions: FunctionOption[] = [
+    { id: '1', name: 'Procesamiento de datos' },
+    { id: '2', name: 'Control de dispositivos' },
+    { id: 'na', name: 'N/A' },
   ];
+
+  existingInventoryCodes: string[] = ['PAT-001', 'EQP-100'];
 
   equipmentForm = this.fb.group({
-    nombre: ['', Validators.required],
-    marca: ['', Validators.required],
-    numeroInventario: ['', Validators.required],
-    ubicacionLaboratorio: ['', Validators.required],
-    disponibilidad: [true, Validators.required],
-    idFuncion: ['', Validators.required],
+    inventoryCode: ['', Validators.required],
+    name: ['', Validators.required],
+    brand: ['', Validators.required],
+    labLocation: ['', Validators.required],
+    availability: [true, Validators.required],
+    functionId: ['', Validators.required], // validación simbólica
   });
 
-  constructor(private fb: FormBuilder) {}
+  // === Estado de control ===
+  isInventoryCodeTaken = false;
 
-  onSubmit() {
-    if (this.equipmentForm.valid) {
-      const formData = this.equipmentForm.value;
-      console.log('Patrón de equipo registrado:', formData);
+  selectedLabName = '';
+  labSearchTerm = '';
+  filteredLabOptions: LabOption[] = [];
+  labDropdownOpen = false;
+
+  selectedFunctions: FunctionOption[] = [];
+  functionSearchTerm = '';
+  filteredFunctionOptions: FunctionOption[] = [];
+  functionDropdownOpen = false;
+
+  showConfirmationModal = false;
+
+  constructor(
+    private fb: FormBuilder,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
+
+  ngOnInit(): void {
+    this.filteredLabOptions = this.labOptions;
+    this.filteredFunctionOptions = this.functionOptions;
+
+    this.equipmentForm.get('inventoryCode')?.valueChanges.subscribe((value) => {
+      const code = (value ?? '').trim();
+      this.isInventoryCodeTaken = this.existingInventoryCodes.includes(code);
+    });
+
+    this.equipmentForm.get('labLocation')?.valueChanges.subscribe((val) => {
+      const selected = this.labOptions.find((opt) => opt.id === val);
+      this.selectedLabName = selected?.name || '';
+    });
+
+    if (isPlatformBrowser(this.platformId)) {
+      document.addEventListener('click', this.handleOutsideClick.bind(this));
     }
   }
 
-  onCancel() {
-    this.equipmentForm.reset({ disponibilidad: true });
+  // === Dropdown laboratorio ===
+  toggleLabDropdown(): void {
+    this.labDropdownOpen = !this.labDropdownOpen;
+  }
+
+  handleLabInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value.toLowerCase();
+    this.labSearchTerm = value;
+    this.filteredLabOptions = this.labOptions.filter((lab) =>
+      lab.name.toLowerCase().includes(value)
+    );
+  }
+
+  onSelectLab(lab: LabOption): void {
+    this.equipmentForm.patchValue({ labLocation: lab.id });
+    this.selectedLabName = lab.name;
+    this.labSearchTerm = '';
+    this.filteredLabOptions = this.labOptions;
+    this.labDropdownOpen = false;
+  }
+
+  // === Dropdown funciones múltiples ===
+  toggleFunctionDropdown(): void {
+    this.functionDropdownOpen = !this.functionDropdownOpen;
+  }
+
+  handleFunctionSearch(event: Event): void {
+    const value = (event.target as HTMLInputElement).value.toLowerCase();
+    this.functionSearchTerm = value;
+    this.filteredFunctionOptions = this.functionOptions.filter((func) =>
+      func.name.toLowerCase().includes(value)
+    );
+  }
+
+  onSelectFunction(func: FunctionOption): void {
+    if (func.name === 'N/A') {
+      this.selectedFunctions = [func];
+    } else {
+      const exists = this.selectedFunctions.some((f) => f.id === func.id);
+      if (!exists) {
+        this.selectedFunctions = this.selectedFunctions.filter(
+          (f) => f.name !== 'N/A'
+        );
+        this.selectedFunctions.push(func);
+      }
+    }
+
+    this.functionSearchTerm = '';
+    this.filteredFunctionOptions = this.functionOptions;
+    this.functionDropdownOpen = false;
+    this.equipmentForm.patchValue({ functionId: 'valid' }); // validación ficticia
+  }
+
+  removeFunction(func: FunctionOption): void {
+    this.selectedFunctions = this.selectedFunctions.filter(
+      (f) => f.id !== func.id
+    );
+    if (this.selectedFunctions.length === 0) {
+      this.equipmentForm.patchValue({ functionId: '' });
+    }
+  }
+
+  // === Modal de confirmación ===
+  onSubmit(): void {
+    if (this.equipmentForm.valid && !this.isInventoryCodeTaken) {
+      this.showConfirmationModal = true;
+    }
+  }
+
+  confirmSubmission(): void {
+    console.log('Formulario confirmado:', {
+      ...this.equipmentForm.value,
+      selectedFunctions: this.selectedFunctions,
+    });
+    this.showConfirmationModal = false;
+    this.onCancel();
+  }
+
+  cancelSubmission(): void {
+    this.showConfirmationModal = false;
+  }
+
+  get formSummary() {
+    const values = this.equipmentForm.value;
+    return {
+      ...values,
+      labName:
+        this.labOptions.find((l) => l.id === values.labLocation)?.name || '',
+      functions: this.selectedFunctions.map((f) => f.name).join(', '),
+    };
+  }
+
+  // === Cierre de dropdowns global ===
+  handleOutsideClick(event: MouseEvent): void {
+    const path = event.composedPath();
+    const clickedInside = path.some((el) =>
+      (el as HTMLElement)?.classList?.contains('custom-select')
+    );
+    if (!clickedInside) {
+      this.labDropdownOpen = false;
+      this.functionDropdownOpen = false;
+    }
+  }
+
+  // === Cancelar ===
+  onCancel(): void {
+    this.equipmentForm.reset({ availability: true });
+    this.selectedLabName = '';
+    this.labSearchTerm = '';
+    this.functionSearchTerm = '';
+    this.selectedFunctions = [];
+    this.filteredLabOptions = this.labOptions;
+    this.filteredFunctionOptions = this.functionOptions;
   }
 }

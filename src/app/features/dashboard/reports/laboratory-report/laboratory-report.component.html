@@ -1,0 +1,110 @@
+<div class="laboratory-report-wrapper">
+  <h1 class="report-title">Reporte de Laboratorios</h1>
+
+  <!-- Panel de Filtros -->
+  <div class="summary-panel filter-panel">
+    <label>
+      Disponibilidad:
+      <select
+        [(ngModel)]="selectedAvailability"
+        (change)="filterLaboratories()"
+      >
+        <option value="">Todas</option>
+        <option *ngFor="let option of availabilityOptions" [value]="option">
+          {{ option }}
+        </option>
+      </select>
+    </label>
+
+    <button (click)="resetFilters()">Limpiar Filtros</button>
+    <button class="btn-excel" (click)="exportToExcel()">📊 Excel</button>
+    <button class="btn-csv" (click)="exportToCSV()">📄 CSV</button>
+    <button class="btn-pdf" (click)="exportToPDF()">🧾 PDF</button>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="summary-panel">
+    <div>
+      <strong>Disponible:</strong> {{ getChartValue(availabilityChart, 0) }}
+    </div>
+    <div>
+      <strong>Ocupado:</strong> {{ getChartValue(availabilityChart, 1) }}
+    </div>
+    <div><strong>Total:</strong> {{ filteredLaboratories.length }}</div>
+  </div>
+
+  <!-- Contenido Principal -->
+  <div class="dashboard-grid">
+    <!-- Tabla de Laboratorios -->
+    <div class="left-section">
+      <div class="table-section">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Disponibilidad</th>
+              <th>Ubicación</th>
+              <th>Equipos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let lab of filteredLaboratories">
+              <td data-label="ID">{{ lab.id }}</td>
+              <td data-label="Nombre">{{ lab.name }}</td>
+              <td data-label="Descripción">{{ lab.description }}</td>
+              <td data-label="Disponibilidad">{{ lab.availability }}</td>
+              <td data-label="Ubicación">
+                {{ lab.location.building }} - Piso {{ lab.location.floor }}
+              </td>
+              <td data-label="Equipos">{{ lab.equipment.length }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="right-section">
+      <div class="chart-tabs">
+        <div class="tab-buttons">
+          <button
+            [class.active]="activeTab === 'availability'"
+            (click)="activeTab = 'availability'"
+          >
+            Disponibilidad
+          </button>
+          <button
+            [class.active]="activeTab === 'equipment'"
+            (click)="activeTab = 'equipment'"
+          >
+            Equipos por Laboratorio
+          </button>
+        </div>
+
+        <div class="tab-content" *ngIf="isBrowser">
+          <canvas
+            #availabilityChartCanvas
+            baseChart
+            [data]="availabilityChart"
+            [type]="'pie'"
+            [legend]="true"
+            class="chart"
+            [class.hidden]="activeTab !== 'availability'"
+          ></canvas>
+
+          <canvas
+            #equipmentChartCanvas
+            baseChart
+            [data]="equipmentChart"
+            [type]="'bar'"
+            [legend]="true"
+            class="chart"
+            [class.hidden]="activeTab !== 'equipment'"
+          ></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

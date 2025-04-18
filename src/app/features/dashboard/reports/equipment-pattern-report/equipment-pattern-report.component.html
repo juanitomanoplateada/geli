@@ -1,0 +1,143 @@
+<div class="equipment-pattern-report-wrapper">
+  <h1 class="report-title">Reporte de Equipos / Patrones</h1>
+
+  <!-- Panel de Filtros -->
+  <div class="summary-panel filter-panel">
+    <label>
+      Disponibilidad:
+      <select [(ngModel)]="selectedAvailability" (change)="filterEquipment()">
+        <option value="">Todas</option>
+        <option *ngFor="let option of availabilityOptions" [value]="option">
+          {{ option }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      Función:
+      <select [(ngModel)]="selectedFunction" (change)="filterEquipment()">
+        <option value="">Todas</option>
+        <option *ngFor="let func of functionOptions" [value]="func">
+          {{ func }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      Laboratorio:
+      <select [(ngModel)]="selectedLaboratory" (change)="filterEquipment()">
+        <option value="">Todos</option>
+        <option *ngFor="let lab of laboratoryOptions" [value]="lab">
+          {{ lab }}
+        </option>
+      </select>
+    </label>
+
+    <button (click)="resetFilters()">Limpiar Filtros</button>
+    <button class="btn-excel" (click)="exportToExcel()">📊 Excel</button>
+    <button class="btn-csv" (click)="exportToCSV()">📄 CSV</button>
+    <button class="btn-pdf" (click)="exportToPDF()">🧾 PDF</button>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="summary-panel">
+    <div>
+      <strong>Disponible:</strong> {{ getChartValue(availabilityChart, 0) }}
+    </div>
+    <div>
+      <strong>Ocupado:</strong> {{ getChartValue(availabilityChart, 1) }}
+    </div>
+    <div><strong>Total:</strong> {{ filteredEquipment.length }}</div>
+  </div>
+
+  <!-- Contenido Principal -->
+  <div class="dashboard-grid">
+    <!-- Tabla -->
+    <div class="left-section">
+      <div class="table-section">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Marca</th>
+              <th>N° Inventario</th>
+              <th>Disponibilidad</th>
+              <th>Función</th>
+              <th>Laboratorio</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let eq of filteredEquipment">
+              <td data-label="ID">{{ eq.id }}</td>
+              <td data-label="Nombre">{{ eq.name }}</td>
+              <td data-label="Marca">{{ eq.brand }}</td>
+              <td data-label="N° Inventario">{{ eq.inventoryNumber }}</td>
+              <td data-label="Disponibilidad">{{ eq.availability }}</td>
+              <td data-label="Función">{{ eq.function.name }}</td>
+              <td data-label="Laboratorio">{{ eq.laboratory.name }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="right-section">
+      <div class="chart-tabs">
+        <div class="tab-buttons">
+          <button
+            [class.active]="activeTab === 'availability'"
+            (click)="activeTab = 'availability'"
+          >
+            Disponibilidad
+          </button>
+          <button
+            [class.active]="activeTab === 'function'"
+            (click)="activeTab = 'function'"
+          >
+            Función
+          </button>
+          <button
+            [class.active]="activeTab === 'laboratory'"
+            (click)="activeTab = 'laboratory'"
+          >
+            Laboratorio
+          </button>
+        </div>
+
+        <div class="tab-content" *ngIf="isBrowser">
+          <canvas
+            #availabilityChartCanvas
+            baseChart
+            [data]="availabilityChart"
+            [type]="'pie'"
+            [legend]="true"
+            class="chart"
+            [class.hidden]="activeTab !== 'availability'"
+          ></canvas>
+
+          <canvas
+            #functionChartCanvas
+            baseChart
+            [data]="functionChart"
+            [type]="'bar'"
+            [legend]="true"
+            class="chart"
+            [class.hidden]="activeTab !== 'function'"
+          ></canvas>
+
+          <canvas
+            #laboratoryChartCanvas
+            baseChart
+            [data]="laboratoryChart"
+            [type]="'bar'"
+            [legend]="true"
+            class="chart"
+            [class.hidden]="activeTab !== 'laboratory'"
+          ></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
