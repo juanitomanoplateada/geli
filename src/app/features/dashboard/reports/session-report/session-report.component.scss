@@ -1,9 +1,10 @@
-.laboratory-report-wrapper {
+.session-report-wrapper {
   padding: 2rem;
   background-color: #f9fbfc;
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  font-family: Arial, sans-serif;
 }
 
 .report-title {
@@ -11,11 +12,14 @@
   font-weight: bold;
   text-align: center;
   color: #2c3e50;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 }
 
 .summary-panel {
   display: flex;
-  justify-content: space-around;
   flex-wrap: wrap;
   gap: 1rem;
   background: white;
@@ -23,22 +27,21 @@
   border-radius: 8px;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
   font-weight: 500;
-}
-
-.filter-panel {
-  flex-wrap: wrap;
+  align-items: flex-start;
 
   label {
     display: flex;
     flex-direction: column;
     font-size: 0.9rem;
     font-weight: 500;
-    min-width: 140px;
+    min-width: 180px;
+    flex: 1;
 
     input,
     select {
       margin-top: 0.25rem;
-      padding: 0.4rem;
+      padding: 0.5rem;
+      font-size: 0.95rem;
       border: 1px solid #ccc;
       border-radius: 4px;
     }
@@ -51,40 +54,41 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    align-self: flex-end;
 
     &:hover {
       background-color: #2471a3;
     }
-  }
 
-  .btn-excel {
-    background-color: #28a745;
+    &.btn-excel {
+      background-color: #28a745;
 
-    &:hover {
-      background-color: #218838;
+      &:hover {
+        background-color: #218838;
+      }
     }
-  }
 
-  .btn-csv {
-    background-color: #f39c12;
+    &.btn-csv {
+      background-color: #f39c12;
 
-    &:hover {
-      background-color: #e67e22;
+      &:hover {
+        background-color: #e67e22;
+      }
     }
-  }
 
-  .btn-pdf {
-    background-color: #c0392b;
+    &.btn-pdf {
+      background-color: #c0392b;
 
-    &:hover {
-      background-color: #a93226;
+      &:hover {
+        background-color: #a93226;
+      }
     }
   }
 }
 
 .dashboard-grid {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 2rem;
 
   @media (max-width: 1024px) {
@@ -107,13 +111,14 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 
     th,
     td {
-      padding: 0.6rem;
+      padding: 0.5rem;
       border: 1px solid #ccc;
       text-align: left;
+      vertical-align: top;
     }
 
     th {
@@ -135,21 +140,23 @@
         tr {
           display: flex;
           flex-direction: column;
-          padding: 1rem;
           background-color: #fff;
           border: 1px solid #ddd;
           border-radius: 8px;
+          padding: 1rem;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         td {
           display: flex;
-          justify-content: space-between;
-          font-size: 0.9rem;
+          flex-direction: column;
+          padding: 0.25rem 0;
 
           &::before {
             content: attr(data-label);
             font-weight: bold;
-            margin-right: 0.5rem;
+            margin-bottom: 0.25rem;
+            color: #333;
           }
         }
       }
@@ -158,69 +165,105 @@
 }
 
 .chart-tabs {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  padding: 1rem;
-  box-sizing: border-box;
-
   .tab-buttons {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 0.5rem;
     margin-bottom: 1rem;
 
     button {
       padding: 0.5rem 1rem;
-      border: none;
-      background-color: #ccc;
+      background: #e0e0e0;
+      border: 1px solid #ccc;
       border-radius: 5px;
       cursor: pointer;
-      transition: background-color 0.3s;
 
       &.active {
         background-color: #3498db;
         color: white;
+        font-weight: bold;
       }
     }
   }
 
   .tab-content {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 1.5rem;
 
-    canvas.chart {
+    .chart {
       width: 100% !important;
-      max-width: 500px;
-      height: auto !important;
-    }
-
-    .hidden {
-      display: none;
+      max-height: 300px;
     }
   }
 }
 
-.hidden {
-  display: none !important;
+/* Dropdowns con buscador */
+.dropdown {
+  position: relative;
+  width: 100%;
+
+  &.disabled .selected {
+    background-color: #eee;
+    color: #888;
+    cursor: not-allowed;
+  }
+
+  .selected {
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+  }
+
+  .dropdown-list {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    max-height: 250px;
+    overflow-y: auto;
+
+    input {
+      width: 85%;
+      padding: 8px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .option {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+
+      &:hover {
+        background: #f0f0f0;
+      }
+    }
+  }
 }
 
+/* Mobile */
 @media (max-width: 768px) {
-  .filter-panel,
   .summary-panel {
     flex-direction: column;
     align-items: stretch;
+
+    label,
+    button {
+      width: 100%;
+    }
   }
 
-  .filter-panel label,
-  .filter-panel button {
+  .dropdown {
     width: 100%;
-  }
-
-  .report-title {
-    font-size: 1.5rem;
   }
 }

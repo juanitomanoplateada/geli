@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChartData } from 'chart.js';
+import { Chart, ChartData } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -25,17 +25,15 @@ import autoTable from 'jspdf-autotable';
   styleUrls: ['./laboratory-report.component.scss'],
 })
 export class LaboratoryReportComponent implements OnInit {
-  activeTab: 'availability' | 'equipment' = 'availability';
+  activeTab: string = 'availability';
   isBrowser = false;
 
   @ViewChild('availabilityChartCanvas')
   availabilityChartCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('equipmentChartCanvas')
   equipmentChartCanvas!: ElementRef<HTMLCanvasElement>;
-
-  constructor(@Inject(PLATFORM_ID) private platformId: any) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
+  @ViewChild('locationChartCanvas')
+  locationChartCanvas!: ElementRef<HTMLCanvasElement>;
 
   laboratories = [
     {
@@ -65,27 +63,58 @@ export class LaboratoryReportComponent implements OnInit {
   ];
 
   availabilityOptions = ['Disponible', 'Ocupado'];
+  locationOptions = [
+    ...new Set(
+      this.laboratories.map(
+        (lab) => `${lab.location.building} - Piso ${lab.location.floor}`
+      )
+    ),
+  ];
+
   selectedAvailability = '';
+  selectedLocation = '';
+  minEquipmentCount: number | null = null;
+  maxEquipmentCount: number | null = null;
+
   filteredLaboratories = [...this.laboratories];
 
   availabilityChart: ChartData<'pie'> = { labels: [], datasets: [] };
   equipmentChart: ChartData<'bar'> = { labels: [], datasets: [] };
+  locationChart: ChartData<'pie'> = { labels: [], datasets: [] };
+
+  constructor(@Inject(PLATFORM_ID) private platformId: any) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
     this.updateCharts();
   }
 
   filterLaboratories(): void {
-    this.filteredLaboratories = this.laboratories.filter(
-      (lab) =>
+    this.filteredLaboratories = this.laboratories.filter((lab) => {
+      const availabilityMatch =
         !this.selectedAvailability ||
-        lab.availability === this.selectedAvailability
-    );
+        lab.availability === this.selectedAvailability;
+      const locationMatch =
+        !this.selectedLocation ||
+        `${lab.location.building} - Piso ${lab.location.floor}` ===
+          this.selectedLocation;
+      const minMatch =
+        this.minEquipmentCount === null ||
+        lab.equipment.length >= this.minEquipmentCount;
+      const maxMatch =
+        this.maxEquipmentCount === null ||
+        lab.equipment.length <= this.maxEquipmentCount;
+      return availabilityMatch && locationMatch && minMatch && maxMatch;
+    });
     this.updateCharts();
   }
 
   resetFilters(): void {
     this.selectedAvailability = '';
+    this.selectedLocation = '';
+    this.minEquipmentCount = null;
+    this.maxEquipmentCount = null;
     this.filteredLaboratories = [...this.laboratories];
     this.updateCharts();
   }
@@ -104,20 +133,25 @@ export class LaboratoryReportComponent implements OnInit {
         },
       ],
     };
+    this.locationChart = this.buildPieChart(this.locationOptions, 'location');
   }
 
   buildPieChart<T extends 'pie'>(
     labels: string[],
-    field: 'availability'
+    field: 'availability' | 'location'
   ): ChartData<T> {
     const data = labels.map(
       (label) =>
-        this.filteredLaboratories.filter((lab) => lab[field] === label).length
+        this.filteredLaboratories.filter((lab) => {
+          if (field === 'availability') return lab.availability === label;
+          if (field === 'location')
+            return (
+              `${lab.location.building} - Piso ${lab.location.floor}` === label
+            );
+          return false;
+        }).length
     );
-    return {
-      labels,
-      datasets: [{ data }],
-    } as ChartData<T>;
+    return { labels, datasets: [{ data }] } as ChartData<T>;
   }
 
   getChartValue(chart: ChartData, index: number): number {
@@ -174,20 +208,25 @@ export class LaboratoryReportComponent implements OnInit {
       `Generado: ${new Date().toLocaleString()}`,
       pageWidth - margin,
       y,
-      {
-        align: 'right',
-      }
+      { align: 'right' }
     );
 
     y += 15;
     doc.setFontSize(12);
     doc.text('Filtros Aplicados:', margin, y);
     y += 8;
-    doc.text(
+
+    const filtros = [
       `• Disponibilidad: ${this.selectedAvailability || 'Todas'}`,
-      margin,
-      y
-    );
+      `• Ubicación: ${this.selectedLocation || 'Todas'}`,
+      `• Cantidad de Equipos desde: ${this.minEquipmentCount ?? 'Sin mínimo'}`,
+      `• Cantidad de Equipos hasta: ${this.maxEquipmentCount ?? 'Sin máximo'}`,
+    ];
+
+    filtros.forEach((f) => {
+      doc.text(f, margin, y);
+      y += 6;
+    });
 
     y += 10;
     doc.text('Resumen:', margin, y);
@@ -234,33 +273,57 @@ export class LaboratoryReportComponent implements OnInit {
       styles: { fontSize: 8, cellPadding: 2 },
     });
 
-    const chartRefs = [
+    const chartRefs: {
+      data: ChartData;
+      type: 'bar' | 'line' | 'pie';
+      title: string;
+    }[] = [
       {
-        ref: this.availabilityChartCanvas,
-        title: 'Disponibilidad de Laboratorios',
+        data: this.availabilityChart,
+        type: 'pie' as const,
+        title: 'Distribución por Disponibilidad',
       },
       {
-        ref: this.equipmentChartCanvas,
+        data: this.equipmentChart,
+        type: 'bar' as const,
         title: 'Cantidad de Equipos por Laboratorio',
+      },
+      {
+        data: this.locationChart,
+        type: 'pie' as const,
+        title: 'Distribución por Ubicación',
       },
     ];
 
     for (const chart of chartRefs) {
-      try {
-        const img = chart.ref.nativeElement.toDataURL('image/png');
-        doc.addPage();
-        doc.setFontSize(14);
-        doc.text(chart.title, margin, margin);
-        doc.addImage(
-          img,
-          'PNG',
-          margin,
-          margin + 5,
-          pageWidth - margin * 2,
-          80
-        );
-      } catch (err) {
-        console.warn(`⚠️ No se pudo capturar el gráfico: ${chart.title}`, err);
+      const chartImg = await this.renderHighResChart(chart.data, chart.type);
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text(chart.title, margin, margin);
+      doc.addImage(
+        chartImg,
+        'PNG',
+        margin,
+        margin + 5,
+        pageWidth - margin * 2,
+        110
+      );
+
+      const labels = chart.data.labels ?? [];
+      const values = chart.data.datasets?.[0]?.data ?? [];
+      let yCursor = margin + 120;
+
+      doc.setFontSize(11);
+      doc.text('Detalle de datos:', margin, yCursor);
+      yCursor += 6;
+
+      for (let i = 0; i < labels.length; i++) {
+        const label = labels[i];
+        const value = values[i];
+        if (label !== undefined && value !== undefined) {
+          doc.text(`• ${label}: ${value}`, margin, yCursor);
+          yCursor += 6;
+        }
       }
     }
 
@@ -273,5 +336,75 @@ export class LaboratoryReportComponent implements OnInit {
     return `reporte_laboratorios_${now
       .toISOString()
       .slice(0, 10)}_${now.getHours()}-${now.getMinutes()}.${extension}`;
+  }
+
+  async renderHighResChart(
+    chartData: ChartData,
+    type: 'bar' | 'line' | 'pie',
+    width = 1200,
+    height = 800
+  ): Promise<string> {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return resolve('');
+
+      const chart = new Chart(ctx, {
+        type,
+        data: chartData,
+        options: {
+          responsive: false,
+          animation: false,
+          plugins: {
+            legend: { labels: { font: { size: 20 } } },
+          },
+          scales:
+            type !== 'pie'
+              ? {
+                  x: { ticks: { font: { size: 18 } } },
+                  y: { ticks: { font: { size: 18 } } },
+                }
+              : undefined,
+        },
+      });
+
+      setTimeout(() => {
+        ctx.font = 'bold 20px Arial';
+        ctx.fillStyle = '#111';
+        ctx.textAlign = 'center';
+
+        const meta = chart.getDatasetMeta(0);
+        const dataset = chart.data.datasets[0];
+
+        if (type === 'bar') {
+          meta.data.forEach((element: any, i: number) => {
+            const value = dataset.data?.[i];
+            if (value !== undefined)
+              ctx.fillText(String(value), element.x, element.y - 10);
+          });
+        }
+
+        if (type === 'pie') {
+          const rawData = dataset.data as number[];
+          const total = rawData.reduce((a, b) => a + b, 0);
+          meta.data.forEach((arc: any, i: number) => {
+            const value = rawData[i];
+            const angle = (arc.startAngle + arc.endAngle) / 2;
+            const radius = arc.outerRadius * 0.75;
+            const x = arc.x + Math.cos(angle) * radius;
+            const y = arc.y + Math.sin(angle) * radius;
+            const percentage = Math.round((value / total) * 100);
+            ctx.fillText(`${percentage}%`, x, y);
+          });
+        }
+
+        const img = canvas.toDataURL('image/png');
+        chart.destroy();
+        resolve(img);
+      }, 500);
+    });
   }
 }

@@ -129,6 +129,7 @@
     </div>
 
     <a
+      *ngIf="hasRole(['ANALISTA_CALIDAD'])"
       routerLink="/dashboard/sessions/session-history"
       class="dashboard-link"
       [class.active]="isExactActive('/dashboard/sessions/session-history')"
@@ -156,11 +157,21 @@
           >Reporte de Laboratorios</a
         >
         <a
+          routerLink="/dashboard/reports/lab-equipment-report"
+          [class.active]="isActive('/dashboard/reports/lab-equipment-report')"
+          >Reporte de Equipos / Patrones por Laboratorio</a
+        >
+        <a
           routerLink="/dashboard/reports/equipment-pattern-report"
           [class.active]="
             isActive('/dashboard/reports/equipment-pattern-report')
           "
           >Reporte de Equipos / Patrones</a
+        >
+        <a
+          routerLink="/dashboard/reports/session-report"
+          [class.active]="isActive('/dashboard/reports/session-report')"
+          >Reporte de Sesiones</a
         >
       </div>
     </div>

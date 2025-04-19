@@ -1,0 +1,115 @@
+<div class="lab-equipment-report-wrapper">
+  <h1 class="report-title">Reporte de Equipos por Laboratorio</h1>
+
+  <!-- 🔍 Selección de laboratorio -->
+  <div class="lab-selector" *ngIf="!selectedLab">
+    <input
+      type="text"
+      [(ngModel)]="labSearchTerm"
+      placeholder="Buscar laboratorio..."
+      class="search-input"
+    />
+
+    <div class="lab-list">
+      <div
+        class="lab-card"
+        *ngFor="let lab of filteredLaboratoriesFilteredBySearch()"
+        (click)="selectLaboratory(lab)"
+      >
+        <h3>{{ lab.name }}</h3>
+        <p><strong>Ubicación:</strong> {{ lab.location }}</p>
+        <p><strong>Disponibilidad:</strong> {{ lab.availability }}</p>
+        <p><strong>Equipos:</strong> {{ lab.equipment.length }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📋 Vista de detalle del laboratorio -->
+  <div *ngIf="selectedLab">
+    <!-- Encabezado + Botones -->
+    <div class="lab-detail-row">
+      <div class="lab-info">
+        <h2>{{ selectedLab.name }}</h2>
+        <p><strong>Ubicación:</strong> {{ selectedLab.location }}</p>
+        <p><strong>Disponibilidad:</strong> {{ selectedLab.availability }}</p>
+        <p><strong>Total Equipos:</strong> {{ filteredEquipment.length }}</p>
+      </div>
+
+      <div class="lab-buttons">
+        <button (click)="resetLabSelection()">← Volver</button>
+        <button class="btn-excel" (click)="exportToExcel()">📊 Excel</button>
+        <button class="btn-csv" (click)="exportToCSV()">📄 CSV</button>
+        <button class="btn-pdf" (click)="exportToPDF()">🧾 PDF</button>
+      </div>
+    </div>
+
+    <!-- Contenido: Tabla y Gráfica -->
+    <div class="report-content">
+      <!-- 🧾 Tabla de equipos -->
+      <div class="table-section">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Marca</th>
+              <th>N° Inventario</th>
+              <th>Disponibilidad</th>
+              <th>Función</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let eq of filteredEquipment">
+              <td data-label="ID">{{ eq.id }}</td>
+              <td data-label="Nombre">{{ eq.name }}</td>
+              <td data-label="Marca">{{ eq.brand }}</td>
+              <td data-label="N° Inventario">{{ eq.inventoryNumber }}</td>
+              <td data-label="Disponibilidad">{{ eq.availability }}</td>
+              <td data-label="Función">{{ eq.function }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 📈 Gráficas -->
+      <div class="chart-section" *ngIf="isBrowser">
+        <div class="tab-buttons">
+          <button
+            [class.active]="activeTab === 'availability'"
+            (click)="activeTab = 'availability'"
+          >
+            Disponibilidad
+          </button>
+          <button
+            [class.active]="activeTab === 'function'"
+            (click)="activeTab = 'function'"
+          >
+            Función
+          </button>
+        </div>
+
+        <div class="tab-content">
+          <canvas
+            *ngIf="activeTab === 'availability'"
+            #availabilityChartCanvas
+            baseChart
+            [data]="availabilityChart"
+            [type]="'pie'"
+            [legend]="true"
+            class="chart"
+          ></canvas>
+
+          <canvas
+            *ngIf="activeTab === 'function'"
+            #functionChartCanvas
+            baseChart
+            [data]="functionChart"
+            [type]="'bar'"
+            [legend]="true"
+            class="chart"
+          ></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

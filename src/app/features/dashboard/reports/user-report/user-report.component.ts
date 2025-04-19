@@ -1,14 +1,7 @@
-import {
-  Component,
-  ElementRef,
-  Inject,
-  OnInit,
-  PLATFORM_ID,
-  ViewChild,
-} from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChartData } from 'chart.js';
+import { Chart, ChartData } from 'chart.js/auto';
 import { NgChartsModule } from 'ng2-charts';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -28,20 +21,6 @@ export class UserReportComponent implements OnInit {
   activeTab = 'status';
   dateFilterType: 'creation' | 'modification' | 'assignment' = 'creation';
   isBrowser = false;
-
-  @ViewChild('statusChartCanvas')
-  statusCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('roleChartCanvas') roleCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('creationChartCanvas')
-  creationCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('modificationChartCanvas')
-  modificationCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('assignmentChartCanvas')
-  assignmentCanvasRef!: ElementRef<HTMLCanvasElement>;
-
-  constructor(@Inject(PLATFORM_ID) private platformId: any) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
 
   users = [
     {
@@ -90,19 +69,16 @@ export class UserReportComponent implements OnInit {
   modificationChart: ChartData<'line'> = { labels: [], datasets: [] };
   assignmentChart: ChartData<'line'> = { labels: [], datasets: [] };
 
+  constructor(@Inject(PLATFORM_ID) private platformId: any) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
+
   ngOnInit(): void {
     this.updateCharts();
   }
 
   getBaseDate(user: any): Date {
-    switch (this.dateFilterType) {
-      case 'creation':
-        return user.creationDate;
-      case 'modification':
-        return user.modificationDate;
-      case 'assignment':
-        return user.assignmentDate;
-    }
+    return user[`${this.dateFilterType}Date`];
   }
 
   filterUsers(): void {
@@ -131,12 +107,8 @@ export class UserReportComponent implements OnInit {
   }
 
   updateCharts(): void {
-    this.statusChart = this.getChart<'bar'>(
-      this.statusOptions,
-      'status',
-      'bar'
-    );
-    this.roleChart = this.getChart<'pie'>(this.roleOptions, 'role', 'pie');
+    this.statusChart = this.getChart(this.statusOptions, 'status', 'bar');
+    this.roleChart = this.getChart(this.roleOptions, 'role', 'pie');
     this.creationChart = this.getLineChart('creationDate', 'Creación');
     this.modificationChart = this.getLineChart(
       'modificationDate',
@@ -154,11 +126,10 @@ export class UserReportComponent implements OnInit {
       (label) =>
         this.filteredUsers.filter((user) => user[field] === label).length
     );
-    const chartData: ChartData = {
+    return {
       labels,
       datasets: type === 'bar' ? [{ label: 'Cantidad', data }] : [{ data }],
-    };
-    return chartData as ChartData<T>;
+    } as ChartData<T>;
   }
 
   getLineChart(
@@ -177,10 +148,7 @@ export class UserReportComponent implements OnInit {
     return {
       labels: Array.from(grouped.keys()),
       datasets: [
-        {
-          label: `Usuarios por ${label}`,
-          data: Array.from(grouped.values()),
-        },
+        { label: `Usuarios por ${label}`, data: Array.from(grouped.values()) },
       ],
     };
   }
@@ -235,6 +203,76 @@ export class UserReportComponent implements OnInit {
       .slice(0, 10)}_${date.getHours()}-${date.getMinutes()}.${ext}`;
   }
 
+  async renderHighResChart(
+    chartData: ChartData,
+    type: 'bar' | 'line' | 'pie',
+    width = 1200,
+    height = 800
+  ): Promise<string> {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return resolve('');
+
+      const chart = new Chart(ctx, {
+        type,
+        data: chartData,
+        options: {
+          responsive: false,
+          animation: false,
+          plugins: {
+            legend: { labels: { font: { size: 20 } } },
+          },
+          scales:
+            type !== 'pie'
+              ? {
+                  x: { ticks: { font: { size: 18 } } },
+                  y: { ticks: { font: { size: 18 } } },
+                }
+              : undefined,
+        },
+      });
+
+      setTimeout(() => {
+        ctx.font = 'bold 20px Arial';
+        ctx.fillStyle = '#111';
+        ctx.textAlign = 'center';
+
+        const meta = chart.getDatasetMeta(0);
+        const dataset = chart.data.datasets[0];
+
+        if (type === 'bar' || type === 'line') {
+          meta.data.forEach((element: any, i: number) => {
+            const value = dataset.data?.[i];
+            if (value !== undefined)
+              ctx.fillText(String(value), element.x, element.y - 10);
+          });
+        }
+
+        if (type === 'pie') {
+          const rawData = dataset.data as number[];
+          const total = rawData.reduce((a, b) => a + b, 0);
+          meta.data.forEach((arc: any, i: number) => {
+            const value = rawData[i];
+            const angle = (arc.startAngle + arc.endAngle) / 2;
+            const radius = arc.outerRadius * 0.75;
+            const x = arc.x + Math.cos(angle) * radius;
+            const y = arc.y + Math.sin(angle) * radius;
+            const percentage = Math.round((value / total) * 100);
+            ctx.fillText(`${percentage}%`, x, y);
+          });
+        }
+
+        const img = canvas.toDataURL('image/png');
+        chart.destroy();
+        resolve(img);
+      }, 500);
+    });
+  }
+
   async onExportPDF(): Promise<void> {
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -251,9 +289,7 @@ export class UserReportComponent implements OnInit {
       `Generado: ${new Date().toLocaleString()}`,
       pageWidth - margin,
       y,
-      {
-        align: 'right',
-      }
+      { align: 'right' }
     );
 
     y += 15;
@@ -266,7 +302,6 @@ export class UserReportComponent implements OnInit {
       modification: 'Modificación',
       assignment: 'Asignación',
     };
-
     const filters = [
       `• Estado: ${this.selectedStatus || 'Todos'}`,
       `• Rol: ${this.selectedRole || 'Todos'}`,
@@ -274,7 +309,6 @@ export class UserReportComponent implements OnInit {
         this.startDate || 'N/A'
       } - ${this.endDate || 'N/A'}`,
     ];
-
     filters.forEach((f) => {
       doc.text(f, margin, y);
       y += 6;
@@ -291,7 +325,6 @@ export class UserReportComponent implements OnInit {
       `• Analistas de Calidad: ${this.getChartValue(this.roleChart, 0)}`,
       `• Personal Autorizado: ${this.getChartValue(this.roleChart, 1)}`,
     ];
-
     stats.forEach((stat) => {
       doc.text(stat, margin, y);
       y += 6;
@@ -327,55 +360,70 @@ export class UserReportComponent implements OnInit {
       ]),
       margin: { left: margin },
       styles: { fontSize: 8, cellPadding: 2 },
-      columnStyles: {
-        0: { cellWidth: 10 },
-        1: { cellWidth: 30 },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 20 },
-        4: { cellWidth: 30 },
-        5: { cellWidth: 20 },
-        6: { cellWidth: 20 },
-        7: { cellWidth: 20 },
-      },
+      columnStyles: {},
       didDrawPage: (data) => {
-        if (data?.cursor?.y != null) {
-          y = data.cursor.y + 10;
-        }
+        if (data?.cursor?.y != null) y = data.cursor.y + 10;
       },
     });
 
-    await new Promise((res) => setTimeout(res, 500));
-
-    const canvasRefs = [
-      { ref: this.statusCanvasRef, title: 'Distribución por Estados' },
-      { ref: this.roleCanvasRef, title: 'Distribución por Roles' },
-      { ref: this.creationCanvasRef, title: 'Usuarios por Fecha de Creación' },
+    const chartRefs: {
+      data: ChartData;
+      type: 'bar' | 'line' | 'pie';
+      title: string;
+    }[] = [
       {
-        ref: this.modificationCanvasRef,
-        title: 'Usuarios por Fecha de Modificación',
+        data: this.statusChart,
+        type: 'bar',
+        title: 'Distribución por Estados',
+      },
+      { data: this.roleChart, type: 'pie', title: 'Distribución por Roles' },
+      {
+        data: this.creationChart,
+        type: 'line',
+        title: 'Usuarios por Creación',
       },
       {
-        ref: this.assignmentCanvasRef,
-        title: 'Usuarios por Fecha de Asignación',
+        data: this.modificationChart,
+        type: 'line',
+        title: 'Usuarios por Modificación',
+      },
+      {
+        data: this.assignmentChart,
+        type: 'line',
+        title: 'Usuarios por Asignación',
       },
     ];
 
-    for (const chart of canvasRefs) {
-      try {
-        const img = chart.ref.nativeElement.toDataURL('image/png');
-        doc.addPage();
-        doc.setFontSize(14);
-        doc.text(chart.title, margin, margin);
-        doc.addImage(
-          img,
-          'PNG',
-          margin,
-          margin + 5,
-          pageWidth - margin * 2,
-          80
-        );
-      } catch (err) {
-        console.warn(`⚠️ No se pudo capturar el gráfico: ${chart.title}`, err);
+    for (const chart of chartRefs) {
+      const chartImg = await this.renderHighResChart(chart.data, chart.type);
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text(chart.title, margin, margin);
+      doc.addImage(
+        chartImg,
+        'PNG',
+        margin,
+        margin + 5,
+        pageWidth - margin * 2,
+        110
+      );
+
+      // Añadir leyenda textual debajo
+      const labels = chart.data.labels ?? [];
+      const values = chart.data.datasets?.[0]?.data ?? [];
+      let yCursor = margin + 120;
+
+      doc.setFontSize(11);
+      doc.text('Detalle de datos:', margin, yCursor);
+      yCursor += 6;
+
+      for (let i = 0; i < labels.length; i++) {
+        const label = labels[i];
+        const value = values[i];
+        if (label !== undefined && value !== undefined) {
+          doc.text(`• ${label}: ${value}`, margin, yCursor);
+          yCursor += 6;
+        }
       }
     }
 

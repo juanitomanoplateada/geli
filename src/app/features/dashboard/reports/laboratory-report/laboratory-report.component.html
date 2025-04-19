@@ -5,15 +5,32 @@
   <div class="summary-panel filter-panel">
     <label>
       Disponibilidad:
-      <select
-        [(ngModel)]="selectedAvailability"
-        (change)="filterLaboratories()"
-      >
+      <select [(ngModel)]="selectedAvailability" (change)="filterLaboratories()">
         <option value="">Todas</option>
         <option *ngFor="let option of availabilityOptions" [value]="option">
           {{ option }}
         </option>
       </select>
+    </label>
+
+    <label>
+      Ubicación:
+      <select [(ngModel)]="selectedLocation" (change)="filterLaboratories()">
+        <option value="">Todas</option>
+        <option *ngFor="let location of locationOptions" [value]="location">
+          {{ location }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      Mín. Equipos:
+      <input type="number" [(ngModel)]="minEquipmentCount" (change)="filterLaboratories()" placeholder="Mín." min="0" />
+    </label>
+
+    <label>
+      Máx. Equipos:
+      <input type="number" [(ngModel)]="maxEquipmentCount" (change)="filterLaboratories()" placeholder="Máx." min="0" />
     </label>
 
     <button (click)="resetFilters()">Limpiar Filtros</button>
@@ -24,12 +41,8 @@
 
   <!-- Estadísticas -->
   <div class="summary-panel">
-    <div>
-      <strong>Disponible:</strong> {{ getChartValue(availabilityChart, 0) }}
-    </div>
-    <div>
-      <strong>Ocupado:</strong> {{ getChartValue(availabilityChart, 1) }}
-    </div>
+    <div><strong>Disponible:</strong> {{ getChartValue(availabilityChart, 0) }}</div>
+    <div><strong>Ocupado:</strong> {{ getChartValue(availabilityChart, 1) }}</div>
     <div><strong>Total:</strong> {{ filteredLaboratories.length }}</div>
   </div>
 
@@ -55,9 +68,7 @@
               <td data-label="Nombre">{{ lab.name }}</td>
               <td data-label="Descripción">{{ lab.description }}</td>
               <td data-label="Disponibilidad">{{ lab.availability }}</td>
-              <td data-label="Ubicación">
-                {{ lab.location.building }} - Piso {{ lab.location.floor }}
-              </td>
+              <td data-label="Ubicación">{{ lab.location.building }} - Piso {{ lab.location.floor }}</td>
               <td data-label="Equipos">{{ lab.equipment.length }}</td>
             </tr>
           </tbody>
@@ -69,40 +80,17 @@
     <div class="right-section">
       <div class="chart-tabs">
         <div class="tab-buttons">
-          <button
-            [class.active]="activeTab === 'availability'"
-            (click)="activeTab = 'availability'"
-          >
-            Disponibilidad
-          </button>
-          <button
-            [class.active]="activeTab === 'equipment'"
-            (click)="activeTab = 'equipment'"
-          >
-            Equipos por Laboratorio
-          </button>
+          <button [class.active]="activeTab === 'availability'" (click)="activeTab = 'availability'">Disponibilidad</button>
+          <button [class.active]="activeTab === 'location'" (click)="activeTab = 'location'">Ubicación</button>
+          <button [class.active]="activeTab === 'equipment'" (click)="activeTab = 'equipment'">Equipos por Laboratorio</button>
         </div>
 
         <div class="tab-content" *ngIf="isBrowser">
-          <canvas
-            #availabilityChartCanvas
-            baseChart
-            [data]="availabilityChart"
-            [type]="'pie'"
-            [legend]="true"
-            class="chart"
-            [class.hidden]="activeTab !== 'availability'"
-          ></canvas>
+          <canvas #availabilityChartCanvas baseChart [data]="availabilityChart" [type]="'pie'" [legend]="true" class="chart" [class.hidden]="activeTab !== 'availability'"></canvas>
 
-          <canvas
-            #equipmentChartCanvas
-            baseChart
-            [data]="equipmentChart"
-            [type]="'bar'"
-            [legend]="true"
-            class="chart"
-            [class.hidden]="activeTab !== 'equipment'"
-          ></canvas>
+          <canvas #equipmentChartCanvas baseChart [data]="equipmentChart" [type]="'bar'" [legend]="true" class="chart" [class.hidden]="activeTab !== 'equipment'"></canvas>
+
+          <canvas #locationChartCanvas baseChart [data]="locationChart" [type]="'pie'" [legend]="true" class="chart" [class.hidden]="activeTab !== 'location'"></canvas>
         </div>
       </div>
     </div>
