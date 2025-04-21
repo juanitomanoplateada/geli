@@ -46,65 +46,27 @@
     </div>
 
     <!-- Filtro: Función con buscador -->
-    <div class="filter-group dropdown-search">
-      <label for="functionDropdown">Función:</label>
-      <div class="select-box" (click)="toggleFunctionDropdown()">
-        {{ selectedFunctionLabel }}
-      </div>
-      <div
-        class="dropdown"
-        *ngIf="functionDropdownOpen"
-        (click)="$event.stopPropagation()"
-      >
-        <input
-          type="text"
-          [(ngModel)]="functionSearchTerm"
-          [ngModelOptions]="{ standalone: true }"
-          (input)="filterFunctions()"
-          placeholder="Buscar función..."
-        />
-        <div class="options">
-          <div class="option" (click)="selectFunction('')">Todas</div>
-          <div
-            class="option"
-            *ngFor="let func of filteredFunctions"
-            (click)="selectFunction(func)"
-          >
-            {{ func }}
-          </div>
-        </div>
-      </div>
+    <div class="filter-group">
+      <label>Función:</label>
+      <app-dropdown-filter
+        [options]="functionOptions"
+        [selected]="filters.function"
+        (selectedChange)="filters.function = $event; performSearch()"
+        placeholder="Seleccione función..."
+        allowEmpty="Todas"
+      />
     </div>
 
     <!-- Filtro: Laboratorio con buscador -->
-    <div class="filter-group dropdown-search">
-      <label for="labDropdown">Laboratorio:</label>
-      <div class="select-box" (click)="toggleLabDropdown()">
-        {{ selectedLabLabel }}
-      </div>
-      <div
-        class="dropdown"
-        *ngIf="labDropdownOpen"
-        (click)="$event.stopPropagation()"
-      >
-        <input
-          type="text"
-          [(ngModel)]="labSearchTerm"
-          [ngModelOptions]="{ standalone: true }"
-          (input)="filterLabs()"
-          placeholder="Buscar laboratorio..."
-        />
-        <div class="options">
-          <div class="option" (click)="selectLab('')">Todos</div>
-          <div
-            class="option"
-            *ngFor="let lab of filteredLabs"
-            (click)="selectLab(lab)"
-          >
-            {{ lab }}
-          </div>
-        </div>
-      </div>
+    <div class="filter-group">
+      <label>Laboratorio:</label>
+      <app-dropdown-filter
+        [options]="laboratoryOptions"
+        [selected]="filters.laboratory"
+        (selectedChange)="filters.laboratory = $event; performSearch()"
+        placeholder="Seleccione laboratorio..."
+        allowEmpty="Todos"
+      />
     </div>
 
     <button

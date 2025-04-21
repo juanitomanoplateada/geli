@@ -8,6 +8,7 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
+import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
 import { UppercaseNospaceDirective } from '../../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
 
@@ -18,6 +19,7 @@ import { UppercaseNospaceDirective } from '../../../../shared/directives/upperca
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    ConfirmModalComponent,
     UppercaseDirective,
     UppercaseNospaceDirective,
   ],
@@ -25,88 +27,78 @@ import { UppercaseNospaceDirective } from '../../../../shared/directives/upperca
   styleUrls: ['./register-user.component.scss'],
 })
 export class RegisterUserComponent {
-  // Roles disponibles
-  availableRoles = ['Personal Autorizado', 'Analista de Calidad'];
+  // Roles disponibles para selección
+  readonly availableRoles = ['Personal Autorizado', 'Analista de Calidad'];
 
-  // Estado visual
+  // Estados visuales y de control
   showAssignmentDateField = signal(false);
   showConfirmationModal = false;
-
-  // Retroalimentación
   feedbackMessage: string | null = null;
   feedbackSuccess = false;
   emailAlreadyExists = false;
 
-  // Correos simulados ya registrados
-  existingInstitutionalEmails = [
+  // Correos ya existentes simulados
+  readonly registeredEmails = [
     'juan.perez@uptc.edu.co',
     'ana.gomez@uptc.edu.co',
   ];
 
   constructor(private formBuilder: FormBuilder) {}
 
-  // Getter para correo institucional completo
+  // Getters computados
   get institutionalEmail(): string {
-    return `${this.userForm.get('email')?.value}@uptc.edu.co`.toLowerCase();
+    const emailPrefix = this.userForm.get('email')?.value || '';
+    return `${emailPrefix}@uptc.edu.co`.toLowerCase();
   }
 
-  // Getter para hoy en formato yyyy-MM-dd
   get todayDate(): string {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
+    return new Date().toISOString().split('T')[0];
   }
 
-  // Validador: fecha debe ser hoy o futura
-  validateFutureOrTodayDate = (
-    control: AbstractControl
-  ): ValidationErrors | null => {
+  // Validador personalizado para fechas no pasadas
+  validateNotPastDate = (control: AbstractControl): ValidationErrors | null => {
     if (!control.value) return null;
-
-    const inputDate = control.value; // 'YYYY-MM-DD'
-    const today = this.todayDate;
-
-    return inputDate < today ? { pastDate: true } : null;
+    return control.value < this.todayDate ? { pastDate: true } : null;
   };
 
-  // Formulario reactivo
+  // Formulario reactivo de usuario
   userForm = this.formBuilder.group({
     email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._-]+$/)]],
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
     identification: ['', Validators.required],
     role: ['', Validators.required],
-    assignmentDate: [''], // sin validadores aquí, se agregan dinámicamente
+    assignmentDate: [''], // Validador se asigna dinámicamente
   });
 
-  // Evento cambio de rol
+  // Evento al cambiar el rol
   handleRoleChange(event: Event): void {
     const selectedRole = (event.target as HTMLSelectElement).value;
-    const assignmentDateControl = this.userForm.get('assignmentDate');
-    const isAuthorized = selectedRole === 'Personal Autorizado';
+    const requiresAssignmentDate = selectedRole === 'Personal Autorizado';
 
-    this.showAssignmentDateField.set(isAuthorized);
+    this.showAssignmentDateField.set(requiresAssignmentDate);
 
-    if (isAuthorized) {
-      assignmentDateControl?.setValidators([
+    const assignmentDateCtrl = this.userForm.get('assignmentDate');
+    if (requiresAssignmentDate) {
+      assignmentDateCtrl?.setValidators([
         Validators.required,
-        this.validateFutureOrTodayDate,
+        this.validateNotPastDate,
       ]);
     } else {
-      assignmentDateControl?.clearValidators();
-      assignmentDateControl?.setValue('');
+      assignmentDateCtrl?.clearValidators();
+      assignmentDateCtrl?.setValue('');
     }
-
-    assignmentDateControl?.updateValueAndValidity();
+    assignmentDateCtrl?.updateValueAndValidity();
   }
 
-  // Verificar correo duplicado
+  // Verificación si ya existe el correo
   checkEmailExists(): void {
-    this.emailAlreadyExists = this.existingInstitutionalEmails.includes(
+    this.emailAlreadyExists = this.registeredEmails.includes(
       this.institutionalEmail
     );
   }
 
-  // Intentar registrar
+  // Envío del formulario
   submitForm(): void {
     this.checkEmailExists();
 
@@ -125,7 +117,7 @@ export class RegisterUserComponent {
     }
   }
 
-  // Confirmar desde modal
+  // Confirmación desde modal
   confirmRegistration(): void {
     const userData = {
       ...this.userForm.value,
@@ -133,15 +125,14 @@ export class RegisterUserComponent {
       fullName: `${this.userForm.value.firstName} ${this.userForm.value.lastName}`,
     };
 
-    console.log('Formulario enviado:', userData);
+    console.log('Registro exitoso:', userData);
 
     this.feedbackMessage = 'Persona registrada exitosamente.';
     this.feedbackSuccess = true;
-
+    this.showConfirmationModal = false;
     this.userForm.reset();
     this.emailAlreadyExists = false;
     this.showAssignmentDateField.set(false);
-    this.showConfirmationModal = false;
 
     setTimeout(() => (this.feedbackMessage = null), 5000);
   }
@@ -151,7 +142,7 @@ export class RegisterUserComponent {
     this.showConfirmationModal = false;
   }
 
-  // Cancelar formulario
+  // Cancelar todo el formulario
   resetForm(): void {
     this.userForm.reset();
     this.feedbackMessage = null;

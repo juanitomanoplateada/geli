@@ -7,81 +7,86 @@ import {
   FormsModule,
 } from '@angular/forms';
 import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
+import { DropdownSearchComponent } from '../../../../shared/components/dropdown-search/dropdown-search.component';
+import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-register-laboratory',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, UppercaseDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    UppercaseDirective,
+    DropdownSearchComponent,
+    ConfirmModalComponent,
+  ],
   templateUrl: './register-laboratory.component.html',
   styleUrls: ['./register-laboratory.component.scss'],
 })
 export class RegisterLaboratoryComponent {
-  availableLocations = [
-    { id: 1, name: 'Bloque A' },
-    { id: 2, name: 'Bloque B' },
-    { id: 3, name: 'Edificio Central' },
-    { id: 4, name: 'Laboratorio de Física' },
-    { id: 5, name: 'Sala de Computo' },
+  // Lista de ubicaciones disponibles
+  locationOptions: string[] = [
+    'Bloque A',
+    'Bloque B',
+    'Edificio Central',
+    'Laboratorio de Física',
+    'Sala de Computo',
   ];
 
-  filteredLocations = [...this.availableLocations];
-  locationSearchTerm = '';
-  selectedLocationName = 'Seleccione un lugar';
-  showLocationDropdown = false;
+  selectedLocation: string | null = null;
   showConfirmationModal = false;
 
+  // Formulario reactivo
   labForm = this.fb.group({
     labName: ['', Validators.required],
     description: ['', Validators.required],
-    locationId: ['', Validators.required],
+    locationName: ['', Validators.required],
     availability: [true, Validators.required],
   });
 
   constructor(private fb: FormBuilder) {}
 
+  // Autoajuste de altura para textarea
   autoResize(event: Event): void {
     const textarea = event.target as HTMLTextAreaElement;
-    textarea.style.height = 'auto'; // reset
-    textarea.style.height = textarea.scrollHeight + 'px'; // expand to content
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
   }
 
-  toggleLocationDropdown(): void {
-    this.showLocationDropdown = !this.showLocationDropdown;
-    if (this.showLocationDropdown) {
-      this.filterLocations('');
-    }
+  // Seleccionar ubicación desde dropdown reutilizable
+  onSelectLocation(option: string): void {
+    this.selectedLocation = option;
+    this.labForm.patchValue({ locationName: option });
   }
 
-  filterLocations(term: string): void {
-    const search = term.toLowerCase();
-    this.filteredLocations = this.availableLocations.filter((l) =>
-      l.name.toLowerCase().includes(search)
-    );
-  }
-
-  selectLocation(location: any): void {
-    this.labForm.patchValue({ locationId: location.id });
-    this.selectedLocationName = location.name;
-    this.showLocationDropdown = false;
-  }
-
+  // Enviar formulario
   submitForm(): void {
     if (this.labForm.valid) {
       this.showConfirmationModal = true;
     }
   }
 
+  // Confirmar desde el modal
   confirmSubmit(): void {
     console.log('Laboratorio registrado:', this.labForm.value);
-    // Aquí iría la lógica de backend...
-    this.labForm.reset({ availability: true });
-    this.selectedLocationName = 'Seleccione un lugar';
+    this.resetForm();
     this.showConfirmationModal = false;
   }
 
+  // Resetear todo
   resetForm(): void {
     this.labForm.reset({ availability: true });
-    this.selectedLocationName = 'Seleccione un lugar';
-    this.locationSearchTerm = '';
+    this.selectedLocation = null;
+  }
+
+  // Cancelar modal
+  cancelConfirmation(): void {
+    this.showConfirmationModal = false;
+  }
+
+  // Texto de disponibilidad formateado
+  get availabilityText(): string {
+    return this.labForm.value.availability ? 'Sí' : 'No';
   }
 }

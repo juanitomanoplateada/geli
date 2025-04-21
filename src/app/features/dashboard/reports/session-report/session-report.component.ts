@@ -14,7 +14,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { ClickOutsideDirective } from '../../../../shared/directives/click-outside/click-outside.directive';
+import { DropdownFilterComponent } from '../../../../shared/components/dropdown-filter/dropdown-filter.component';
 
 (jsPDF as any).autoTable = autoTable;
 
@@ -37,7 +37,7 @@ interface SessionRecord {
 @Component({
   selector: 'app-session-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgChartsModule, ClickOutsideDirective],
+  imports: [CommonModule, FormsModule, NgChartsModule, DropdownFilterComponent],
   templateUrl: './session-report.component.html',
   styleUrls: ['./session-report.component.scss'],
 })
@@ -67,26 +67,12 @@ export class SessionReportComponent implements OnInit {
     user: '',
   };
 
-  // Dropdown y búsqueda
-  labSearch = '';
-  equipmentSearch = '';
-  functionSearch = '';
-  userSearch = '';
-
-  showLabDropdown = false;
-  showEquipmentDropdown = false;
-  showFunctionDropdown = false;
-  showUserDropdown = false;
-
   // Opciones disponibles
   labOptions: string[] = [];
   equipmentOptions: string[] = [];
   responsibleOptions: string[] = [];
 
-  filteredLabs: string[] = [];
-  filteredEquipments: string[] = [];
   filteredFunctions: string[] = [];
-  filteredUsers: string[] = [];
 
   // Datos para gráficas
   verifiedChart!: ChartData;
@@ -191,12 +177,30 @@ export class SessionReportComponent implements OnInit {
     this.responsibleOptions = [
       ...new Set(this.allSessions.map((s) => s.responsible)),
     ];
-    this.filteredLabs = [...this.labOptions];
-    this.filteredEquipments = [...this.equipmentOptions];
-    this.filteredUsers = [...this.responsibleOptions];
+
     this.filteredFunctions = this.extractFunctions();
 
     this.generateCharts();
+  }
+
+  onLabChange(selected: string): void {
+    this.filters.lab = selected;
+    this.filterSessions();
+  }
+
+  onEquipmentChange(selected: string): void {
+    this.filters.equipment = selected;
+    this.filterSessions();
+  }
+
+  onUserChange(selected: string): void {
+    this.filters.user = selected;
+    this.filterSessions();
+  }
+
+  onFunctionChange(selected: string): void {
+    this.filters.function = selected;
+    this.filterSessions();
   }
 
   extractFunctions(): string[] {
@@ -248,11 +252,6 @@ export class SessionReportComponent implements OnInit {
       function: '',
       user: '',
     };
-
-    this.labSearch = '';
-    this.equipmentSearch = '';
-    this.functionSearch = '';
-    this.userSearch = '';
 
     this.filterSessions();
   }

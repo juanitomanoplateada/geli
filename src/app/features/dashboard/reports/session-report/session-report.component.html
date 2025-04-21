@@ -1,7 +1,15 @@
 <div class="session-report-wrapper">
-  <h1 class="report-title">Reporte de Sesiones de Uso de Equipos</h1>
+  <!-- Título -->
+  <div class="header-panel">
+    <h1 class="report-title">📋 Reporte de Sesiones de Uso de Equipos</h1>
+    <div class="export-buttons">
+      <button class="btn-excel" (click)="exportToExcel()">📊 Excel</button>
+      <button class="btn-csv" (click)="exportToCSV()">📄 CSV</button>
+      <button class="btn-pdf" (click)="exportToPDF()">🧾 PDF</button>
+    </div>
+  </div>
 
-  <!-- 🔎 Filtros avanzados -->
+  <!-- Filtros -->
   <div class="summary-panel filter-panel">
     <!-- Fila 1 -->
     <label>
@@ -47,110 +55,37 @@
     <!-- Fila 2 - Dropdown laboratorio -->
     <label>
       Laboratorio:
-      <div
-        class="dropdown"
-        (appClickOutside)="showLabDropdown = false"
-        appClickOutside
-      >
-        <div class="selected" (click)="showLabDropdown = !showLabDropdown">
-          {{ filters.lab || "Todos" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showLabDropdown">
-          <input [(ngModel)]="labSearch" placeholder="Buscar laboratorio..." />
-          <div
-            class="option"
-            (click)="
-              filters.lab = ''; showLabDropdown = false; filterSessions()
-            "
-          >
-            Todos
-          </div>
-          <div
-            class="option"
-            *ngFor="let lab of filteredLabs"
-            (click)="
-              filters.lab = lab; showLabDropdown = false; filterSessions()
-            "
-          >
-            {{ lab }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-filter
+        [options]="labOptions"
+        [selected]="filters.lab"
+        (selectedChange)="onLabChange($event)"
+        placeholder="Seleccione laboratorio"
+        allowEmpty="Todos"
+      />
     </label>
 
     <!-- Dropdown equipo -->
     <label>
       Equipo / Patrón:
-      <div
-        class="dropdown"
-        (appClickOutside)="showEquipmentDropdown = false"
-        appClickOutside
-      >
-        <div
-          class="selected"
-          (click)="showEquipmentDropdown = !showEquipmentDropdown"
-        >
-          {{ filters.equipment || "Todos" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showEquipmentDropdown">
-          <input [(ngModel)]="equipmentSearch" placeholder="Buscar equipo..." />
-          <div
-            class="option"
-            (click)="
-              filters.equipment = '';
-              showEquipmentDropdown = false;
-              filterSessions()
-            "
-          >
-            Todos
-          </div>
-          <div
-            class="option"
-            *ngFor="let eq of filteredEquipments"
-            (click)="
-              filters.equipment = eq;
-              showEquipmentDropdown = false;
-              filterSessions()
-            "
-          >
-            {{ eq }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-filter
+        [options]="equipmentOptions"
+        [selected]="filters.equipment"
+        (selectedChange)="onEquipmentChange($event)"
+        placeholder="Seleccione equipo"
+        allowEmpty="Todos"
+      />
     </label>
 
     <!-- Dropdown responsable -->
     <label>
       Responsable:
-      <div
-        class="dropdown"
-        (appClickOutside)="showUserDropdown = false"
-        appClickOutside
-      >
-        <div class="selected" (click)="showUserDropdown = !showUserDropdown">
-          {{ filters.user || "Todos" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showUserDropdown">
-          <input [(ngModel)]="userSearch" placeholder="Buscar responsable..." />
-          <div
-            class="option"
-            (click)="
-              filters.user = ''; showUserDropdown = false; filterSessions()
-            "
-          >
-            Todos
-          </div>
-          <div
-            class="option"
-            *ngFor="let user of filteredUsers"
-            (click)="
-              filters.user = user; showUserDropdown = false; filterSessions()
-            "
-          >
-            {{ user }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-filter
+        [options]="responsibleOptions"
+        [selected]="filters.user"
+        (selectedChange)="onUserChange($event)"
+        placeholder="Seleccione responsable"
+        allowEmpty="Todos"
+      />
     </label>
 
     <!-- Verificado -->
@@ -222,252 +157,212 @@
     <!-- Función utilizada -->
     <label>
       Función utilizada:
-      <div
-        class="dropdown"
-        (appClickOutside)="showFunctionDropdown = false"
-        appClickOutside
-      >
-        <div
-          class="selected"
-          (click)="showFunctionDropdown = !showFunctionDropdown"
-        >
-          {{ filters.function || "Todas" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showFunctionDropdown">
-          <input [(ngModel)]="functionSearch" placeholder="Buscar función..." />
-          <div
-            class="option"
-            (click)="
-              filters.function = '';
-              showFunctionDropdown = false;
-              filterSessions()
-            "
-          >
-            Todas
-          </div>
-          <div
-            class="option"
-            *ngFor="let func of filteredFunctions"
-            (click)="
-              filters.function = func;
-              showFunctionDropdown = false;
-              filterSessions()
-            "
-          >
-            {{ func }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-filter
+        [options]="filteredFunctions"
+        [selected]="filters.function"
+        (selectedChange)="onFunctionChange($event)"
+        placeholder="Seleccione función"
+        allowEmpty="Todas"
+      />
     </label>
 
     <!-- Botones -->
     <button (click)="resetFilters()">Limpiar Filtros</button>
-    <button class="btn-excel" (click)="exportToExcel()">📊 Excel</button>
-    <button class="btn-csv" (click)="exportToCSV()">📄 CSV</button>
-    <button class="btn-pdf" (click)="exportToPDF()">🧾 PDF</button>
   </div>
 
   <!-- Estadísticas -->
-  <div class="summary-panel">
-    <div><strong>Total de sesiones:</strong> {{ filteredSessions.length }}</div>
-  </div>
-
-  <!-- Tabla de resultados -->
-  <div class="dashboard-grid">
-    <div class="left-section">
-      <div class="table-section">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Laboratorio</th>
-              <th>Equipo</th>
-              <th>Fecha</th>
-              <th>Hora</th>
-              <th>Verificado</th>
-              <th>Responsable</th>
-              <th>Correo</th>
-              <th>Estado para uso</th>
-              <th>Minutos</th>
-              <th>Muestras</th>
-              <th>Funciones</th>
-              <th>Observaciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let s of filteredSessions">
-              <td data-label="ID">{{ s.id }}</td>
-              <td data-label="Laboratorio">{{ s.lab }}</td>
-              <td data-label="Equipo">{{ s.equipment }}</td>
-              <td data-label="Fecha">{{ s.date }}</td>
-              <td data-label="Hora">{{ s.time }}</td>
-              <td data-label="Verificado">{{ s.verifiedStatus }}</td>
-              <td data-label="Responsable">{{ s.responsible }}</td>
-              <td data-label="Correo">{{ s.email }}</td>
-              <td data-label="Estado">{{ s.usageStatus }}</td>
-              <td data-label="Minutos">{{ s.usageDuration }}</td>
-              <td data-label="Muestras">{{ s.sampleCount }}</td>
-              <td data-label="Funciones">{{ s.functionsUsed?.join(", ") }}</td>
-              <td data-label="Observaciones">{{ s.observations }}</td>
-            </tr>
-          </tbody>
-        </table>
+  <div class="summary-panel statistics-panel">
+    <h3 class="section-title">📌 Estadísticas Generales</h3>
+    <div class="stats-row">
+      <div class="stat-box neutral">
+        <h4>📦 Total de Sesiones</h4>
+        <p>{{ filteredSessions.length }}</p>
       </div>
     </div>
+  </div>
 
-    <!-- 📊 Gráficas -->
-    <div class="right-section">
-      <div class="chart-tabs">
-        <div class="tab-buttons">
-          <button
-            [class.active]="activeTab === 'date'"
-            (click)="activeTab = 'date'"
-          >
-            Fecha
-          </button>
-          <button
-            [class.active]="activeTab === 'time'"
-            (click)="activeTab = 'time'"
-          >
-            Hora
-          </button>
-          <button
-            [class.active]="activeTab === 'verified'"
-            (click)="activeTab = 'verified'"
-          >
-            Verificado
-          </button>
-          <button
-            [class.active]="activeTab === 'usage'"
-            (click)="activeTab = 'usage'"
-          >
-            Tiempo de Uso
-          </button>
-          <button
-            [class.active]="activeTab === 'samples'"
-            (click)="activeTab = 'samples'"
-          >
-            Muestras
-          </button>
-          <button
-            [class.active]="activeTab === 'functions'"
-            (click)="activeTab = 'functions'"
-          >
-            Funciones Usadas
-          </button>
-          <button
-            [class.active]="activeTab === 'lab'"
-            (click)="activeTab = 'lab'"
-          >
-            Laboratorio
-          </button>
-          <button
-            [class.active]="activeTab === 'equipment'"
-            (click)="activeTab = 'equipment'"
-          >
-            Equipo
-          </button>
-          <button
-            [class.active]="activeTab === 'usage'"
-            (click)="activeTab = 'usage'"
-          >
-            Estado para uso
-          </button>
-          <button
-            [class.active]="activeTab === 'responsible'"
-            (click)="activeTab = 'responsible'"
-          >
-            Responsable
-          </button>
-        </div>
+  <!-- Tabla -->
+  <div class="table-panel">
+    <h3 class="section-title">📄 Lista de Sesiones</h3>
+    <div class="table-section">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Laboratorio</th>
+            <th>Equipo</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Verificado</th>
+            <th>Responsable</th>
+            <th>Correo</th>
+            <th>Estado para uso</th>
+            <th>Minutos</th>
+            <th>Muestras</th>
+            <th>Funciones</th>
+            <th>Observaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filteredSessions">
+            <td data-label="ID">{{ s.id }}</td>
+            <td data-label="Laboratorio">{{ s.lab }}</td>
+            <td data-label="Equipo">{{ s.equipment }}</td>
+            <td data-label="Fecha">{{ s.date }}</td>
+            <td data-label="Hora">{{ s.time }}</td>
+            <td data-label="Verificado">{{ s.verifiedStatus }}</td>
+            <td data-label="Responsable">{{ s.responsible }}</td>
+            <td data-label="Correo">{{ s.email }}</td>
+            <td data-label="Estado">{{ s.usageStatus }}</td>
+            <td data-label="Minutos">{{ s.usageDuration }}</td>
+            <td data-label="Muestras">{{ s.sampleCount }}</td>
+            <td data-label="Funciones">{{ s.functionsUsed?.join(", ") }}</td>
+            <td data-label="Observaciones">{{ s.observations }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-        <div class="tab-content" *ngIf="isBrowser">
-          <canvas
-            baseChart
-            class="chart"
-            *ngIf="activeTab === 'verified'"
-            [data]="verifiedChart"
-            [type]="'pie'"
-            [legend]="true"
-          ></canvas>
-          <canvas
-            baseChart
-            class="chart"
-            *ngIf="activeTab === 'usage'"
-            [data]="usageChart"
-            [type]="'bar'"
-            [legend]="true"
-          ></canvas>
-          <canvas
-            baseChart
-            class="chart"
-            *ngIf="activeTab === 'samples'"
-            [data]="samplesChart"
-            [type]="'bar'"
-            [legend]="true"
-          ></canvas>
-          <canvas
-            baseChart
-            class="chart"
-            *ngIf="activeTab === 'functions'"
-            [data]="functionsChart"
-            [type]="'bar'"
-            [legend]="true"
-          ></canvas>
-          <canvas
-            *ngIf="activeTab === 'lab'"
-            baseChart
-            class="chart"
-            [data]="labChart"
-            [type]="'bar'"
-            [legend]="true"
-          ></canvas>
+  <!-- 📊 Gráficas -->
+  <div class="chart-panel">
+    <h3 class="section-title">📈 Visualizaciones Gráficas</h3>
 
-          <canvas
-            *ngIf="activeTab === 'equipment'"
-            baseChart
-            class="chart"
-            [data]="equipmentChart"
-            [type]="'bar'"
-            [legend]="true"
-          ></canvas>
+    <div class="chart-tabs">
+      <div class="tab-buttons">
+        <button
+          [class.active]="activeTab === 'date'"
+          (click)="activeTab = 'date'"
+        >
+          Fecha
+        </button>
+        <button
+          [class.active]="activeTab === 'time'"
+          (click)="activeTab = 'time'"
+        >
+          Hora
+        </button>
+        <button
+          [class.active]="activeTab === 'verified'"
+          (click)="activeTab = 'verified'"
+        >
+          Verificado
+        </button>
+        <button
+          [class.active]="activeTab === 'usage'"
+          (click)="activeTab = 'usage'"
+        >
+          Tiempo de Uso
+        </button>
+        <button
+          [class.active]="activeTab === 'samples'"
+          (click)="activeTab = 'samples'"
+        >
+          Muestras
+        </button>
+        <button
+          [class.active]="activeTab === 'functions'"
+          (click)="activeTab = 'functions'"
+        >
+          Funciones Usadas
+        </button>
+        <button
+          [class.active]="activeTab === 'lab'"
+          (click)="activeTab = 'lab'"
+        >
+          Laboratorio
+        </button>
+        <button
+          [class.active]="activeTab === 'equipment'"
+          (click)="activeTab = 'equipment'"
+        >
+          Equipo
+        </button>
+        <button
+          [class.active]="activeTab === 'usageStatus'"
+          (click)="activeTab = 'usageStatus'"
+        >
+          Estado para uso
+        </button>
+        <button
+          [class.active]="activeTab === 'responsible'"
+          (click)="activeTab = 'responsible'"
+        >
+          Responsable
+        </button>
+      </div>
 
-          <canvas
-            *ngIf="activeTab === 'date'"
-            baseChart
-            class="chart"
-            [data]="dateChart"
-            [type]="'bar'"
-            [legend]="true"
-          ></canvas>
-
-          <canvas
-            *ngIf="activeTab === 'time'"
-            baseChart
-            class="chart"
-            [data]="timeChart"
-            [type]="'bar'"
-            [legend]="true"
-          ></canvas>
-
-          <canvas
-            *ngIf="activeTab === 'usage'"
-            baseChart
-            class="chart"
-            [data]="usageStatusChart"
-            [type]="'pie'"
-            [legend]="true"
-          ></canvas>
-
-          <canvas
-            *ngIf="activeTab === 'responsible'"
-            baseChart
-            class="chart"
-            [data]="responsibleChart"
-            [type]="'bar'"
-            [legend]="true"
-          ></canvas>
-        </div>
+      <div class="tab-content" *ngIf="isBrowser">
+        <canvas
+          *ngIf="activeTab === 'date'"
+          baseChart
+          [data]="dateChart"
+          [type]="'bar'"
+          class="chart"
+        ></canvas>
+        <canvas
+          *ngIf="activeTab === 'time'"
+          baseChart
+          [data]="timeChart"
+          [type]="'bar'"
+          class="chart"
+        ></canvas>
+        <canvas
+          *ngIf="activeTab === 'verified'"
+          baseChart
+          [data]="verifiedChart"
+          [type]="'pie'"
+          class="chart"
+        ></canvas>
+        <canvas
+          *ngIf="activeTab === 'usage'"
+          baseChart
+          [data]="usageChart"
+          [type]="'bar'"
+          class="chart"
+        ></canvas>
+        <canvas
+          *ngIf="activeTab === 'samples'"
+          baseChart
+          [data]="samplesChart"
+          [type]="'bar'"
+          class="chart"
+        ></canvas>
+        <canvas
+          *ngIf="activeTab === 'functions'"
+          baseChart
+          [data]="functionsChart"
+          [type]="'bar'"
+          class="chart"
+        ></canvas>
+        <canvas
+          *ngIf="activeTab === 'lab'"
+          baseChart
+          [data]="labChart"
+          [type]="'bar'"
+          class="chart"
+        ></canvas>
+        <canvas
+          *ngIf="activeTab === 'equipment'"
+          baseChart
+          [data]="equipmentChart"
+          [type]="'bar'"
+          class="chart"
+        ></canvas>
+        <canvas
+          *ngIf="activeTab === 'usageStatus'"
+          baseChart
+          [data]="usageStatusChart"
+          [type]="'pie'"
+          class="chart"
+        ></canvas>
+        <canvas
+          *ngIf="activeTab === 'responsible'"
+          baseChart
+          [data]="responsibleChart"
+          [type]="'bar'"
+          class="chart"
+        ></canvas>
       </div>
     </div>
   </div>

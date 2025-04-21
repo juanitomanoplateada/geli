@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/auth/services/auth.service';
 import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
+import { DropdownFilterComponent } from '../../../../shared/components/dropdown-filter/dropdown-filter.component';
 
 @Component({
   selector: 'app-search-laboratory',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DropdownFilterComponent],
   templateUrl: './search-laboratory.component.html',
   styleUrls: ['./search-laboratory.component.scss'],
 })
@@ -19,28 +20,24 @@ export class SearchLaboratoryComponent implements OnInit {
     public laboratoryService: LaboratoryService
   ) {}
 
-  // Estado visual y datos
+  // Estado de búsqueda
   searchQuery: string = '';
   showAdvancedSearch: boolean = false;
   isLoading: boolean = false;
 
-  availableLocations: string[] = [];
-  filteredLocations: string[] = [];
-  locationSearchTerm: string = '';
-  dropdownOpen: boolean = false;
-  selectedLocationLabel: string = 'Todas';
-
+  // Filtros y datos
   filters = {
     availability: '',
     location: '',
   };
 
+  availableLocations: string[] = [];
+  selectedLocationLabel: string = 'Todas';
+
   laboratories: any[] = [];
   allLabs: any[] = [];
 
   ngOnInit(): void {
-    this.filteredLocations = [];
-    // Puedes comentar esta línea si no deseas login automático:
     this.loginAndFetchLabs('marcela.admin', '123');
   }
 
@@ -59,7 +56,6 @@ export class SearchLaboratoryComponent implements OnInit {
             this.availableLocations = [
               ...new Set(labs.map((lab) => lab.location.locationName)),
             ];
-            this.filteredLocations = [...this.availableLocations];
             this.isLoading = false;
           },
           error: (err) => {
@@ -104,23 +100,9 @@ export class SearchLaboratoryComponent implements OnInit {
     });
   }
 
-  toggleDropdown(): void {
-    this.dropdownOpen = !this.dropdownOpen;
-    this.filteredLocations = [...this.availableLocations];
-    this.locationSearchTerm = '';
-  }
-
-  filterLocations(): void {
-    const term = this.locationSearchTerm.toLowerCase();
-    this.filteredLocations = this.availableLocations.filter((loc) =>
-      loc.toLowerCase().includes(term)
-    );
-  }
-
-  selectLocation(location: string): void {
-    this.filters.location = location;
-    this.selectedLocationLabel = location;
-    this.dropdownOpen = false;
+  onLocationChange(newLocation: string): void {
+    this.filters.location = newLocation;
+    this.selectedLocationLabel = newLocation || 'Todas';
     this.performSearch();
   }
 
@@ -132,8 +114,6 @@ export class SearchLaboratoryComponent implements OnInit {
     this.searchQuery = '';
     this.filters = { availability: '', location: '' };
     this.selectedLocationLabel = 'Todas';
-    this.locationSearchTerm = '';
-    this.filteredLocations = [...this.availableLocations];
     this.laboratories = [...this.allLabs];
   }
 

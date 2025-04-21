@@ -1,8 +1,8 @@
 .history-container {
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
   padding: 1rem;
-  gap: 1rem;
   max-width: 100%;
   box-sizing: border-box;
   font-family: Arial, sans-serif;
@@ -10,20 +10,20 @@
   user-select: none;
 }
 
+// 🔍 Barra de búsqueda principal
 .search-bar {
   display: flex;
-  gap: 1rem;
   flex-wrap: wrap;
+  gap: 1rem;
   align-items: center;
-  margin-bottom: 1rem;
 
   .search-input {
     flex: 1;
     min-width: 250px;
     padding: 0.75rem 1rem;
+    font-size: 1rem;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 1rem;
 
     &:focus {
       border-color: #1976d2;
@@ -40,9 +40,9 @@
   .search-button,
   .advanced-search-btn {
     padding: 0.75rem 1rem;
+    font-size: 0.9rem;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.9rem;
     white-space: nowrap;
   }
 
@@ -74,15 +74,15 @@
   }
 }
 
+// 🎯 Búsqueda avanzada
 .advanced-search {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
   background-color: #fafafa;
   padding: 1.5rem;
   border: 1px solid #ddd;
   border-radius: 8px;
-  margin-bottom: 1rem;
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 
   .filter-group {
     display: flex;
@@ -94,11 +94,9 @@
       font-size: 0.875rem;
     }
 
-    input[type="date"],
-    input[type="time"],
-    input[type="text"],
-    input[type="number"],
+    input,
     select {
+      height: 45px;
       padding: 0.5rem 0.75rem;
       font-size: 0.95rem;
       border: 1px solid #ccc;
@@ -108,25 +106,24 @@
     }
 
     input[type="number"] {
-      -moz-appearance: textfield;
-      -webkit-appearance: none;
-      appearance: textfield;
-
-      &::-webkit-outer-spin-button,
-      &::-webkit-inner-spin-button {
+      &::-webkit-inner-spin-button,
+      &::-webkit-outer-spin-button {
         -webkit-appearance: none;
         margin: 0;
       }
+
+      appearance: textfield;
     }
   }
 
   .clear-filters-btn {
     padding: 0.5rem 1rem;
+    width: 100%;
+    align-self: start;
     background-color: #eeeeee;
     border: 1px solid #bbb;
     border-radius: 4px;
     cursor: pointer;
-    align-self: start;
 
     &:hover {
       background-color: #dddddd;
@@ -134,6 +131,33 @@
   }
 }
 
+// ⬇️ Orden por fecha
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.95rem;
+
+  label {
+    font-weight: 600;
+  }
+
+  button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #e0e0e0;
+    }
+  }
+}
+
+// 🧾 Contenedor principal
 .history-content {
   display: flex;
   gap: 1.5rem;
@@ -143,24 +167,25 @@
   }
 }
 
+// 📋 Lista lateral
 .history-sidebar {
   width: 30%;
-  overflow-y: auto;
-  border-right: 1px solid #ccc;
   padding-right: 1rem;
+  border-right: 1px solid #ccc;
+  overflow-y: auto;
 
   @media (max-width: 768px) {
     width: 100%;
+    padding-right: 0;
     border-right: none;
     border-bottom: 1px solid #ccc;
-    padding-right: 0;
   }
 
   .session-preview {
     padding: 1rem;
     border-bottom: 1px solid #eee;
-    cursor: pointer;
     border-radius: 6px;
+    cursor: pointer;
 
     &:hover {
       background-color: #f0f8ff;
@@ -188,6 +213,7 @@
   }
 }
 
+// 📝 Detalle de la sesión seleccionada
 .history-detail {
   flex-grow: 1;
   padding: 1rem;
@@ -212,6 +238,7 @@
   }
 }
 
+// ❌ Mensaje sin resultados
 .no-results {
   padding: 2rem;
   text-align: center;
@@ -219,63 +246,12 @@
   color: #888;
 }
 
-.dropdown {
-  position: relative;
-  width: 100%;
-
-  &.disabled .selected {
-    background-color: #eee;
-    color: #888;
-    cursor: not-allowed;
-  }
-
-  .selected {
-    padding: 10px;
-    border: 1px solid #ccc;
-    background-color: white;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-
-  .dropdown-list {
-    position: absolute;
-    top: 45px;
-    left: 0;
-    width: 100%;
-    background: white;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    z-index: 10;
-
-    input {
-      width: 90%;
-      padding: 8px;
-      margin: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .option {
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 1px solid #eee;
-
-      &:hover {
-        background: #f0f0f0;
-      }
-    }
-  }
-}
-
+// 📱 Responsive extra para móviles
 @media (max-width: 480px) {
   .search-bar,
   .advanced-search {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .dropdown {
-    width: 100%;
   }
 
   .search-button,

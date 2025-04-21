@@ -2,7 +2,7 @@
   <h1>Registro de Equipo / Patrón</h1>
 
   <form [formGroup]="equipmentForm" (ngSubmit)="onSubmit()">
-    <!-- Código de inventario -->
+    <!-- Código de Inventario -->
     <div class="form-group">
       <label for="inventoryCode">Código de Inventario</label>
       <input
@@ -71,7 +71,7 @@
       </div>
     </div>
 
-    <!-- Laboratorio con buscador -->
+    <!-- Laboratorio (Dropdown personalizado) -->
     <div class="form-group">
       <label for="labLocation">Laboratorio</label>
       <div
@@ -95,7 +95,6 @@
             placeholder="Buscar laboratorio..."
             appUppercase
           />
-
           <div class="options">
             <div
               class="option"
@@ -118,17 +117,15 @@
       </div>
     </div>
 
-    <!-- Función -->
+    <!-- Funciones múltiples -->
     <div class="form-group">
-      <label for="functionId">Funciones utilizadas</label>
-
+      <label for="functionId">Funciones Utilizadas</label>
       <div
         class="custom-select"
         (click)="toggleFunctionDropdown()"
         [class.open]="functionDropdownOpen"
       >
         <div class="select-box">Seleccione funciones</div>
-
         <div
           class="dropdown"
           *ngIf="functionDropdownOpen"
@@ -153,7 +150,7 @@
         </div>
       </div>
 
-      <!-- Etiquetas de funciones -->
+      <!-- Etiquetas -->
       <div class="tag-container" *ngIf="selectedFunctions.length > 0">
         <span class="tag" *ngFor="let func of selectedFunctions">
           {{ func.name }}
@@ -179,6 +176,19 @@
       </div>
     </div>
 
+    <!-- Disponibilidad -->
+    <div class="form-group">
+      <label for="availability">¿Disponible?</label>
+      <select
+        id="availability"
+        formControlName="availability"
+        class="form-control"
+      >
+        <option [value]="true">Sí</option>
+        <option [value]="false">No</option>
+      </select>
+    </div>
+
     <!-- Botones -->
     <div class="button-group">
       <button type="button" class="btn cancel-btn" (click)="onCancel()">
@@ -192,33 +202,28 @@
         Registrar Patrón
       </button>
     </div>
+
     <!-- Modal de confirmación -->
-    <div class="modal-backdrop" *ngIf="showConfirmationModal">
-      <div class="modal-content">
-        <h2>Confirmar registro</h2>
-        <p>Por favor, revisa la información antes de confirmar:</p>
-
-        <ul>
-          <li><strong>Inventario:</strong> {{ formSummary.inventoryCode }}</li>
-          <li><strong>Nombre:</strong> {{ formSummary.name }}</li>
-          <li><strong>Marca:</strong> {{ formSummary.brand }}</li>
-          <li><strong>Laboratorio:</strong> {{ formSummary.labName }}</li>
-          <li>
-            <strong>Disponibilidad:</strong>
-            {{ formSummary.availability ? "Sí" : "No" }}
-          </li>
-          <li><strong>Funciones:</strong> {{ formSummary.functions }}</li>
-        </ul>
-
-        <div class="modal-buttons">
-          <button type="button" class="btn cancel-btn" (click)="cancelSubmission()">
-            Cancelar
-          </button>
-          <button type="button"  class="btn submit-btn" (click)="confirmSubmission()">
-            Confirmar
-          </button>
-        </div>
-      </div>
-    </div>
+    <app-confirm-modal
+      [title]="'Confirmar Registro'"
+      [show]="showConfirmationModal"
+      [confirmLabel]="'Confirmar'"
+      [cancelLabel]="'Cancelar'"
+      (confirm)="confirmSubmission()"
+      (cancel)="cancelSubmission()"
+    >
+      <p>Por favor, revisa la información antes de confirmar:</p>
+      <ul class="summary-list">
+        <li><strong>Inventario:</strong> {{ formSummary.inventoryCode }}</li>
+        <li><strong>Nombre:</strong> {{ formSummary.name }}</li>
+        <li><strong>Marca:</strong> {{ formSummary.brand }}</li>
+        <li><strong>Laboratorio:</strong> {{ formSummary.labName }}</li>
+        <li>
+          <strong>Disponibilidad:</strong>
+          {{ formSummary.availability ? "Sí" : "No" }}
+        </li>
+        <li><strong>Funciones:</strong> {{ formSummary.functions }}</li>
+      </ul>
+    </app-confirm-modal>
   </form>
 </div>

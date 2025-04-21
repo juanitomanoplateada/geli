@@ -1,5 +1,5 @@
 .search-container {
-  max-width: 1200px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 2rem;
   font-family: Arial, sans-serif;
@@ -89,9 +89,10 @@
     select,
     input[type="date"] {
       padding: 0.5rem;
-      font-size: 0.9rem;
+      font-size: 1rem;
       border: 1px solid #ccc;
       border-radius: 4px;
+      height: 45px;
     }
   }
 

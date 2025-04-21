@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DropdownFilterComponent } from '../../../../shared/components/dropdown-filter/dropdown-filter.component';
 import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
 import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
 
@@ -23,7 +24,13 @@ interface SessionRecord {
 @Component({
   selector: 'app-session-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, IntegerOnlyDirective, UppercaseDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DropdownFilterComponent,
+    IntegerOnlyDirective,
+    UppercaseDirective,
+  ],
   templateUrl: './session-history.component.html',
   styleUrls: ['./session-history.component.scss'],
 })
@@ -31,6 +38,7 @@ export class SessionHistoryComponent {
   searchQuery = '';
   isLoading = false;
   showAdvancedSearch = false;
+  sortAscending = true;
   selectedSession: SessionRecord | null = null;
 
   filters = {
@@ -111,120 +119,94 @@ export class SessionHistoryComponent {
   }
 
   get filteredEquipments() {
-    return this.availableEquipments.filter((eq) =>
-      eq.toLowerCase().includes(this.equipmentSearch.toLowerCase())
+    return this.availableEquipments.filter((equipment) =>
+      equipment.toLowerCase().includes(this.equipmentSearch.toLowerCase())
     );
   }
 
   get filteredFunctions() {
-    return this.availableFunctions.filter((f) =>
-      f.toLowerCase().includes(this.functionSearch.toLowerCase())
+    return this.availableFunctions.filter((func) =>
+      func.toLowerCase().includes(this.functionSearch.toLowerCase())
     );
   }
 
   get filteredUsers() {
-    return this.availableUsers.filter((u) =>
-      u.toLowerCase().includes(this.userSearch.toLowerCase())
+    return this.availableUsers.filter((user) =>
+      user.toLowerCase().includes(this.userSearch.toLowerCase())
     );
   }
 
   get filteredSessions(): SessionRecord[] {
-    return this.sessionRecords.filter((session) => {
-      const matchesQuery =
-        session.lab.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        session.equipment
-          .toLowerCase()
-          .includes(this.searchQuery.toLowerCase());
+    return this.sessionRecords
+      .filter((session) => {
+        const match = (val: string, filter: string) =>
+          !filter || val.toLowerCase() === filter.toLowerCase();
 
-      const matchesLab =
-        !this.filters.lab ||
-        session.lab.toLowerCase() === this.filters.lab.toLowerCase();
+        const includes = (val: string, query: string) =>
+          val.toLowerCase().includes(query.toLowerCase());
 
-      const matchesEquipment =
-        !this.filters.equipment ||
-        session.equipment.toLowerCase() ===
-          this.filters.equipment.toLowerCase();
+        const rangeMatch = (
+          value: number | undefined,
+          min: number | null,
+          max: number | null
+        ) =>
+          (min === null || (value ?? 0) >= min) &&
+          (max === null || (value ?? 0) <= max);
 
-      const matchesDateFrom =
-        !this.filters.dateFrom || session.date >= this.filters.dateFrom;
-
-      const matchesDateTo =
-        !this.filters.dateTo || session.date <= this.filters.dateTo;
-
-      const matchesTimeFrom =
-        !this.filters.timeFrom || session.time >= this.filters.timeFrom;
-
-      const matchesTimeTo =
-        !this.filters.timeTo || session.time <= this.filters.timeTo;
-
-      const matchesVerifiedStatus =
-        !this.filters.verifiedStatus ||
-        session.verifiedStatus.toLowerCase() ===
-          this.filters.verifiedStatus.toLowerCase();
-
-      const matchesUsageStatus =
-        !this.filters.usageStatus ||
-        session.usageStatus.toLowerCase() ===
-          this.filters.usageStatus.toLowerCase();
-
-      const matchesUsageDuration =
-        (!this.filters.usageDurationMin ||
-          session.usageDuration! >= this.filters.usageDurationMin) &&
-        (!this.filters.usageDurationMax ||
-          session.usageDuration! <= this.filters.usageDurationMax);
-
-      const matchesSampleCount =
-        (!this.filters.sampleCountMin ||
-          session.sampleCount! >= this.filters.sampleCountMin) &&
-        (!this.filters.sampleCountMax ||
-          session.sampleCount! <= this.filters.sampleCountMax);
-
-      const matchesFunction =
-        !this.filters.function ||
-        session.functionsUsed?.some(
-          (f) => f.toLowerCase() === this.filters.function.toLowerCase()
+        return (
+          (includes(session.lab, this.searchQuery) ||
+            includes(session.equipment, this.searchQuery)) &&
+          match(session.lab, this.filters.lab) &&
+          match(session.equipment, this.filters.equipment) &&
+          (!this.filters.dateFrom || session.date >= this.filters.dateFrom) &&
+          (!this.filters.dateTo || session.date <= this.filters.dateTo) &&
+          (!this.filters.timeFrom || session.time >= this.filters.timeFrom) &&
+          (!this.filters.timeTo || session.time <= this.filters.timeTo) &&
+          match(session.verifiedStatus, this.filters.verifiedStatus) &&
+          match(session.usageStatus, this.filters.usageStatus) &&
+          rangeMatch(
+            session.usageDuration,
+            this.filters.usageDurationMin,
+            this.filters.usageDurationMax
+          ) &&
+          rangeMatch(
+            session.sampleCount,
+            this.filters.sampleCountMin,
+            this.filters.sampleCountMax
+          ) &&
+          (!this.filters.function ||
+            session.functionsUsed?.some(
+              (func) =>
+                func.toLowerCase() === this.filters.function.toLowerCase()
+            )) &&
+          match(session.responsible, this.filters.user)
         );
-
-      const matchesUser =
-        !this.filters.user ||
-        session.responsible.toLowerCase() === this.filters.user.toLowerCase();
-
-      return (
-        matchesQuery &&
-        matchesLab &&
-        matchesEquipment &&
-        matchesDateFrom &&
-        matchesDateTo &&
-        matchesTimeFrom &&
-        matchesTimeTo &&
-        matchesVerifiedStatus &&
-        matchesUsageStatus &&
-        matchesUsageDuration &&
-        matchesSampleCount &&
-        matchesFunction &&
-        matchesUser
+      })
+      .sort((a, b) =>
+        this.sortAscending
+          ? a.date.localeCompare(b.date)
+          : b.date.localeCompare(a.date)
       );
-    });
   }
 
-  onSearch() {
+  onSearch(): void {
     this.isLoading = true;
     setTimeout(() => (this.isLoading = false), 300);
   }
 
-  onKeyUp(event: KeyboardEvent) {
+  onKeyUp(event: KeyboardEvent): void {
     if (event.key === 'Enter') this.onSearch();
   }
 
-  toggleAdvancedSearch() {
+  toggleAdvancedSearch(): void {
     this.showAdvancedSearch = !this.showAdvancedSearch;
   }
 
-  selectSession(session: SessionRecord) {
+  selectSession(session: SessionRecord): void {
     this.selectedSession = session;
   }
 
-  clearFilters() {
+  clearFilters(): void {
     this.filters = {
       lab: '',
       equipment: '',
@@ -241,15 +223,13 @@ export class SessionHistoryComponent {
       function: '',
       user: '',
     };
+
     this.labSearch = '';
     this.equipmentSearch = '';
     this.functionSearch = '';
     this.userSearch = '';
-    this.showLabDropdown = false;
-    this.showEquipmentDropdown = false;
-    this.showFunctionDropdown = false;
-    this.showUserDropdown = false;
     this.searchQuery = '';
+
     this.onSearch();
   }
 }

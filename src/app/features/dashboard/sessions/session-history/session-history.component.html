@@ -1,42 +1,41 @@
 <div class="history-container">
-  <!-- 🔍 Buscador principal -->
+  <!-- 🔍 Barra de búsqueda principal -->
   <div class="search-bar">
     <input
       type="text"
       appUppercase
       [(ngModel)]="searchQuery"
       (keyup)="onKeyUp($event)"
-      placeholder="Buscar por laboratorio o equipo..."
-      class="search-input"
       [disabled]="isLoading"
+      class="search-input"
+      placeholder="Buscar por laboratorio o equipo..."
     />
 
-    <button (click)="onSearch()" class="search-button" [disabled]="isLoading">
+    <button class="search-button" (click)="onSearch()" [disabled]="isLoading">
       🔍 <span *ngIf="!isLoading">Buscar</span>
       <span *ngIf="isLoading">Buscando...</span>
     </button>
 
     <button
-      (click)="toggleAdvancedSearch()"
       class="advanced-search-btn"
+      (click)="toggleAdvancedSearch()"
       [disabled]="isLoading"
     >
       {{ showAdvancedSearch ? "Ocultar filtros" : "Búsqueda avanzada" }}
     </button>
   </div>
 
-  <!-- 🔎 Filtros avanzados -->
+  <!-- 🎯 Filtros avanzados -->
   <div *ngIf="showAdvancedSearch" class="advanced-search">
-    <!-- Fecha y hora -->
+    <!-- Fechas y horas -->
     <div class="filter-group">
       <label for="dateFrom">Fecha desde:</label>
       <input
         id="dateFrom"
         type="date"
-        title="Seleccione la fecha inicial"
-        placeholder="aaaa-mm-dd"
         [(ngModel)]="filters.dateFrom"
         (change)="onSearch()"
+        title="Seleccione la fecha inicial"
       />
     </div>
 
@@ -45,10 +44,9 @@
       <input
         id="dateTo"
         type="date"
-        title="Seleccione la fecha final"
-        placeholder="aaaa-mm-dd"
         [(ngModel)]="filters.dateTo"
         (change)="onSearch()"
+        title="Seleccione la fecha final"
       />
     </div>
 
@@ -57,10 +55,9 @@
       <input
         id="timeFrom"
         type="time"
-        title="Seleccione la hora inicial"
-        placeholder="hh:mm"
         [(ngModel)]="filters.timeFrom"
         (change)="onSearch()"
+        title="Seleccione la hora inicial"
       />
     </div>
 
@@ -69,67 +66,33 @@
       <input
         id="timeTo"
         type="time"
-        title="Seleccione la hora final"
-        placeholder="hh:mm"
         [(ngModel)]="filters.timeTo"
         (change)="onSearch()"
+        title="Seleccione la hora final"
       />
     </div>
 
-    <!-- Dropdowns de laboratorio y equipo -->
+    <!-- Dropdowns personalizados -->
     <div class="filter-group">
       <label>Laboratorio:</label>
-      <div class="dropdown">
-        <div class="selected" (click)="showLabDropdown = !showLabDropdown">
-          {{ filters.lab || "Todos" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showLabDropdown">
-          <input [(ngModel)]="labSearch" placeholder="Buscar laboratorio..." />
-          <div
-            class="option"
-            (click)="filters.lab = ''; showLabDropdown = false"
-          >
-            Todos
-          </div>
-          <div
-            class="option"
-            *ngFor="let lab of filteredLabs"
-            (click)="filters.lab = lab; showLabDropdown = false; onSearch()"
-          >
-            {{ lab }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-filter
+        [options]="availableLabs"
+        [selected]="filters.lab"
+        (selectedChange)="filters.lab = $event; onSearch()"
+        [placeholder]="'Laboratorio'"
+        [allowEmpty]="'Todos'"
+      ></app-dropdown-filter>
     </div>
 
     <div class="filter-group">
       <label>Equipo / Patrón:</label>
-      <div class="dropdown">
-        <div
-          class="selected"
-          (click)="showEquipmentDropdown = !showEquipmentDropdown"
-        >
-          {{ filters.equipment || "Todos" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showEquipmentDropdown">
-          <input [(ngModel)]="equipmentSearch" placeholder="Buscar equipo..." />
-          <div
-            class="option"
-            (click)="filters.equipment = ''; showEquipmentDropdown = false"
-          >
-            Todos
-          </div>
-          <div
-            class="option"
-            *ngFor="let eq of filteredEquipments"
-            (click)="
-              filters.equipment = eq; showEquipmentDropdown = false; onSearch()
-            "
-          >
-            {{ eq }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-filter
+        [options]="availableEquipments"
+        [selected]="filters.equipment"
+        (selectedChange)="filters.equipment = $event; onSearch()"
+        [placeholder]="'Equipo / Patrón'"
+        [allowEmpty]="'Todos'"
+      ></app-dropdown-filter>
     </div>
 
     <!-- Estados -->
@@ -137,9 +100,9 @@
       <label for="verifiedFilter">Estado - Verificado:</label>
       <select
         id="verifiedFilter"
-        title="Seleccione estado de verificación"
         [(ngModel)]="filters.verifiedStatus"
         (change)="onSearch()"
+        title="Seleccione el estado de verificación"
       >
         <option value="">Todos</option>
         <option value="SI">Sí</option>
@@ -151,9 +114,9 @@
       <label for="usageFilter">Estado - Para uso:</label>
       <select
         id="usageFilter"
-        title="Seleccione disponibilidad"
         [(ngModel)]="filters.usageStatus"
         (change)="onSearch()"
+        title="Seleccione disponibilidad de uso"
       >
         <option value="">Todos</option>
         <option value="Disponible">Disponible</option>
@@ -161,18 +124,18 @@
       </select>
     </div>
 
-    <!-- Rango de minutos -->
+    <!-- Rango de tiempo de uso -->
     <div class="filter-group">
       <label for="durationMin">Tiempo de uso desde (min):</label>
       <input
         id="durationMin"
         type="number"
         appIntegerOnly
-        min="0"
-        placeholder="Mínimo en minutos"
-        title="Ingrese el tiempo mínimo en minutos"
         [(ngModel)]="filters.usageDurationMin"
         (change)="onSearch()"
+        placeholder="Mínimo"
+        title="Tiempo mínimo en minutos"
+        min="0"
       />
     </div>
 
@@ -182,11 +145,11 @@
         id="durationMax"
         type="number"
         appIntegerOnly
-        min="0"
-        placeholder="Máximo en minutos"
-        title="Ingrese el tiempo máximo en minutos"
         [(ngModel)]="filters.usageDurationMax"
         (change)="onSearch()"
+        placeholder="Máximo"
+        title="Tiempo máximo en minutos"
+        min="0"
       />
     </div>
 
@@ -197,11 +160,11 @@
         id="sampleCountMin"
         type="number"
         appIntegerOnly
-        min="0"
-        title="Ingrese la cantidad mínima de muestras"
-        placeholder="Mínimo"
         [(ngModel)]="filters.sampleCountMin"
         (change)="onSearch()"
+        placeholder="Mínimo"
+        title="Cantidad mínima de muestras"
+        min="0"
       />
     </div>
 
@@ -211,77 +174,56 @@
         id="sampleCountMax"
         type="number"
         appIntegerOnly
-        min="0"
-        title="Ingrese la cantidad máxima de muestras"
-        placeholder="Máximo"
         [(ngModel)]="filters.sampleCountMax"
         (change)="onSearch()"
+        placeholder="Máximo"
+        title="Cantidad máxima de muestras"
+        min="0"
       />
     </div>
 
-    <!-- Función utilizada -->
+    <!-- Función -->
     <div class="filter-group">
       <label>Función utilizada:</label>
-      <div class="dropdown">
-        <div
-          class="selected"
-          (click)="showFunctionDropdown = !showFunctionDropdown"
-        >
-          {{ filters.function || "Todas" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showFunctionDropdown">
-          <input [(ngModel)]="functionSearch" placeholder="Buscar función..." />
-          <div
-            class="option"
-            (click)="filters.function = ''; showFunctionDropdown = false"
-          >
-            Todas
-          </div>
-          <div
-            class="option"
-            *ngFor="let func of filteredFunctions"
-            (click)="
-              filters.function = func; showFunctionDropdown = false; onSearch()
-            "
-          >
-            {{ func }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-filter
+        [options]="availableFunctions"
+        [selected]="filters.function"
+        (selectedChange)="filters.function = $event; onSearch()"
+        [placeholder]="'Función'"
+        [allowEmpty]="'Todas'"
+      ></app-dropdown-filter>
     </div>
 
-    <!-- Usuario responsable -->
+    <!-- Responsable -->
     <div class="filter-group">
       <label>Responsable:</label>
-      <div class="dropdown">
-        <div class="selected" (click)="showUserDropdown = !showUserDropdown">
-          {{ filters.user || "Todos" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showUserDropdown">
-          <input [(ngModel)]="userSearch" placeholder="Buscar responsable..." />
-          <div
-            class="option"
-            (click)="filters.user = ''; showUserDropdown = false; onSearch()"
-          >
-            Todos
-          </div>
-          <div
-            class="option"
-            *ngFor="let user of filteredUsers"
-            (click)="filters.user = user; showUserDropdown = false; onSearch()"
-          >
-            {{ user }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-filter
+        [options]="availableUsers"
+        [selected]="filters.user"
+        (selectedChange)="filters.user = $event; onSearch()"
+        [placeholder]="'Responsable'"
+        [allowEmpty]="'Todos'"
+      ></app-dropdown-filter>
     </div>
 
-    <button class="clear-filters-btn" (click)="clearFilters()">
-      Limpiar filtros
+    <!-- Botón limpiar -->
+    <div class="filter-group">
+      <label>&nbsp;</label>
+      <button class="clear-filters-btn" (click)="clearFilters()">
+        Limpiar filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- 🗂 Orden por fecha -->
+  <div class="sort-bar">
+    <label>Ordenar por fecha:</label>
+    <button (click)="sortAscending = !sortAscending">
+      {{ sortAscending ? "⬇️ Más antiguo" : "⬇️ Más reciente" }}
     </button>
   </div>
 
-  <!-- 🧾 Resultados de búsqueda -->
+  <!-- 📄 Resultados -->
   <div class="history-content">
     <aside class="history-sidebar">
       <div
@@ -294,15 +236,16 @@
         <p>{{ session.equipment }}</p>
         <span>{{ session.date }} - {{ session.time }}</span>
       </div>
+
       <div
-        *ngIf="filteredSessions.length === 0 && !isLoading"
         class="no-results"
+        *ngIf="filteredSessions.length === 0 && !isLoading"
       >
         No se encontraron sesiones para mostrar.
       </div>
     </aside>
 
-    <!-- 📋 Detalles de la sesión -->
+    <!-- 📋 Detalle de la sesión -->
     <section class="history-detail" *ngIf="selectedSession">
       <h2>Detalles de la Sesión</h2>
       <p>
@@ -351,7 +294,6 @@
 
       <p>
         <strong>Funciones utilizadas:</strong>
-
         <ng-container
           *ngIf="
             selectedSession.functionsUsed &&
@@ -359,19 +301,16 @@
             else noFunctions
           "
         >
-          {{ selectedSession.functionsUsed!.join(", ") | uppercase }}
+          {{ selectedSession.functionsUsed.join(", ") | uppercase }}
         </ng-container>
-
         <ng-template #noFunctions>NO APLICA</ng-template>
       </p>
 
       <p>
         <strong>Observaciones:</strong>
-
         <ng-container *ngIf="selectedSession.observations; else noObs">
           {{ selectedSession.observations | uppercase }}
         </ng-container>
-
         <ng-template #noObs>N/A</ng-template>
       </p>
     </section>

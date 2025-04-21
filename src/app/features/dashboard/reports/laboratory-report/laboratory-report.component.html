@@ -1,11 +1,24 @@
 <div class="laboratory-report-wrapper">
-  <h1 class="report-title">Reporte de Laboratorios</h1>
+  <!-- Panel de exportación con título -->
+  <div class="export-panel">
+    <h1 class="report-title">🏢 Reporte de Laboratorios</h1>
+    <div class="export-buttons">
+      <button class="btn-excel" (click)="exportToExcel()">📊 Excel</button>
+      <button class="btn-csv" (click)="exportToCSV()">📄 CSV</button>
+      <button class="btn-pdf" (click)="exportToPDF()">🧾 PDF</button>
+    </div>
+  </div>
 
-  <!-- Panel de Filtros -->
+  <!-- Filtros -->
   <div class="summary-panel filter-panel">
+    <h3 class="section-title full-width">🔍 Filtros de Búsqueda</h3>
+
     <label>
       Disponibilidad:
-      <select [(ngModel)]="selectedAvailability" (change)="filterLaboratories()">
+      <select
+        [(ngModel)]="selectedAvailability"
+        (change)="filterLaboratories()"
+      >
         <option value="">Todas</option>
         <option *ngFor="let option of availabilityOptions" [value]="option">
           {{ option }}
@@ -15,42 +28,66 @@
 
     <label>
       Ubicación:
-      <select [(ngModel)]="selectedLocation" (change)="filterLaboratories()">
-        <option value="">Todas</option>
-        <option *ngFor="let location of locationOptions" [value]="location">
-          {{ location }}
-        </option>
-      </select>
+      <app-dropdown-filter
+        [options]="locationOptions"
+        [selected]="selectedLocation"
+        (selectedChange)="onLocationChange($event)"
+        placeholder="Seleccione ubicación"
+        allowEmpty="Todas"
+      />
     </label>
 
     <label>
       Mín. Equipos:
-      <input type="number" [(ngModel)]="minEquipmentCount" (change)="filterLaboratories()" placeholder="Mín." min="0" />
+      <input
+        type="number"
+        [(ngModel)]="minEquipmentCount"
+        (change)="filterLaboratories()"
+        placeholder="Mín."
+        min="0"
+      />
     </label>
 
     <label>
       Máx. Equipos:
-      <input type="number" [(ngModel)]="maxEquipmentCount" (change)="filterLaboratories()" placeholder="Máx." min="0" />
+      <input
+        type="number"
+        [(ngModel)]="maxEquipmentCount"
+        (change)="filterLaboratories()"
+        placeholder="Máx."
+        min="0"
+      />
     </label>
 
     <button (click)="resetFilters()">Limpiar Filtros</button>
-    <button class="btn-excel" (click)="exportToExcel()">📊 Excel</button>
-    <button class="btn-csv" (click)="exportToCSV()">📄 CSV</button>
-    <button class="btn-pdf" (click)="exportToPDF()">🧾 PDF</button>
   </div>
 
   <!-- Estadísticas -->
-  <div class="summary-panel">
-    <div><strong>Disponible:</strong> {{ getChartValue(availabilityChart, 0) }}</div>
-    <div><strong>Ocupado:</strong> {{ getChartValue(availabilityChart, 1) }}</div>
-    <div><strong>Total:</strong> {{ filteredLaboratories.length }}</div>
+  <div class="summary-panel statistics-panel">
+    <h3 class="section-title">📌 Estadísticas Generales</h3>
+
+    <div class="stats-row">
+      <div class="stat-box green">
+        <h4>✅ Disponible</h4>
+        <p>{{ getChartValue(availabilityChart, 0) }}</p>
+      </div>
+      <div class="stat-box red">
+        <h4>❌ Ocupado</h4>
+        <p>{{ getChartValue(availabilityChart, 1) }}</p>
+      </div>
+      <div class="stat-box neutral">
+        <h4>🏷️ Total</h4>
+        <p>{{ filteredLaboratories.length }}</p>
+      </div>
+    </div>
   </div>
 
-  <!-- Contenido Principal -->
-  <div class="dashboard-grid">
-    <!-- Tabla de Laboratorios -->
-    <div class="left-section">
+  <!-- Tabla y gráficas en la misma fila -->
+  <div class="main-content">
+    <!-- Tabla -->
+    <div class="left-column">
       <div class="table-section">
+        <h3 class="section-title">📋 Lista de Laboratorios</h3>
         <table>
           <thead>
             <tr>
@@ -68,7 +105,9 @@
               <td data-label="Nombre">{{ lab.name }}</td>
               <td data-label="Descripción">{{ lab.description }}</td>
               <td data-label="Disponibilidad">{{ lab.availability }}</td>
-              <td data-label="Ubicación">{{ lab.location.building }} - Piso {{ lab.location.floor }}</td>
+              <td data-label="Ubicación">
+                {{ lab.location.building }} - Piso {{ lab.location.floor }}
+              </td>
               <td data-label="Equipos">{{ lab.equipment.length }}</td>
             </tr>
           </tbody>
@@ -76,21 +115,56 @@
       </div>
     </div>
 
-    <!-- Gráficos -->
-    <div class="right-section">
+    <!-- Gráficas -->
+    <div class="right-column">
       <div class="chart-tabs">
+        <h3 class="section-title">📈 Visualizaciones Gráficas</h3>
         <div class="tab-buttons">
-          <button [class.active]="activeTab === 'availability'" (click)="activeTab = 'availability'">Disponibilidad</button>
-          <button [class.active]="activeTab === 'location'" (click)="activeTab = 'location'">Ubicación</button>
-          <button [class.active]="activeTab === 'equipment'" (click)="activeTab = 'equipment'">Equipos por Laboratorio</button>
+          <button
+            [class.active]="activeTab === 'availability'"
+            (click)="activeTab = 'availability'"
+          >
+            Disponibilidad
+          </button>
+          <button
+            [class.active]="activeTab === 'location'"
+            (click)="activeTab = 'location'"
+          >
+            Ubicación
+          </button>
+          <button
+            [class.active]="activeTab === 'equipment'"
+            (click)="activeTab = 'equipment'"
+          >
+            Equipos por Laboratorio
+          </button>
         </div>
 
         <div class="tab-content" *ngIf="isBrowser">
-          <canvas #availabilityChartCanvas baseChart [data]="availabilityChart" [type]="'pie'" [legend]="true" class="chart" [class.hidden]="activeTab !== 'availability'"></canvas>
-
-          <canvas #equipmentChartCanvas baseChart [data]="equipmentChart" [type]="'bar'" [legend]="true" class="chart" [class.hidden]="activeTab !== 'equipment'"></canvas>
-
-          <canvas #locationChartCanvas baseChart [data]="locationChart" [type]="'pie'" [legend]="true" class="chart" [class.hidden]="activeTab !== 'location'"></canvas>
+          <canvas
+            baseChart
+            [data]="availabilityChart"
+            [type]="'pie'"
+            [legend]="true"
+            class="chart"
+            [class.hidden]="activeTab !== 'availability'"
+          ></canvas>
+          <canvas
+            baseChart
+            [data]="equipmentChart"
+            [type]="'bar'"
+            [legend]="true"
+            class="chart"
+            [class.hidden]="activeTab !== 'equipment'"
+          ></canvas>
+          <canvas
+            baseChart
+            [data]="locationChart"
+            [type]="'pie'"
+            [legend]="true"
+            class="chart"
+            [class.hidden]="activeTab !== 'location'"
+          ></canvas>
         </div>
       </div>
     </div>

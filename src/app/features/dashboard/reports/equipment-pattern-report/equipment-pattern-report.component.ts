@@ -14,13 +14,14 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { DropdownFilterComponent } from '../../../../shared/components/dropdown-filter/dropdown-filter.component';
 
 (jsPDF as any).autoTable = autoTable;
 
 @Component({
   selector: 'app-equipment-pattern-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgChartsModule],
+  imports: [CommonModule, FormsModule, NgChartsModule, DropdownFilterComponent],
   templateUrl: './equipment-pattern-report.component.html',
   styleUrls: ['./equipment-pattern-report.component.scss'],
 })
@@ -88,6 +89,16 @@ export class EquipmentPatternReportComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateCharts();
+  }
+
+  onFunctionChange(selected: string): void {
+    this.selectedFunction = selected;
+    this.filterEquipment();
+  }
+
+  onLaboratoryChange(selected: string): void {
+    this.selectedLaboratory = selected;
+    this.filterEquipment();
   }
 
   filterEquipment(): void {

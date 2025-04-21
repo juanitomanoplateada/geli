@@ -3,7 +3,7 @@
   <p class="subtitle">Ingrese los datos del nuevo laboratorio.</p>
 
   <form [formGroup]="labForm" (ngSubmit)="submitForm()">
-    <!-- Nombre -->
+    <!-- Nombre del Laboratorio -->
     <div class="form-group">
       <label for="labName">Nombre del Laboratorio</label>
       <input
@@ -32,8 +32,8 @@
         formControlName="description"
         class="form-control auto-expand"
         rows="1"
-        placeholder="Describa el laboratorio"
         appUppercase
+        placeholder="Describa brevemente el laboratorio"
         (input)="autoResize($event)"
       ></textarea>
       <div
@@ -47,49 +47,37 @@
       </div>
     </div>
 
-    <!-- Lugar con buscador -->
-    <div class="form-group custom-select">
+    <!-- Lugar (Dropdown Reutilizable) -->
+    <div class="form-group">
       <label for="location">Lugar</label>
-
-      <div class="select-box" (click)="toggleLocationDropdown()">
-        {{ selectedLocationName }}
-      </div>
-
-      <div
-        class="dropdown"
-        *ngIf="showLocationDropdown"
-        (click)="$event.stopPropagation()"
-      >
-        <input
-          type="text"
-          [(ngModel)]="locationSearchTerm"
-          name="locationSearch"
-          [ngModelOptions]="{ standalone: true }"
-          (input)="filterLocations(locationSearchTerm)"
-          class="form-control"
-          placeholder="Buscar lugar..."
-          title="Buscar lugar"
-        />
-        <div class="options">
-          <div
-            class="option"
-            *ngFor="let location of filteredLocations"
-            (click)="selectLocation(location)"
-          >
-            {{ location.name }}
-          </div>
-        </div>
-      </div>
-
+      <app-dropdown-search
+        [options]="locationOptions"
+        [selectedValue]="selectedLocation"
+        (select)="onSelectLocation($event)"
+        placeholder="Seleccione un lugar"
+      ></app-dropdown-search>
       <div
         *ngIf="
-          labForm.get('locationId')?.invalid &&
-          labForm.get('locationId')?.touched
+          labForm.get('locationName')?.invalid &&
+          labForm.get('locationName')?.touched
         "
         class="error-message"
       >
         Debe seleccionar un lugar
       </div>
+    </div>
+
+    <!-- Disponibilidad -->
+    <div class="form-group">
+      <label for="availability">¿Disponible?</label>
+      <select
+        id="availability"
+        formControlName="availability"
+        class="form-control"
+      >
+        <option [value]="true">Sí</option>
+        <option [value]="false">No</option>
+      </select>
     </div>
 
     <!-- Botones -->
@@ -101,28 +89,23 @@
         Registrar Laboratorio
       </button>
     </div>
+
+    <!-- Modal Reutilizable -->
+    <app-confirm-modal
+      [title]="'Confirmar Registro'"
+      [show]="showConfirmationModal"
+      [confirmLabel]="'Confirmar'"
+      [cancelLabel]="'Cancelar'"
+      (confirm)="confirmSubmit()"
+      (cancel)="cancelConfirmation()"
+    >
+      <p>Por favor confirme la información antes de registrar:</p>
+      <ul class="summary-list">
+        <li><strong>Nombre:</strong> {{ labForm.value.labName }}</li>
+        <li><strong>Descripción:</strong> {{ labForm.value.description }}</li>
+        <li><strong>Lugar:</strong> {{ labForm.value.locationName }}</li>
+        <li><strong>Disponible:</strong> {{ availabilityText }}</li>
+      </ul>
+    </app-confirm-modal>
   </form>
-
-  <!-- Modal de confirmación -->
-  <div class="modal-overlay" *ngIf="showConfirmationModal">
-    <div class="modal">
-      <h2>Confirmar Registro</h2>
-      <p><strong>Nombre:</strong> {{ labForm.value.labName }}</p>
-      <p><strong>Descripción:</strong> {{ labForm.value.description }}</p>
-      <p><strong>Lugar:</strong> {{ selectedLocationName }}</p>
-      <p>
-        <strong>Disponible:</strong>
-        {{ labForm.value.availability ? "Sí" : "No" }}
-      </p>
-
-      <div class="modal-buttons">
-        <button class="btn cancel-btn" (click)="showConfirmationModal = false">
-          Cancelar
-        </button>
-        <button class="btn submit-btn" (click)="confirmSubmit()">
-          Confirmar
-        </button>
-      </div>
-    </div>
-  </div>
 </div>

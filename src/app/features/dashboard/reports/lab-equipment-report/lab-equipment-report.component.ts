@@ -364,6 +364,13 @@ export class LabEquipmentReportComponent implements OnInit {
       .slice(0, 10)}_${now.getHours()}-${now.getMinutes()}.${ext}`;
   }
 
+  getChartValue(chart: ChartData, index: number): number {
+    const dataset = chart.datasets?.[0];
+    if (!dataset || !Array.isArray(dataset.data)) return 0;
+    const value = dataset.data[index];
+    return typeof value === 'number' ? value : Number(value) || 0;
+  }
+
   filteredLaboratoriesFilteredBySearch(): Laboratory[] {
     const term = this.labSearchTerm.trim().toLowerCase();
     return this.filteredLaboratories.filter((lab) =>

@@ -2,55 +2,64 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DropdownFilterComponent } from '../../../../shared/components/dropdown-filter/dropdown-filter.component';
 
 @Component({
   selector: 'app-search-equipment-pattern',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DropdownFilterComponent],
   templateUrl: './search-equipment-pattern.component.html',
   styleUrls: ['./search-equipment-pattern.component.scss'],
 })
 export class SearchEquipmentPatternComponent implements OnInit {
   constructor(private router: Router) {}
 
+  // Entrada de búsqueda general
   searchQuery = '';
   showAdvancedSearch = false;
   isLoading = false;
 
+  // Opciones de filtros
   availabilityOptions = ['Disponible', 'No disponible'];
   functionOptions = ['Medición', 'Calibración', 'Análisis'];
   laboratoryOptions = ['Lab Física', 'Lab Química', 'Lab Electrónica'];
 
+  // Filtros aplicados
   filters = {
     availability: '',
     function: '',
     laboratory: '',
   };
 
-  filteredFunctions: string[] = [];
-  filteredLabs: string[] = [];
-  functionSearchTerm = '';
-  labSearchTerm = '';
-
-  functionDropdownOpen = false;
-  labDropdownOpen = false;
-  selectedFunctionLabel = 'Todas';
-  selectedLabLabel = 'Todos';
-
+  // Resultados
   equipmentResults: any[] = [];
 
   ngOnInit(): void {
-    this.filteredFunctions = [...this.functionOptions];
-    this.filteredLabs = [...this.laboratoryOptions];
+    // Aquí podrías cargar los datos dinámicamente en lugar de usar datos simulados
   }
 
   onKeyUp(event: KeyboardEvent): void {
     if (event.key === 'Enter') this.performSearch();
   }
 
+  toggleAdvancedSearch(): void {
+    this.showAdvancedSearch = !this.showAdvancedSearch;
+  }
+
+  clearFilters(): void {
+    this.searchQuery = '';
+    this.filters = {
+      availability: '',
+      function: '',
+      laboratory: '',
+    };
+    this.equipmentResults = [];
+  }
+
   performSearch(): void {
     this.isLoading = true;
 
+    // Datos simulados
     const allEquipment = [
       {
         id: 1,
@@ -93,62 +102,6 @@ export class SearchEquipmentPatternComponent implements OnInit {
 
       this.isLoading = false;
     }, 400);
-  }
-
-  toggleAdvancedSearch(): void {
-    this.showAdvancedSearch = !this.showAdvancedSearch;
-  }
-
-  clearFilters(): void {
-    this.searchQuery = '';
-    this.filters = { availability: '', function: '', laboratory: '' };
-    this.functionSearchTerm = '';
-    this.labSearchTerm = '';
-    this.selectedFunctionLabel = 'Todas';
-    this.selectedLabLabel = 'Todos';
-    this.filteredFunctions = [...this.functionOptions];
-    this.filteredLabs = [...this.laboratoryOptions];
-    this.equipmentResults = [];
-  }
-
-  toggleFunctionDropdown(): void {
-    this.functionDropdownOpen = !this.functionDropdownOpen;
-    this.filteredFunctions = [...this.functionOptions];
-    this.functionSearchTerm = '';
-  }
-
-  filterFunctions(): void {
-    const term = this.functionSearchTerm.toLowerCase();
-    this.filteredFunctions = this.functionOptions.filter((f) =>
-      f.toLowerCase().includes(term)
-    );
-  }
-
-  selectFunction(func: string): void {
-    this.filters.function = func;
-    this.selectedFunctionLabel = func || 'Todas';
-    this.functionDropdownOpen = false;
-    this.performSearch();
-  }
-
-  toggleLabDropdown(): void {
-    this.labDropdownOpen = !this.labDropdownOpen;
-    this.filteredLabs = [...this.laboratoryOptions];
-    this.labSearchTerm = '';
-  }
-
-  filterLabs(): void {
-    const term = this.labSearchTerm.toLowerCase();
-    this.filteredLabs = this.laboratoryOptions.filter((l) =>
-      l.toLowerCase().includes(term)
-    );
-  }
-
-  selectLab(lab: string): void {
-    this.filters.laboratory = lab;
-    this.selectedLabLabel = lab || 'Todos';
-    this.labDropdownOpen = false;
-    this.performSearch();
   }
 
   trackById(index: number, item: any): number {

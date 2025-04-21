@@ -47,34 +47,15 @@
     </div>
 
     <!-- Filtro: Ubicación con buscador embebido -->
-    <div class="filter-group dropdown-search">
-      <label for="locationDropdown">Ubicación:</label>
-      <div class="select-box" (click)="toggleDropdown()">
-        {{ selectedLocationLabel }}
-      </div>
-
-      <div
-        class="dropdown"
-        *ngIf="dropdownOpen"
-        (click)="$event.stopPropagation()"
-      >
-        <input
-          type="text"
-          [(ngModel)]="locationSearchTerm"
-          [ngModelOptions]="{ standalone: true }"
-          (input)="filterLocations()"
-          placeholder="Buscar ubicación..."
-        />
-        <div class="options">
-          <div
-            class="option"
-            *ngFor="let loc of filteredLocations"
-            (click)="selectLocation(loc)"
-          >
-            {{ loc }}
-          </div>
-        </div>
-      </div>
+    <div class="filter-group">
+      <label>Ubicación:</label>
+      <app-dropdown-filter
+        [options]="availableLocations"
+        [selected]="filters.location"
+        [placeholder]="'Seleccione ubicación...'"
+        [allowEmpty]="'Todas'"
+        (selectedChange)="onLocationChange($event)"
+      ></app-dropdown-filter>
     </div>
 
     <button

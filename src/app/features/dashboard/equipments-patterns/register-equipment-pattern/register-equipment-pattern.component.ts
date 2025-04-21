@@ -8,6 +8,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { UppercaseNospaceDirective } from '../../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
 import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
+import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 
 interface LabOption {
   id: string;
@@ -22,12 +23,19 @@ interface FunctionOption {
 @Component({
   selector: 'app-register-equipment-pattern',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, UppercaseDirective, UppercaseNospaceDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    UppercaseDirective,
+    UppercaseNospaceDirective,
+    ConfirmModalComponent,
+  ],
   templateUrl: './register-equipment-pattern.component.html',
   styleUrls: ['./register-equipment-pattern.component.scss'],
 })
 export class RegisterEquipmentPatternComponent implements OnInit {
-  // === Datos de prueba ===
+  // Opciones de laboratorio y funciones
   labOptions: LabOption[] = [
     { id: '1', name: 'Laboratorio de Redes' },
     { id: '2', name: 'Laboratorio de Electrónica' },
@@ -39,8 +47,7 @@ export class RegisterEquipmentPatternComponent implements OnInit {
     { id: 'na', name: 'N/A' },
   ];
 
-  existingInventoryCodes: string[] = ['PAT-001', 'EQP-100'];
-
+  // Estado del formulario
   equipmentForm = this.fb.group({
     inventoryCode: ['', Validators.required],
     name: ['', Validators.required],
@@ -50,20 +57,23 @@ export class RegisterEquipmentPatternComponent implements OnInit {
     functionId: ['', Validators.required], // validación simbólica
   });
 
-  // === Estado de control ===
+  // Estado visual y dinámico
   isInventoryCodeTaken = false;
+  showConfirmationModal = false;
 
   selectedLabName = '';
-  labSearchTerm = '';
-  filteredLabOptions: LabOption[] = [];
-  labDropdownOpen = false;
-
   selectedFunctions: FunctionOption[] = [];
+
+  labSearchTerm = '';
   functionSearchTerm = '';
+
+  filteredLabOptions: LabOption[] = [];
   filteredFunctionOptions: FunctionOption[] = [];
+
+  labDropdownOpen = false;
   functionDropdownOpen = false;
 
-  showConfirmationModal = false;
+  existingInventoryCodes: string[] = ['PAT-001', 'EQP-100'];
 
   constructor(
     private fb: FormBuilder,
@@ -89,7 +99,7 @@ export class RegisterEquipmentPatternComponent implements OnInit {
     }
   }
 
-  // === Dropdown laboratorio ===
+  // === Lógica dropdown laboratorio ===
   toggleLabDropdown(): void {
     this.labDropdownOpen = !this.labDropdownOpen;
   }
@@ -110,7 +120,7 @@ export class RegisterEquipmentPatternComponent implements OnInit {
     this.labDropdownOpen = false;
   }
 
-  // === Dropdown funciones múltiples ===
+  // === Lógica dropdown de funciones múltiples ===
   toggleFunctionDropdown(): void {
     this.functionDropdownOpen = !this.functionDropdownOpen;
   }
@@ -139,7 +149,7 @@ export class RegisterEquipmentPatternComponent implements OnInit {
     this.functionSearchTerm = '';
     this.filteredFunctionOptions = this.functionOptions;
     this.functionDropdownOpen = false;
-    this.equipmentForm.patchValue({ functionId: 'valid' }); // validación ficticia
+    this.equipmentForm.patchValue({ functionId: 'valid' });
   }
 
   removeFunction(func: FunctionOption): void {
@@ -181,18 +191,6 @@ export class RegisterEquipmentPatternComponent implements OnInit {
     };
   }
 
-  // === Cierre de dropdowns global ===
-  handleOutsideClick(event: MouseEvent): void {
-    const path = event.composedPath();
-    const clickedInside = path.some((el) =>
-      (el as HTMLElement)?.classList?.contains('custom-select')
-    );
-    if (!clickedInside) {
-      this.labDropdownOpen = false;
-      this.functionDropdownOpen = false;
-    }
-  }
-
   // === Cancelar ===
   onCancel(): void {
     this.equipmentForm.reset({ availability: true });
@@ -202,5 +200,17 @@ export class RegisterEquipmentPatternComponent implements OnInit {
     this.selectedFunctions = [];
     this.filteredLabOptions = this.labOptions;
     this.filteredFunctionOptions = this.functionOptions;
+  }
+
+  // === Cierre global de dropdowns ===
+  handleOutsideClick(event: MouseEvent): void {
+    const path = event.composedPath();
+    const clickedInside = path.some((el) =>
+      (el as HTMLElement)?.classList?.contains('custom-select')
+    );
+    if (!clickedInside) {
+      this.labDropdownOpen = false;
+      this.functionDropdownOpen = false;
+    }
   }
 }

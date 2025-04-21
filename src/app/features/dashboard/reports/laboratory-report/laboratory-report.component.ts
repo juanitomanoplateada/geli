@@ -14,13 +14,14 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { DropdownFilterComponent } from '../../../../shared/components/dropdown-filter/dropdown-filter.component';
 
 (jsPDF as any).autoTable = autoTable;
 
 @Component({
   selector: 'app-laboratory-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgChartsModule],
+  imports: [CommonModule, FormsModule, NgChartsModule, DropdownFilterComponent],
   templateUrl: './laboratory-report.component.html',
   styleUrls: ['./laboratory-report.component.scss'],
 })
@@ -88,6 +89,11 @@ export class LaboratoryReportComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateCharts();
+  }
+
+  onLocationChange(location: string): void {
+    this.selectedLocation = location;
+    this.filterLaboratories();
   }
 
   filterLaboratories(): void {

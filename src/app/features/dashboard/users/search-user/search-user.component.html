@@ -116,9 +116,9 @@
         <div>Identificación</div>
         <div>Estado</div>
         <div>Rol</div>
-        <div>Fecha de Registro</div>
-        <div>Fecha de Modificación</div>
-        <div>Fecha Asignada</div>
+        <div>Creación</div>
+        <div>Modificación</div>
+        <div>Asignación</div>
         <div>Acciones</div>
       </div>
 
@@ -130,13 +130,13 @@
         <div data-label="Identificación">{{ user.id }}</div>
         <div data-label="Estado">{{ user.status }}</div>
         <div data-label="Rol">{{ user.role.name }}</div>
-        <div data-label="Fecha de Registro">
+        <div data-label="Creación">
           {{ user.createdAt | date : "dd/MM/yyyy" }}
         </div>
-        <div data-label="Fecha de Modificación">
+        <div data-label="Modificación">
           {{ user.updatedAt | date : "dd/MM/yyyy" }}
         </div>
-        <div data-label="Fecha Asignada">
+        <div data-label="Asignación">
           {{ user.assignedAt | date : "dd/MM/yyyy" }}
         </div>
         <div data-label="Acciones">
