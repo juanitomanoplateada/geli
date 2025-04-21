@@ -1,0 +1,28 @@
+<div class="tag-selector" appClickOutside (appClickOutside)="closeDropdown()">
+  <div class="selector-box" (click)="toggleDropdown()">
+    {{ placeholder }}
+  </div>
+
+  <div class="dropdown-list" *ngIf="showDropdown">
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      placeholder="Buscar..."
+      appUppercase
+    />
+    <div
+      class="option"
+      *ngFor="let option of filteredOptions"
+      (click)="addOption(option)"
+    >
+      {{ option }}
+    </div>
+  </div>
+
+  <div class="tags">
+    <span class="tag" *ngFor="let opt of selected">
+      {{ opt }}
+      <button (click)="removeOption(opt)">×</button>
+    </span>
+  </div>
+</div>

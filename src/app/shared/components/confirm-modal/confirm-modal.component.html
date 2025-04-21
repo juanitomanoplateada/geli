@@ -1,0 +1,14 @@
+<div class="modal-backdrop" *ngIf="show">
+  <div class="modal-box">
+    <h3>{{ title }}</h3>
+    <ng-content></ng-content>
+    <div class="modal-actions">
+      <button class="confirm-btn" (click)="confirm.emit()">
+        {{ confirmLabel }}
+      </button>
+      <button class="cancel-btn" (click)="cancel.emit()">
+        {{ cancelLabel }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,58 +1,68 @@
 <div class="confirm-code-background">
-  <div class="confirm-code-container">
-    <div class="confirm-code-header">
-      <button class="confirm-code-button-comeback" (click)="goBack()">←</button>
-    </div>
-    <div class="confirm-code-logos">
-      <img
-        class="confirm-code-logo uptc-logo"
-        src="/logo_uptc.png"
-        alt="Logo UPTC"
-      />
+  <main class="confirm-code-container">
+    <!-- Botón de regreso -->
+    <header class="confirm-code-header">
+      <button class="btn-back" (click)="goBack()">←</button>
+    </header>
+
+    <!-- Logos institucionales -->
+    <section class="confirm-code-logos">
+      <img class="confirm-code-logo" src="/logo_uptc.png" alt="Logo UPTC" />
       <hr class="confirm-code-divider" />
       <img
-        class="confirm-code-logo incitema-logo"
+        class="confirm-code-logo"
         src="/logo_incitema.png"
         alt="Logo INCITEMA"
       />
-    </div>
+    </section>
+
+    <!-- Título e instrucciones -->
     <h2 class="confirm-code-title">VALIDAR CÓDIGO DE RECUPERACIÓN</h2>
     <p class="confirm-code-instructions">
       Ingresa el código que enviamos a tu correo institucional
     </p>
+
+    <!-- Mensaje de retroalimentación -->
     <div
-      *ngIf="feedbackMessage"
+      *ngIf="message"
       class="confirm-code-message"
-      [ngClass]="{ error: isError, success: !isError }"
+      [ngClass]="{ error: hasError, success: !hasError }"
     >
-      {{ feedbackMessage }}
+      {{ message }}
     </div>
-    <form class="confirm-code-form" (ngSubmit)="login()">
-      <div class="confirm-code-code-wrapper">
+
+    <!-- Formulario -->
+    <form class="confirm-code-form" (ngSubmit)="onSubmit()">
+      <!-- Campo para código -->
+      <div class="confirm-code-input-group">
         <input
-          class="confirm-code-input code-input"
           type="text"
+          class="confirm-code-input"
           [(ngModel)]="code"
           name="code"
-          placeholder="Código de Recuperación"
+          placeholder="Código de recuperación"
           required
           appUppercaseNospace
         />
       </div>
-      <button class="confirm-code-button" type="submit" [disabled]="!code">
+
+      <!-- Botón para continuar -->
+      <button type="submit" class="confirm-code-button" [disabled]="!code">
         Continuar
       </button>
+
+      <!-- Botón para reenviar código -->
       <button
-        class="confirm-code-button resend-button"
         type="button"
+        class="confirm-code-button resend-button"
         [disabled]="!canResend"
         (click)="resendCode()"
       >
-        Reenviar Código
-        <span *ngIf="!canResend" class="resend-counter"
-          >({{ countdown }}s)</span
-        >
+        Reenviar código
+        <span *ngIf="!canResend" class="resend-counter">
+          ({{ countdown }}s)
+        </span>
       </button>
     </form>
-  </div>
+  </main>
 </div>

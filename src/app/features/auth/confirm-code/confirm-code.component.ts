@@ -1,24 +1,25 @@
-import { Component, OnDestroy, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Location } from '@angular/common';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Location } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
-import { UppercaseNospaceDirective } from '../../../shared/uppercase-nospace/uppercase-nospace.directive';
+import { UppercaseNospaceDirective } from '../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
 
 @Component({
   selector: 'app-confirm-code',
   standalone: true,
-  imports: [FormsModule, CommonModule, UppercaseNospaceDirective],
+  imports: [CommonModule, FormsModule, UppercaseNospaceDirective],
   templateUrl: './confirm-code.component.html',
-  styleUrl: './confirm-code.component.scss',
+  styleUrls: ['./confirm-code.component.scss'],
 })
 export class ConfirmCodeComponent implements OnInit, OnDestroy {
   code: string = '';
   canResend: boolean = false;
   countdown: number = 45;
-  private interval: any;
-  feedbackMessage: string = '';
-  isError: boolean = false;
+  message: string = '';
+  hasError: boolean = false;
+
+  private countdownInterval: any;
 
   constructor(
     private location: Location,
@@ -35,38 +36,40 @@ export class ConfirmCodeComponent implements OnInit, OnDestroy {
     this.clearCountdown();
   }
 
-  goBack() {
+  goBack(): void {
     this.location.back();
   }
 
-  login() {
-    if (this.code.trim() === '123456') {
-      this.feedbackMessage = 'Código correcto. Puedes continuar.';
-      this.isError = false;
-      // Aquí podrías redirigir o avanzar al siguiente paso
+  onSubmit(): void {
+    const trimmedCode = this.code.trim();
+
+    if (trimmedCode === '123456') {
+      this.message = 'Código correcto. Puedes continuar.';
+      this.hasError = false;
+      // 🚀 Aquí podrías redirigir al siguiente paso
     } else {
-      this.feedbackMessage = 'El código ingresado no es válido.';
-      this.isError = true;
+      this.message = 'El código ingresado no es válido.';
+      this.hasError = true;
     }
 
     setTimeout(() => {
-      this.feedbackMessage = '';
+      this.message = '';
     }, 5000);
   }
 
-  resendCode() {
+  resendCode(): void {
     if (!this.canResend) return;
 
     this.canResend = false;
     this.countdown = 45;
     this.startCountdown();
-    console.log('Código reenviado');
+    console.log('📩 Código reenviado');
   }
 
-  private startCountdown() {
+  private startCountdown(): void {
     this.clearCountdown();
 
-    this.interval = setInterval(() => {
+    this.countdownInterval = setInterval(() => {
       this.countdown--;
 
       if (this.countdown <= 0) {
@@ -76,10 +79,10 @@ export class ConfirmCodeComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  private clearCountdown() {
-    if (this.interval) {
-      clearInterval(this.interval);
-      this.interval = null;
+  private clearCountdown(): void {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
     }
   }
 }

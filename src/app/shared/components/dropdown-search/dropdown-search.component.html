@@ -1,0 +1,28 @@
+<div
+  class="dropdown"
+  [class.disabled]="disabled"
+  appClickOutside
+  (appClickOutside)="close()"
+>
+  <div class="selected" (click)="toggleDropdown()">
+    {{ selectedValue || placeholder }}
+  </div>
+  <div class="dropdown-list" *ngIf="showDropdown()">
+    <input
+      type="text"
+      [ngModel]="searchTerm()"
+      (ngModelChange)="searchTerm.set($event)"
+      placeholder="Buscar..."
+      title="Buscar opciones"
+      aria-label="Buscar opción en lista"
+      appUppercase
+    />
+    <div
+      class="option"
+      *ngFor="let option of filteredOptions"
+      (click)="onSelect(option)"
+    >
+      {{ option }}
+    </div>
+  </div>
+</div>

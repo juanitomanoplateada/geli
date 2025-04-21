@@ -14,7 +14,7 @@
     >
 
     <div
-      *ngIf="hasRole(['PERSONAL_AUTORIZADO'])"
+      *ngIf="hasRole(['AUTHORIZED-USER'])"
       class="dashboard-group"
       [class.active]="isActive('/dashboard/sessions')"
     >
@@ -39,7 +39,7 @@
     </div>
 
     <div
-      *ngIf="hasRole(['ANALISTA_CALIDAD'])"
+      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
       class="dashboard-group"
       [class.active]="isActive('/dashboard/users')"
     >
@@ -62,7 +62,7 @@
     </div>
 
     <div
-      *ngIf="hasRole(['ANALISTA_CALIDAD'])"
+      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
       class="dashboard-group"
       [class.active]="isActive('/dashboard/laboratories')"
     >
@@ -92,7 +92,7 @@
     </div>
 
     <div
-      *ngIf="hasRole(['ANALISTA_CALIDAD'])"
+      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
       class="dashboard-group"
       [class.active]="isActive('/dashboard/equipments-patterns')"
     >
@@ -129,7 +129,7 @@
     </div>
 
     <a
-      *ngIf="hasRole(['ANALISTA_CALIDAD'])"
+      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
       routerLink="/dashboard/sessions/session-history"
       class="dashboard-link"
       [class.active]="isExactActive('/dashboard/sessions/session-history')"
@@ -137,7 +137,7 @@
     >
 
     <div
-      *ngIf="hasRole(['ANALISTA_CALIDAD'])"
+      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
       class="dashboard-group"
       [class.active]="isActive('/dashboard/reports')"
     >
@@ -182,19 +182,14 @@
       [class.active]="isExactActive('/dashboard/user-profile')"
       >Perfil de Usuario</a
     >
-    <a
-      routerLink="/auth/login"
-      class="dashboard-link"
-      [class.active]="isExactActive('/auth/login')"
-      >Cerrar Sesión</a
-    >
+    <a (click)="logout()" class="dashboard-link">Cerrar Sesión</a>
   </nav>
 
   <main class="dashboard-main">
     <header class="dashboard-header">
-      <span class="dashboard-user-info"
-        >RAMIREZ RAMIREZ RAMIREZ RAMIREZ - {{ userRole }}</span
-      >
+      <span class="dashboard-user-info">
+        {{ username.toUpperCase() }} - {{ getTranslatedRole() }}
+      </span>
     </header>
 
     <router-outlet></router-outlet>

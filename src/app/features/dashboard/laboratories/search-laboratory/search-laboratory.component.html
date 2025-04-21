@@ -1,4 +1,5 @@
 <div class="search-container">
+  <!-- Búsqueda principal -->
   <div class="search-bar">
     <input
       type="text"
@@ -28,6 +29,7 @@
     </button>
   </div>
 
+  <!-- Filtros avanzados -->
   <div *ngIf="showAdvancedSearch" class="advanced-search">
     <!-- Filtro: Disponibilidad -->
     <div class="filter-group">
@@ -84,11 +86,13 @@
     </button>
   </div>
 
+  <!-- Estado de carga -->
   <div *ngIf="isLoading" class="loading-state">
     <div class="spinner"></div>
     <p>Buscando laboratorios...</p>
   </div>
 
+  <!-- Resultados -->
   <div *ngIf="!isLoading && laboratories.length > 0" class="results-container">
     <h3>Resultados ({{ laboratories.length }})</h3>
     <div class="results-grid">
@@ -104,10 +108,14 @@
         *ngFor="let lab of laboratories; trackBy: trackById"
         class="result-item"
       >
-        <div data-label="Nombre">{{ lab.name }}</div>
-        <div data-label="Descripción">{{ lab.description }}</div>
-        <div data-label="Disponibilidad">{{ lab.availability }}</div>
-        <div data-label="Ubicación">{{ lab.location.name }}</div>
+        <div data-label="Nombre">{{ lab.laboratoryName }}</div>
+        <div data-label="Descripción">{{ lab.laboratoryDescription }}</div>
+        <div data-label="Disponibilidad">
+          {{ lab.laboratoryAvailability ? "Disponible" : "No disponible" }}
+        </div>
+        <div data-label="Ubicación">
+          {{ lab.location?.locationName || "-" }}
+        </div>
         <div data-label="Acciones">
           <button class="search-button" (click)="navigateToEdit(lab.id)">
             Editar
@@ -117,6 +125,7 @@
     </div>
   </div>
 
+  <!-- Sin resultados -->
   <div
     *ngIf="!isLoading && searchQuery && laboratories.length === 0"
     class="no-results"

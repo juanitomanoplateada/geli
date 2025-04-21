@@ -79,57 +79,24 @@
     <!-- Dropdowns de laboratorio y equipo -->
     <div class="filter-group">
       <label>Laboratorio:</label>
-      <div class="dropdown">
-        <div class="selected" (click)="showLabDropdown = !showLabDropdown">
-          {{ filters.lab || "Todos" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showLabDropdown">
-          <input [(ngModel)]="labSearch" placeholder="Buscar laboratorio..." />
-          <div
-            class="option"
-            (click)="filters.lab = ''; showLabDropdown = false"
-          >
-            Todos
-          </div>
-          <div
-            class="option"
-            *ngFor="let lab of filteredLabs"
-            (click)="filters.lab = lab; showLabDropdown = false; onSearch()"
-          >
-            {{ lab }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-filter
+        [options]="availableLabs"
+        [selected]="filters.lab"
+        (selectedChange)="filters.lab = $event; onSearch()"
+        [placeholder]="'Laboratorio'"
+        [allowEmpty]="'Todos'"
+      ></app-dropdown-filter>
     </div>
 
     <div class="filter-group">
       <label>Equipo / Patrón:</label>
-      <div class="dropdown">
-        <div
-          class="selected"
-          (click)="showEquipmentDropdown = !showEquipmentDropdown"
-        >
-          {{ filters.equipment || "Todos" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showEquipmentDropdown">
-          <input [(ngModel)]="equipmentSearch" placeholder="Buscar equipo..." />
-          <div
-            class="option"
-            (click)="filters.equipment = ''; showEquipmentDropdown = false"
-          >
-            Todos
-          </div>
-          <div
-            class="option"
-            *ngFor="let eq of filteredEquipments"
-            (click)="
-              filters.equipment = eq; showEquipmentDropdown = false; onSearch()
-            "
-          >
-            {{ eq }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-filter
+        [options]="availableEquipments"
+        [selected]="filters.equipment"
+        (selectedChange)="filters.equipment = $event; onSearch()"
+        [placeholder]="'Equipo / Patrón'"
+        [allowEmpty]="'Todos'"
+      ></app-dropdown-filter>
     </div>
 
     <!-- Estados -->
@@ -222,36 +189,28 @@
     <!-- Función utilizada -->
     <div class="filter-group">
       <label>Función utilizada:</label>
-      <div class="dropdown">
-        <div
-          class="selected"
-          (click)="showFunctionDropdown = !showFunctionDropdown"
-        >
-          {{ filters.function || "Todas" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showFunctionDropdown">
-          <input [(ngModel)]="functionSearch" placeholder="Buscar función..." />
-          <div
-            class="option"
-            (click)="filters.function = ''; showFunctionDropdown = false"
-          >
-            Todas
-          </div>
-          <div
-            class="option"
-            *ngFor="let func of filteredFunctions"
-            (click)="
-              filters.function = func; showFunctionDropdown = false; onSearch()
-            "
-          >
-            {{ func }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-filter
+        [options]="availableFunctions"
+        [selected]="filters.function"
+        (selectedChange)="filters.function = $event; onSearch()"
+        [placeholder]="'Función'"
+        [allowEmpty]="'Todas'"
+      ></app-dropdown-filter>
     </div>
+    <div class="filter-group">
+      <label>­­</label>
 
-    <button class="clear-filters-btn" (click)="clearFilters()">
-      Limpiar filtros
+      <button class="clear-filters-btn" (click)="clearFilters()">
+        Limpiar filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- 🔽 Ordenamiento por fecha -->
+  <div class="sort-bar">
+    <label>Ordenar por fecha:</label>
+    <button (click)="sortAscending = !sortAscending">
+      {{ sortAscending ? "⬇️ Más antiguo" : "⬇️ Más reciente" }}
     </button>
   </div>
 

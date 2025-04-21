@@ -2,6 +2,20 @@
   <div class="options-container" *ngIf="isExpanded">
     <button
       class="option"
+      (click)="toggleFocusMode()"
+      [title]="
+        focusEnabled
+          ? 'Desactivar enfoque accesible'
+          : 'Activar enfoque accesible'
+      "
+    >
+      <span class="icon">👁️</span>
+      <span class="label">
+        {{ focusEnabled ? "Desactivar Focus" : "Activar Focus" }}
+      </span>
+    </button>
+    <button
+      class="option"
       (click)="increaseFont()"
       title="Aumentar tamaño de texto"
     >

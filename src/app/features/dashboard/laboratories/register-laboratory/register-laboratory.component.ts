@@ -6,7 +6,7 @@ import {
   Validators,
   FormsModule,
 } from '@angular/forms';
-import { UppercaseDirective } from '../../../../shared/uppercase/uppercase.directive';
+import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
 
 @Component({
   selector: 'app-register-laboratory',

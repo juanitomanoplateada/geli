@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../../core/auth/services/auth.service';
+import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
 
 @Component({
   selector: 'app-search-laboratory',
@@ -11,14 +13,18 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./search-laboratory.component.scss'],
 })
 export class SearchLaboratoryComponent implements OnInit {
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    public authService: AuthService,
+    public laboratoryService: LaboratoryService
+  ) {}
 
+  // Estado visual y datos
   searchQuery: string = '';
   showAdvancedSearch: boolean = false;
   isLoading: boolean = false;
 
-  // Ubicación con dropdown independiente
-  availableLocations: string[] = ['Edificio A - Piso 2', 'Edificio B - Piso 1'];
+  availableLocations: string[] = [];
   filteredLocations: string[] = [];
   locationSearchTerm: string = '';
   dropdownOpen: boolean = false;
@@ -30,9 +36,43 @@ export class SearchLaboratoryComponent implements OnInit {
   };
 
   laboratories: any[] = [];
+  allLabs: any[] = [];
 
   ngOnInit(): void {
-    this.filteredLocations = [...this.availableLocations];
+    this.filteredLocations = [];
+    // Puedes comentar esta línea si no deseas login automático:
+    this.loginAndFetchLabs('marcela.admin', '123');
+  }
+
+  loginAndFetchLabs(username: string, password: string): void {
+    this.isLoading = true;
+
+    this.authService.login(username, password).subscribe({
+      next: (res) => {
+        const token = res.access_token;
+
+        this.laboratoryService.getLaboratories(token).subscribe({
+          next: (labs) => {
+            this.allLabs = labs;
+            this.laboratories = labs;
+
+            this.availableLocations = [
+              ...new Set(labs.map((lab) => lab.location.locationName)),
+            ];
+            this.filteredLocations = [...this.availableLocations];
+            this.isLoading = false;
+          },
+          error: (err) => {
+            console.error('❌ Error al obtener laboratorios:', err);
+            this.isLoading = false;
+          },
+        });
+      },
+      error: (err) => {
+        console.error('❌ Error al hacer login:', err);
+        this.isLoading = false;
+      },
+    });
   }
 
   onKeyUp(event: KeyboardEvent): void {
@@ -40,47 +80,28 @@ export class SearchLaboratoryComponent implements OnInit {
   }
 
   performSearch(): void {
-    this.isLoading = true;
+    const query = this.searchQuery.toLowerCase();
+    const { availability, location } = this.filters;
 
-    const allLabs = [
-      {
-        id: 1,
-        name: 'Lab Redes',
-        description: 'Laboratorio de Redes y Comunicaciones',
-        availability: 'Disponible',
-        location: { name: 'Edificio A - Piso 2' },
-      },
-      {
-        id: 2,
-        name: 'Lab Electrónica',
-        description: 'Laboratorio de circuitos',
-        availability: 'No disponible',
-        location: { name: 'Edificio B - Piso 1' },
-      },
-    ];
+    this.laboratories = this.allLabs.filter((lab) => {
+      const matchesQuery =
+        !query ||
+        lab.laboratoryName.toLowerCase().includes(query) ||
+        lab.laboratoryDescription.toLowerCase().includes(query);
 
-    setTimeout(() => {
-      const query = this.searchQuery.toLowerCase();
-      const { availability, location } = this.filters;
+      const matchesAvailability =
+        !availability ||
+        (availability === 'Disponible' && lab.laboratoryAvailability) ||
+        (availability === 'No disponible' && !lab.laboratoryAvailability);
 
-      this.laboratories = allLabs.filter((lab) => {
-        const matchesQuery =
-          !query ||
-          lab.name.toLowerCase().includes(query) ||
-          lab.description.toLowerCase().includes(query);
+      const matchesLocation =
+        !location ||
+        lab.location.locationName
+          .toLowerCase()
+          .includes(location.toLowerCase());
 
-        const matchesAvailability =
-          !availability || lab.availability === availability;
-
-        const matchesLocation =
-          !location ||
-          lab.location.name.toLowerCase().includes(location.toLowerCase());
-
-        return matchesQuery && matchesAvailability && matchesLocation;
-      });
-
-      this.isLoading = false;
-    }, 400);
+      return matchesQuery && matchesAvailability && matchesLocation;
+    });
   }
 
   toggleDropdown(): void {
@@ -113,7 +134,7 @@ export class SearchLaboratoryComponent implements OnInit {
     this.selectedLocationLabel = 'Todas';
     this.locationSearchTerm = '';
     this.filteredLocations = [...this.availableLocations];
-    this.laboratories = [];
+    this.laboratories = [...this.allLabs];
   }
 
   trackById(index: number, item: any): number {

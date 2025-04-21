@@ -1,13 +1,15 @@
 import { Component } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { UppercaseNospaceDirective } from '../../../shared/uppercase-nospace/uppercase-nospace.directive';
+import { AuthService } from '../../../core/auth/services/auth.service';
+import { decodeToken } from '../../../core/auth/services/token.utils';
+import { UppercaseNospaceDirective } from '../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, RouterLink, CommonModule, UppercaseNospaceDirective],
+  imports: [CommonModule, FormsModule, RouterLink, UppercaseNospaceDirective],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
@@ -15,27 +17,49 @@ export class LoginComponent {
   username: string = '';
   password: string = '';
   isPasswordVisible: boolean = false;
-  loginMessage: string = '';
-  loginError: boolean = false;
 
-  togglePasswordVisibility() {
+  message: string = '';
+  hasError: boolean = false;
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  togglePasswordVisibility(): void {
     this.isPasswordVisible = !this.isPasswordVisible;
   }
 
-  onLogin() {
-    // Simulación de autenticación (deberías reemplazar esto con un servicio real)
-    if (this.username === 'ADMIN' && this.password === '1234') {
-      this.loginMessage = 'Inicio de sesión exitoso';
-      this.loginError = false;
-      // Redirigir o continuar flujo
-    } else {
-      this.loginMessage = 'Usuario o contraseña incorrectos';
-      this.loginError = true;
-    }
+  onLogin(): void {
+    const cleanUsername = this.username.trim().toLowerCase();
 
-    // Opcional: borrar el mensaje luego de unos segundos
-    setTimeout(() => {
-      this.loginMessage = '';
-    }, 5000);
+    this.authService.login(cleanUsername, this.password).subscribe({
+      next: (response) => {
+        const token = response.access_token;
+        const decoded = decodeToken(token);
+
+        const user = decoded?.preferred_username || '';
+        const roles = decoded?.realm_access?.roles || [];
+
+        // 🔐 Guardar sesión
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('username', user);
+        localStorage.setItem('roles', JSON.stringify(roles));
+        localStorage.setItem('is_authenticated', 'true');
+
+        this.message = 'Inicio de sesión exitoso';
+        this.hasError = false;
+
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']);
+        }, 1000);
+      },
+      error: (err) => {
+        console.error('Login error:', err);
+        this.message = 'Usuario o contraseña incorrectos';
+        this.hasError = true;
+
+        setTimeout(() => {
+          this.message = '';
+        }, 5000);
+      },
+    });
   }
 }

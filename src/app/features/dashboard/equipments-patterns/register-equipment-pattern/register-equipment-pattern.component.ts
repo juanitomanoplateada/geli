@@ -6,8 +6,8 @@ import {
   FormsModule,
 } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { UppercaseNospaceDirective } from '../../../../shared/uppercase-nospace/uppercase-nospace.directive';
-import { UppercaseDirective } from '../../../../shared/uppercase/uppercase.directive';
+import { UppercaseNospaceDirective } from '../../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
+import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
 
 interface LabOption {
   id: string;

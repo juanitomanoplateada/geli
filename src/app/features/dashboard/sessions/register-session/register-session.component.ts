@@ -1,11 +1,22 @@
 import { Component, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DropdownSearchComponent } from '../../../../shared/components/dropdown-search/dropdown-search.component';
+import { TagSelectorComponent } from '../../../../shared/components/tag-selector/tag-selector.component';
+import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
+import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
 
 @Component({
   selector: 'app-register-session',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ConfirmModalComponent,
+    DropdownSearchComponent,
+    TagSelectorComponent,
+    IntegerOnlyDirective,
+  ],
   templateUrl: './register-session.component.html',
   styleUrls: ['./register-session.component.scss'],
 })
@@ -13,15 +24,11 @@ export class RegisterSessionComponent implements AfterViewInit {
   private isBrowser = false;
 
   sessionActive = false;
-
   selectedLab: string | null = null;
   selectedEquipment: string | null = null;
 
-  showLabDropdown = false;
-  showEquipmentDropdown = false;
-
-  labSearch = '';
-  equipmentSearch = '';
+  showConfirmationModal = false;
+  showSummaryModal = false;
 
   laboratories = [
     {
@@ -34,13 +41,19 @@ export class RegisterSessionComponent implements AfterViewInit {
     },
   ];
 
-  showConfirmationModal = false;
+  get labNames(): string[] {
+    return this.laboratories.map((lab) => lab.name);
+  }
+
+  get equipmentOptions(): string[] {
+    const selected = this.laboratories.find((l) => l.name === this.selectedLab);
+    return selected ? selected.equipments : [];
+  }
 
   checkIn = { date: '', time: '', user: 'RAAA' };
   checkOut = { sampleCount: null, functions: '', remarks: '' };
 
   availabilityStatus = '';
-  showCheckoutFields = false;
   checkInTime: Date | null = null;
   usageDuration = '';
 
@@ -54,8 +67,6 @@ export class RegisterSessionComponent implements AfterViewInit {
   ];
 
   selectedFunctions: string[] = [];
-  showFunctionDropdown = false;
-  functionSearch = '';
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -84,52 +95,13 @@ export class RegisterSessionComponent implements AfterViewInit {
     this.showConfirmationModal = false;
   }
 
-  toggleLabDropdown() {
-    this.showLabDropdown = !this.showLabDropdown;
-    this.labSearch = '';
-  }
-
-  toggleEquipmentDropdown() {
-    this.showEquipmentDropdown = !this.showEquipmentDropdown;
-    this.equipmentSearch = '';
-  }
-
   selectLab(lab: { name: string }) {
     this.selectedLab = lab.name;
     this.selectedEquipment = null;
-    this.showLabDropdown = false;
   }
 
   selectEquipment(equipment: string) {
     this.selectedEquipment = equipment;
-    this.showEquipmentDropdown = false;
-  }
-
-  get filteredLabs() {
-    return this.laboratories.filter((lab) =>
-      lab.name.toLowerCase().includes(this.labSearch.toLowerCase())
-    );
-  }
-
-  get filteredEquipments() {
-    const lab = this.laboratories.find((l) => l.name === this.selectedLab);
-    if (!lab) return [];
-    return lab.equipments.filter((e) =>
-      e.toLowerCase().includes(this.equipmentSearch.toLowerCase())
-    );
-  }
-
-  confirmSessionStart() {
-    const confirmStart = confirm(
-      '¿Desea iniciar la sesión con el equipo/patrón seleccionado?'
-    );
-    if (confirmStart) {
-      const now = new Date();
-      this.checkIn.date = now.toLocaleDateString();
-      this.checkIn.time = now.toLocaleTimeString();
-      this.checkInTime = now;
-      this.sessionActive = true;
-    }
   }
 
   updateUsageTime() {
@@ -144,7 +116,6 @@ export class RegisterSessionComponent implements AfterViewInit {
   }
 
   onAvailabilityChange() {
-    this.showCheckoutFields = this.availabilityStatus === 'Yes';
     this.updateUsageTime();
   }
 
@@ -158,29 +129,6 @@ export class RegisterSessionComponent implements AfterViewInit {
     return hasSamples && hasFunctions && hasRemarks;
   }
 
-  get filteredFunctions(): string[] {
-    return this.availableFunctions.filter(
-      (func) =>
-        func.toLowerCase().includes(this.functionSearch.toLowerCase()) &&
-        !this.selectedFunctions.includes(func)
-    );
-  }
-
-  toggleFunctionDropdown() {
-    this.showFunctionDropdown = !this.showFunctionDropdown;
-    this.functionSearch = '';
-  }
-
-  selectFunction(func: string) {
-    this.selectedFunctions.push(func);
-    this.functionSearch = '';
-    this.showFunctionDropdown = false;
-  }
-
-  removeFunction(func: string) {
-    this.selectedFunctions = this.selectedFunctions.filter((f) => f !== func);
-  }
-
   autoResizeTextarea(event: Event): void {
     const textarea = event.target as HTMLTextAreaElement;
     textarea.style.height = 'auto';
@@ -189,6 +137,15 @@ export class RegisterSessionComponent implements AfterViewInit {
 
   finishSession() {
     this.updateUsageTime();
+    this.showSummaryModal = true;
+  }
+
+  cancelFinishSession() {
+    this.showSummaryModal = false;
+  }
+
+  confirmFinishSession() {
+    this.showSummaryModal = false;
     alert('Sesión finalizada exitosamente.');
     console.log('Entrada:', this.checkIn);
     console.log('Salida:', {

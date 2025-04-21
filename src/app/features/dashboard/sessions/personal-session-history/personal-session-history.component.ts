@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IntegerOnlyDirective } from '../../../../shared/integer-only/integer-only.directive';
-import { UppercaseDirective } from '../../../../shared/uppercase/uppercase.directive';
+import { DropdownFilterComponent } from '../../../../shared/components/dropdown-filter/dropdown-filter.component';
+import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
+import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
 
 interface SessionRecord {
   id: number;
@@ -23,18 +24,23 @@ interface SessionRecord {
 @Component({
   selector: 'app-personal-session-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, IntegerOnlyDirective, UppercaseDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DropdownFilterComponent,
+    IntegerOnlyDirective,
+    UppercaseDirective,
+  ],
   templateUrl: './personal-session-history.component.html',
   styleUrls: ['./personal-session-history.component.scss'],
 })
 export class PersonalSessionHistoryComponent {
-  // Estado general
   searchQuery = '';
   isLoading = false;
   showAdvancedSearch = false;
   selectedSession: SessionRecord | null = null;
+  sortAscending = true;
 
-  // Filtros avanzados
   filters = {
     lab: '',
     equipment: '',
@@ -51,7 +57,6 @@ export class PersonalSessionHistoryComponent {
     function: '',
   };
 
-  // Registros de sesiones
   sessionRecords: SessionRecord[] = [
     {
       id: 1,
@@ -85,15 +90,6 @@ export class PersonalSessionHistoryComponent {
     },
   ];
 
-  // Dropdowns dinámicos
-  showLabDropdown = false;
-  showEquipmentDropdown = false;
-  showFunctionDropdown = false;
-
-  labSearch = '';
-  equipmentSearch = '';
-  functionSearch = '';
-
   availableLabs = ['Laboratorio de DRX', 'Laboratorio de Electrónica'];
   availableEquipments = [
     'Difractómetro PANalytical',
@@ -102,28 +98,8 @@ export class PersonalSessionHistoryComponent {
   ];
   availableFunctions = ['Medición', 'Calibración', 'Alimentación continua'];
 
-  // Filtros con buscador
-  get filteredLabs() {
-    return this.availableLabs.filter((lab) =>
-      lab.toLowerCase().includes(this.labSearch.toLowerCase())
-    );
-  }
-
-  get filteredEquipments() {
-    return this.availableEquipments.filter((eq) =>
-      eq.toLowerCase().includes(this.equipmentSearch.toLowerCase())
-    );
-  }
-
-  get filteredFunctions() {
-    return this.availableFunctions.filter((f) =>
-      f.toLowerCase().includes(this.functionSearch.toLowerCase())
-    );
-  }
-
-  // Aplicar filtros sobre las sesiones
   get filteredSessions(): SessionRecord[] {
-    return this.sessionRecords.filter((session) => {
+    const filtered = this.sessionRecords.filter((session) => {
       const matchesQuery =
         session.lab.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         session.equipment
@@ -194,30 +170,31 @@ export class PersonalSessionHistoryComponent {
         matchesFunction
       );
     });
+
+    return filtered.sort((a, b) => {
+      return this.sortAscending
+        ? a.date.localeCompare(b.date)
+        : b.date.localeCompare(a.date);
+    });
   }
 
-  // Buscar manualmente o por cambio
   onSearch() {
     this.isLoading = true;
     setTimeout(() => (this.isLoading = false), 300);
   }
 
-  // Buscar con Enter
   onKeyUp(event: KeyboardEvent) {
     if (event.key === 'Enter') this.onSearch();
   }
 
-  // Mostrar/Ocultar filtros
   toggleAdvancedSearch() {
     this.showAdvancedSearch = !this.showAdvancedSearch;
   }
 
-  // Seleccionar sesión para mostrar detalles
   selectSession(session: SessionRecord) {
     this.selectedSession = session;
   }
 
-  // Limpiar todos los filtros y cerrar dropdowns
   clearFilters() {
     this.filters = {
       lab: '',
@@ -234,12 +211,7 @@ export class PersonalSessionHistoryComponent {
       sampleCountMax: null,
       function: '',
     };
-    this.labSearch = '';
-    this.equipmentSearch = '';
-    this.functionSearch = '';
-    this.showLabDropdown = false;
-    this.showEquipmentDropdown = false;
-    this.showFunctionDropdown = false;
+
     this.searchQuery = '';
     this.onSearch();
   }

@@ -5,21 +5,28 @@ import { laboratoriesRoutes } from './laboratories/laboratories.routes';
 import { equipmentsPatternsRoutes } from './equipments-patterns/equipments-patterns.routes';
 import { sessionsRoutes } from './sessions/sessions.routes';
 import { reportsRoutes } from './reports/reports.routes';
-import { UserProfileComponent } from './user-profile/user-profile/user-profile.component';
+import { UserProfileComponent } from './user-profile/user-profile.component';
+import { RoleGuard } from '../../core/auth/guards/role.guard';
 
 export const dashboardRoutes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
   {
     path: 'users',
+    canActivate: [RoleGuard],
+    data: { roles: ['QUALITY-ADMIN-USER'] },
     children: usersRoutes,
   },
   {
     path: 'laboratories',
+    canActivate: [RoleGuard],
+    data: { roles: ['QUALITY-ADMIN-USER'] },
     children: laboratoriesRoutes,
   },
   {
     path: 'equipments-patterns',
+    canActivate: [RoleGuard],
+    data: { roles: ['QUALITY-ADMIN-USER'] },
     children: equipmentsPatternsRoutes,
   },
   {
@@ -28,7 +35,14 @@ export const dashboardRoutes: Routes = [
   },
   {
     path: 'reports',
+    canActivate: [RoleGuard],
+    data: { roles: ['QUALITY-ADMIN-USER'] },
     children: reportsRoutes,
   },
-  { path: 'user-profile', component: UserProfileComponent },
+  {
+    path: 'user-profile',
+    canActivate: [RoleGuard],
+    data: { roles: ['AUTHORIZED-USER', 'QUALITY-ADMIN-USER'] },
+    component: UserProfileComponent,
+  },
 ];

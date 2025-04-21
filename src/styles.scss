@@ -1,28 +1,108 @@
+/* ==================== GLOBAL ROOT VARS ==================== */
 :root {
   --accessibility-fontSize: 16px;
+  --primary-color: #2c3e50;
+  --secondary-color: #3498db;
+  --background-color: #f9fbfc;
+  --text-color: #000000;
+  --border-radius: 4px;
 }
 
+/* ==================== RESET BÁSICO ==================== */
 * {
+  box-sizing: border-box;
   line-height: 1.5;
   margin: 0;
   padding: 0;
 }
 
 html,
-body,
+body {
+  font-size: var(--accessibility-fontSize, 16px);
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==================== TIPOGRAFÍA Y ELEMENTOS ==================== */
 input,
+textarea,
+select,
+button,
 p,
 a,
 span,
-select,
-button,
-textarea {
-  font-size: var(--accessibility-fontSize, 16px);
-  font-family: Arial, Helvetica, sans-serif;
+label,
+option {
+  font-family: inherit;
+  font-size: inherit;
 }
 
-select,
+/* ==================== INTERACTIVOS ==================== */
 button,
+select,
 option {
   cursor: pointer;
+  border: none;
+  background: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ==================== FOCUS ACCESIBLE ==================== */
+body.focus-visible-enabled :focus {
+  outline: 2px dashed var(--secondary-color);
+  outline-offset: 2px;
+}
+
+body:not(.focus-visible-enabled) :focus {
+  outline: none;
+}
+
+/* ==================== SCROLL PERSONALIZADO ==================== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+/* ==================== UTILIDADES COMUNES ==================== */
+.hidden {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
+/* ==================== CLASES PARA ACCESIBILIDAD ==================== */
+.high-contrast {
+  background-color: #000 !important;
+  color: #fff !important;
+
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    background-color: #000 !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+  }
 }

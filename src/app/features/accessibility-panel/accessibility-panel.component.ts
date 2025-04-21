@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 export class AccessibilityPanelComponent {
   isExpanded = false;
   currentFontSize = 16;
+  focusEnabled = false;
 
   @HostBinding('style.fontSize.px') get fontSize() {
     return this.currentFontSize;
@@ -20,9 +21,21 @@ export class AccessibilityPanelComponent {
     this.isExpanded = !this.isExpanded;
   }
 
+  toggleFocusMode() {
+    this.focusEnabled = !this.focusEnabled;
+
+    if (this.focusEnabled) {
+      document.body.classList.add('focus-visible-enabled');
+    } else {
+      document.body.classList.remove('focus-visible-enabled');
+    }
+  }
+
   increaseFont() {
+    if (this.currentFontSize < 24) {
     this.currentFontSize += 2;
     this.applyToDocument('fontSize', `${this.currentFontSize}px`);
+    }
   }
 
   decreaseFont() {
@@ -39,6 +52,5 @@ export class AccessibilityPanelComponent {
 
   private applyToDocument(key: string, value: string) {
     document.documentElement.style.setProperty(`--accessibility-${key}`, value);
-    document.body.classList.toggle(`accessibility-${key}`, value === 'true');
   }
 }

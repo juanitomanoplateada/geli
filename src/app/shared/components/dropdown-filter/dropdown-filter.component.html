@@ -1,0 +1,28 @@
+<div class="dropdown" appClickOutside (appClickOutside)="closeDropdown()">
+  <div class="selected" (click)="toggleDropdown()">
+    {{ selected || allowEmpty || placeholder }}
+  </div>
+
+  <div class="dropdown-list" *ngIf="showDropdown()">
+    <input
+      type="text"
+      [ngModel]="searchTerm()"
+      (ngModelChange)="searchTerm.set($event)"
+      placeholder="Buscar..."
+      title="Buscar en opciones"
+      appUppercase
+    />
+
+    <div class="option" (click)="clearSelection()">
+      {{ allowEmpty || "Todos" }}
+    </div>
+
+    <div
+      class="option"
+      *ngFor="let option of filteredOptions"
+      (click)="select(option)"
+    >
+      {{ option }}
+    </div>
+  </div>
+</div>

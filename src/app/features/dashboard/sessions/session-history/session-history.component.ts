@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IntegerOnlyDirective } from '../../../../shared/integer-only/integer-only.directive';
-import { UppercaseDirective } from '../../../../shared/uppercase/uppercase.directive';
+import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
+import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
 
 interface SessionRecord {
   id: number;

@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-change-password',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './change-password.component.html',
   styleUrls: ['./change-password.component.scss'],
 })
@@ -15,16 +15,16 @@ export class ChangePasswordComponent {
   confirmPassword: string = '';
   isNewPasswordVisible: boolean = false;
   isConfirmPasswordVisible: boolean = false;
-  feedbackMessage: string = '';
-  isError: boolean = false;
+  message: string = '';
+  hasError: boolean = false;
 
   constructor(private location: Location) {}
 
-  goBack() {
+  goBack(): void {
     this.location.back();
   }
 
-  togglePasswordVisibility(field: 'new' | 'confirm') {
+  togglePasswordVisibility(field: 'new' | 'confirm'): void {
     if (field === 'new') {
       this.isNewPasswordVisible = !this.isNewPasswordVisible;
     } else {
@@ -32,52 +32,58 @@ export class ChangePasswordComponent {
     }
   }
 
-  validatePassword() {
-    if (!this.newPassword || !this.confirmPassword) {
-      this.feedbackMessage = '';
-      return;
-    }
+  validatePassword(): void {
+    this.message = '';
+    this.hasError = false;
+
+    if (!this.newPassword || !this.confirmPassword) return;
 
     if (this.newPassword !== this.confirmPassword) {
-      this.feedbackMessage = 'Las contraseñas no coinciden';
-      this.isError = true;
+      this.setError('Las contraseñas no coinciden');
       return;
     }
 
     if (this.newPassword.length < 8) {
-      this.feedbackMessage = 'La contraseña debe tener al menos 8 caracteres';
-      this.isError = true;
+      this.setError('La contraseña debe tener al menos 8 caracteres');
       return;
     }
 
-    const hasNumber = /\d/.test(this.newPassword);
     const hasUpper = /[A-Z]/.test(this.newPassword);
     const hasLower = /[a-z]/.test(this.newPassword);
+    const hasDigit = /\d/.test(this.newPassword);
 
-    if (!hasNumber || !hasUpper || !hasLower) {
-      this.feedbackMessage =
-        'La contraseña debe contener mayúsculas, minúsculas y números';
-      this.isError = true;
+    if (!hasUpper || !hasLower || !hasDigit) {
+      this.setError(
+        'La contraseña debe contener mayúsculas, minúsculas y números'
+      );
       return;
     }
 
-    this.feedbackMessage = 'Contraseña válida y coincidente';
-    this.isError = false;
+    this.message = 'Contraseña válida y coincidente';
+    this.hasError = false;
   }
 
   get formValid(): boolean {
     return (
       this.newPassword.trim().length > 0 &&
       this.confirmPassword.trim().length > 0 &&
-      !this.isError
+      !this.hasError
     );
   }
 
-  onChangePassword() {
+  onChangePassword(): void {
     this.validatePassword();
 
-    if (this.isError) return;
+    if (this.hasError) return;
 
-    console.log('Contraseña cambiada exitosamente');
+    // Aquí se realizaría la petición para cambiar la contraseña
+    console.log('✅ Contraseña cambiada exitosamente');
+    this.message = 'Contraseña cambiada exitosamente';
+    this.hasError = false;
+  }
+
+  private setError(msg: string): void {
+    this.message = msg;
+    this.hasError = true;
   }
 }

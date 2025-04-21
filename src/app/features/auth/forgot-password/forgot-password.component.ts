@@ -1,42 +1,40 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Location } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { UppercaseNospaceDirective } from '../../../shared/uppercase-nospace/uppercase-nospace.directive';
+import { UppercaseNospaceDirective } from '../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [FormsModule, CommonModule, UppercaseNospaceDirective],
+  imports: [CommonModule, FormsModule, UppercaseNospaceDirective],
   templateUrl: './forgot-password.component.html',
-  styleUrl: './forgot-password.component.scss',
+  styleUrls: ['./forgot-password.component.scss'],
 })
 export class ForgotPasswordComponent {
   username: string = '';
-  feedbackMessage: string = '';
-  isError: boolean = false;
+  message: string = '';
+  hasError: boolean = false;
 
   constructor(private location: Location) {}
 
-  goBack() {
+  goBack(): void {
     this.location.back();
   }
 
-  login() {
-    // Simula validación del usuario
-    if (this.username.trim() === 'usuario.existente') {
-      this.feedbackMessage =
-        'Usuario encontrado. Se enviará un código al correo.';
-      this.isError = false;
+  onSubmit(): void {
+    const cleanUsername = this.username.trim();
+
+    if (cleanUsername === 'usuario.existente') {
+      this.message = 'Usuario encontrado. Se enviará un código al correo.';
+      this.hasError = false;
     } else {
-      this.feedbackMessage =
-        'Usuario no encontrado. Verifica y vuelve a intentar.';
-      this.isError = true;
+      this.message = 'Usuario no encontrado. Verifica y vuelve a intentar.';
+      this.hasError = true;
     }
 
-    // Limpia el mensaje después de unos segundos
     setTimeout(() => {
-      this.feedbackMessage = '';
+      this.message = '';
     }, 5000);
   }
 }

@@ -8,8 +8,8 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { UppercaseDirective } from '../../../../shared/uppercase/uppercase.directive';
-import { UppercaseNospaceDirective } from '../../../../shared/uppercase-nospace/uppercase-nospace.directive';
+import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
+import { UppercaseNospaceDirective } from '../../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
 
 @Component({
   selector: 'app-register-user',

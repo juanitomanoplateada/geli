@@ -3,45 +3,21 @@
     <h1>Registrar Uso de Equipo / Patrón</h1>
 
     <div class="dropdown-group">
-      <div class="dropdown" [class.disabled]="sessionActive">
-        <div class="selected" (click)="toggleLabDropdown()">
-          {{ selectedLab || "Seleccione un laboratorio" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showLabDropdown">
-          <input
-            type="text"
-            [(ngModel)]="labSearch"
-            placeholder="Buscar laboratorio..."
-          />
-          <div
-            class="option"
-            *ngFor="let lab of filteredLabs"
-            (click)="selectLab(lab)"
-          >
-            {{ lab.name }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-search
+        [placeholder]="'Seleccione un laboratorio'"
+        [options]="labNames"
+        [selectedValue]="selectedLab"
+        [disabled]="sessionActive"
+        (select)="selectLab({ name: $event })"
+      />
 
-      <div class="dropdown" [class.disabled]="!selectedLab || sessionActive">
-        <div class="selected" (click)="toggleEquipmentDropdown()">
-          {{ selectedEquipment || "Seleccione un equipo / patrón" }}
-        </div>
-        <div class="dropdown-list" *ngIf="showEquipmentDropdown && selectedLab">
-          <input
-            type="text"
-            [(ngModel)]="equipmentSearch"
-            placeholder="Buscar equipo / patrón..."
-          />
-          <div
-            class="option"
-            *ngFor="let equip of filteredEquipments"
-            (click)="selectEquipment(equip)"
-          >
-            {{ equip }}
-          </div>
-        </div>
-      </div>
+      <app-dropdown-search
+        [placeholder]="'Seleccione un equipo / patrón'"
+        [options]="equipmentOptions"
+        [selectedValue]="selectedEquipment"
+        [disabled]="!selectedLab || sessionActive"
+        (select)="selectEquipment($event)"
+      />
 
       <button
         class="start-btn"
@@ -53,35 +29,41 @@
     </div>
   </div>
 
-  <div class="modal-backdrop" *ngIf="showConfirmationModal">
-    <div class="modal-box">
-      <h3>¿Confirmar inicio de sesión?</h3>
-      <p>
-        Se va a registrar el uso del equipo
-        <strong>{{ selectedEquipment }}</strong> en el laboratorio
-        <strong>{{ selectedLab }}</strong
-        >.
-      </p>
-      <div class="modal-actions">
-        <button class="confirm-btn" (click)="confirmStartSession()">
-          Sí, iniciar
-        </button>
-        <button class="cancel-btn" (click)="cancelStartSession()">
-          Cancelar
-        </button>
-      </div>
-    </div>
-  </div>
+  <app-confirm-modal
+    [title]="'¿Confirmar inicio de sesión?'"
+    [show]="showConfirmationModal"
+    (confirm)="confirmStartSession()"
+    (cancel)="cancelStartSession()"
+  >
+    <p>
+      Se va a registrar el uso del equipo
+      <strong>{{ selectedEquipment }}</strong> en el laboratorio
+      <strong>{{ selectedLab }}</strong
+      >.
+    </p>
+  </app-confirm-modal>
 
   <div *ngIf="sessionActive" class="session-body">
     <div class="panel">
       <h2>Entrada</h2>
-      <p><strong>Fecha:</strong> {{ checkIn.date }}</p>
-      <p><strong>Hora:</strong> {{ checkIn.time }}</p>
-      <p><strong>Laboratorio:</strong> {{ selectedLab }}</p>
-      <p><strong>Equipo / Patrón:</strong> {{ selectedEquipment }}</p>
-      <p><strong>Estado - Verificado: </strong> SI</p>
-      <p><strong>Responsable:</strong> {{ checkIn.user }}</p>
+
+      <label>Fecha:<input type="text" [value]="checkIn.date" disabled /></label>
+      <label>Hora:<input type="text" [value]="checkIn.time" disabled /></label>
+      <label
+        >Laboratorio:<input type="text" [value]="selectedLab" disabled
+      /></label>
+      <label
+        >Equipo / Patrón:<input
+          type="text"
+          [value]="selectedEquipment"
+          disabled
+      /></label>
+      <label
+        >Estado - Verificado:<input type="text" value="SI" disabled
+      /></label>
+      <label
+        >Responsable:<input type="text" [value]="checkIn.user" disabled
+      /></label>
     </div>
 
     <div class="panel">
@@ -105,52 +87,32 @@
           observaciones.
         </div>
 
-        <label>
-          Tiempo de uso:
-          <input type="text" [value]="usageDuration" readonly />
-        </label>
+        <label
+          >Tiempo de uso:<input type="text" [value]="usageDuration" readonly
+        /></label>
 
-        <label>
-          Cantidad de muestras:
-          <input type="number" [(ngModel)]="checkOut.sampleCount" />
+        <label
+          >Cantidad de muestras:
+          <input
+            type="number"
+            [(ngModel)]="checkOut.sampleCount"
+            appIntegerOnly
+          />
         </label>
 
         <label>Funciones utilizadas:</label>
-        <div class="functions-wrapper">
-          <div class="dropdown">
-            <div class="selected" (click)="toggleFunctionDropdown()">
-              Seleccionar funciones
-            </div>
-            <div class="dropdown-list" *ngIf="showFunctionDropdown">
-              <input
-                type="text"
-                [(ngModel)]="functionSearch"
-                placeholder="Buscar..."
-              />
-              <div
-                class="option"
-                *ngFor="let func of filteredFunctions"
-                (click)="selectFunction(func)"
-              >
-                {{ func }}
-              </div>
-            </div>
-          </div>
-
-          <div class="tags">
-            <span class="tag" *ngFor="let func of selectedFunctions">
-              {{ func }}
-              <button (click)="removeFunction(func)">×</button>
-            </span>
-          </div>
-        </div>
+        <app-tag-selector
+          [availableOptions]="availableFunctions"
+          [selected]="selectedFunctions"
+          (selectedChange)="selectedFunctions = $event"
+          [placeholder]="'Buscar funciones...'"
+        ></app-tag-selector>
 
         <label>
           Observaciones:
           <textarea
             [(ngModel)]="checkOut.remarks"
             (input)="autoResizeTextarea($event)"
-            #remarksArea
           ></textarea>
         </label>
       </ng-container>
@@ -162,6 +124,45 @@
       >
         Finalizar Sesión
       </button>
+
+      <app-confirm-modal
+        [title]="'¿Finalizar sesión?'"
+        [show]="showSummaryModal"
+        [confirmLabel]="'Finalizar'"
+        (confirm)="confirmFinishSession()"
+        (cancel)="cancelFinishSession()"
+      >
+        <div class="summary-section">
+          <h4>⏱ Detalles de uso</h4>
+          <p><strong>Duración:</strong> {{ usageDuration }}</p>
+          <p><strong>Fecha:</strong> {{ checkIn.date }}</p>
+          <p><strong>Hora de inicio:</strong> {{ checkIn.time }}</p>
+        </div>
+
+        <div class="summary-section">
+          <h4>🔬 Equipo utilizado</h4>
+          <p><strong>Laboratorio:</strong> {{ selectedLab }}</p>
+          <p><strong>Equipo / Patrón:</strong> {{ selectedEquipment }}</p>
+        </div>
+
+        <div class="summary-section">
+          <h4>📊 Datos de salida</h4>
+          <p>
+            <strong>Estado - Para uso:</strong>
+            {{ availabilityStatus === "Yes" ? "SI" : "NO" }}
+          </p>
+          <p>
+            <strong>Cantidad de muestras:</strong> {{ checkOut.sampleCount }}
+          </p>
+          <p><strong>Funciones utilizadas:</strong></p>
+          <ul>
+            <li *ngFor="let f of selectedFunctions">✔️ {{ f }}</li>
+          </ul>
+          <p>
+            <strong>Observaciones:</strong> {{ checkOut.remarks || "Ninguna" }}
+          </p>
+        </div>
+      </app-confirm-modal>
     </div>
   </div>
 </div>
