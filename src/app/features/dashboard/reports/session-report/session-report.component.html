@@ -11,6 +11,29 @@
 
   <!-- Filtros -->
   <div class="summary-panel filter-panel">
+    <!-- Fila 2 - Dropdown laboratorio -->
+    <label>
+      Laboratorio:
+      <app-dropdown-filter
+        [options]="labOptions"
+        [selected]="filters.lab"
+        (selectedChange)="onLabChange($event)"
+        placeholder="Seleccione laboratorio"
+        allowEmpty="Todos"
+      />
+    </label>
+
+    <!-- Dropdown equipo -->
+    <label>
+      Equipo / Patrón:
+      <app-dropdown-filter
+        [options]="equipmentOptions"
+        [selected]="filters.equipment"
+        (selectedChange)="onEquipmentChange($event)"
+        placeholder="Seleccione equipo"
+        allowEmpty="Todos"
+      />
+    </label>
     <!-- Fila 1 -->
     <label>
       Fecha desde:
@@ -52,30 +75,6 @@
       />
     </label>
 
-    <!-- Fila 2 - Dropdown laboratorio -->
-    <label>
-      Laboratorio:
-      <app-dropdown-filter
-        [options]="labOptions"
-        [selected]="filters.lab"
-        (selectedChange)="onLabChange($event)"
-        placeholder="Seleccione laboratorio"
-        allowEmpty="Todos"
-      />
-    </label>
-
-    <!-- Dropdown equipo -->
-    <label>
-      Equipo / Patrón:
-      <app-dropdown-filter
-        [options]="equipmentOptions"
-        [selected]="filters.equipment"
-        (selectedChange)="onEquipmentChange($event)"
-        placeholder="Seleccione equipo"
-        allowEmpty="Todos"
-      />
-    </label>
-
     <!-- Dropdown responsable -->
     <label>
       Responsable:
@@ -106,6 +105,18 @@
         <option value="Disponible">Disponible</option>
         <option value="No disponible">No disponible</option>
       </select>
+    </label>
+
+    <!-- Función utilizada -->
+    <label>
+      Función utilizada:
+      <app-dropdown-filter
+        [options]="filteredFunctions"
+        [selected]="filters.function"
+        (selectedChange)="onFunctionChange($event)"
+        placeholder="Seleccione función"
+        allowEmpty="Todas"
+      />
     </label>
 
     <!-- Tiempo de uso -->
@@ -154,17 +165,7 @@
       />
     </label>
 
-    <!-- Función utilizada -->
-    <label>
-      Función utilizada:
-      <app-dropdown-filter
-        [options]="filteredFunctions"
-        [selected]="filters.function"
-        (selectedChange)="onFunctionChange($event)"
-        placeholder="Seleccione función"
-        allowEmpty="Todas"
-      />
-    </label>
+
 
     <!-- Botones -->
     <button (click)="resetFilters()">Limpiar Filtros</button>
@@ -193,13 +194,13 @@
             <th>Equipo</th>
             <th>Fecha</th>
             <th>Hora</th>
-            <th>Verificado</th>
             <th>Responsable</th>
             <th>Correo</th>
+            <th>Verificado</th>
             <th>Estado para uso</th>
-            <th>Minutos</th>
-            <th>Muestras</th>
             <th>Funciones</th>
+            <th>Minutos de uso</th>
+            <th>Muestras</th>
             <th>Observaciones</th>
           </tr>
         </thead>
@@ -210,13 +211,13 @@
             <td data-label="Equipo">{{ s.equipment }}</td>
             <td data-label="Fecha">{{ s.date }}</td>
             <td data-label="Hora">{{ s.time }}</td>
-            <td data-label="Verificado">{{ s.verifiedStatus }}</td>
             <td data-label="Responsable">{{ s.responsible }}</td>
             <td data-label="Correo">{{ s.email }}</td>
-            <td data-label="Estado">{{ s.usageStatus }}</td>
-            <td data-label="Minutos">{{ s.usageDuration }}</td>
-            <td data-label="Muestras">{{ s.sampleCount }}</td>
+            <td data-label="Verificado">{{ s.verifiedStatus }}</td>
+            <td data-label="Estado para uso">{{ s.usageStatus }}</td>
             <td data-label="Funciones">{{ s.functionsUsed?.join(", ") }}</td>
+            <td data-label="Minutos de uso">{{ s.usageDuration }}</td>
+            <td data-label="Muestras">{{ s.sampleCount }}</td>
             <td data-label="Observaciones">{{ s.observations }}</td>
           </tr>
         </tbody>
@@ -231,42 +232,6 @@
     <div class="chart-tabs">
       <div class="tab-buttons">
         <button
-          [class.active]="activeTab === 'date'"
-          (click)="activeTab = 'date'"
-        >
-          Fecha
-        </button>
-        <button
-          [class.active]="activeTab === 'time'"
-          (click)="activeTab = 'time'"
-        >
-          Hora
-        </button>
-        <button
-          [class.active]="activeTab === 'verified'"
-          (click)="activeTab = 'verified'"
-        >
-          Verificado
-        </button>
-        <button
-          [class.active]="activeTab === 'usage'"
-          (click)="activeTab = 'usage'"
-        >
-          Tiempo de Uso
-        </button>
-        <button
-          [class.active]="activeTab === 'samples'"
-          (click)="activeTab = 'samples'"
-        >
-          Muestras
-        </button>
-        <button
-          [class.active]="activeTab === 'functions'"
-          (click)="activeTab = 'functions'"
-        >
-          Funciones Usadas
-        </button>
-        <button
           [class.active]="activeTab === 'lab'"
           (click)="activeTab = 'lab'"
         >
@@ -279,16 +244,52 @@
           Equipo
         </button>
         <button
-          [class.active]="activeTab === 'usageStatus'"
-          (click)="activeTab = 'usageStatus'"
+          [class.active]="activeTab === 'date'"
+          (click)="activeTab = 'date'"
         >
-          Estado para uso
+          Fecha
+        </button>
+        <button
+          [class.active]="activeTab === 'time'"
+          (click)="activeTab = 'time'"
+        >
+          Hora
         </button>
         <button
           [class.active]="activeTab === 'responsible'"
           (click)="activeTab = 'responsible'"
         >
           Responsable
+        </button>
+        <button
+          [class.active]="activeTab === 'verified'"
+          (click)="activeTab = 'verified'"
+        >
+          Verificado
+        </button>
+        <button
+          [class.active]="activeTab === 'usageStatus'"
+          (click)="activeTab = 'usageStatus'"
+        >
+          Estado para uso
+        </button>
+        <button
+          [class.active]="activeTab === 'functions'"
+          (click)="activeTab = 'functions'"
+        >
+          Funciones Usadas
+        </button>
+        <button
+          [class.active]="activeTab === 'usage'"
+          (click)="activeTab = 'usage'"
+        >
+          Tiempo de Uso
+        </button>
+        <button
+          [class.active]="activeTab === 'samples'"
+          (click)="activeTab = 'samples'"
+        >
+          Muestras
         </button>
       </div>
 

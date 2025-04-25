@@ -1,17 +1,39 @@
-import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
-import { UserSessionService } from '../services/user-session.service';
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  Router,
+  RouterStateSnapshot,
+} from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
-  constructor(private session: UserSessionService, private router: Router) {}
+  constructor(
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
-  canActivate(): boolean {
-    if (this.session.isAuthenticated()) {
-      return true;
-    } else {
-      this.router.navigate(['/auth/login']);
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): boolean {
+    if (!isPlatformBrowser(this.platformId)) {
       return false;
     }
+
+    const accessToken = localStorage.getItem('auth_token');
+    const tempToken = localStorage.getItem('temp_token');
+
+    const isRecoveryFlow =
+      state.url === '/auth/confirm-code' ||
+      state.url === '/auth/change-password';
+
+    if (accessToken || (isRecoveryFlow && tempToken)) {
+      return true;
+    }
+
+    this.router.navigate(['/auth/login']);
+    return false;
   }
 }

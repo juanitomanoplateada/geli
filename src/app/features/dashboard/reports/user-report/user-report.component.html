@@ -14,21 +14,21 @@
     <h3 class="section-title full-width">🔎 Filtros de Búsqueda</h3>
 
     <label>
-      Estado:
-      <select [(ngModel)]="selectedStatus" (change)="filterUsers()">
-        <option value="">Todos</option>
-        <option *ngFor="let status of statusOptions" [value]="status">
-          {{ status }}
-        </option>
-      </select>
-    </label>
-
-    <label>
       Rol:
       <select [(ngModel)]="selectedRole" (change)="filterUsers()">
         <option value="">Todos</option>
         <option *ngFor="let role of roleOptions" [value]="role">
           {{ role }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      Estado:
+      <select [(ngModel)]="selectedStatus" (change)="filterUsers()">
+        <option value="">Todos</option>
+        <option *ngFor="let status of statusOptions" [value]="status">
+          {{ status }}
         </option>
       </select>
     </label>
@@ -123,11 +123,11 @@
               <th>ID</th>
               <th>Nombre</th>
               <th>Identificación</th>
-              <th>Estado</th>
               <th>Rol</th>
+              <th>Estado</th>
               <th>Creación</th>
-              <th>Modificación</th>
               <th>Asignación</th>
+              <th>Modificación</th>
             </tr>
           </thead>
           <tbody>
@@ -135,16 +135,16 @@
               <td data-label="ID">{{ user.id }}</td>
               <td data-label="Nombre">{{ user.name }}</td>
               <td data-label="Identificación">{{ user.idNumber }}</td>
-              <td data-label="Estado">{{ user.status }}</td>
               <td data-label="Rol">{{ user.role }}</td>
+              <td data-label="Estado">{{ user.status }}</td>
               <td data-label="Creación">
                 {{ user.creationDate | date : "dd/MM/yyyy" }}
               </td>
-              <td data-label="Modificación">
-                {{ user.modificationDate | date : "dd/MM/yyyy" }}
-              </td>
               <td data-label="Asignación">
                 {{ user.assignmentDate | date : "dd/MM/yyyy" }}
+              </td>
+              <td data-label="Modificación">
+                {{ user.modificationDate | date : "dd/MM/yyyy" }}
               </td>
             </tr>
           </tbody>
@@ -158,16 +158,16 @@
         <h3 class="section-title">📈 Visualizaciones Gráficas</h3>
         <div class="tab-buttons">
           <button
-            [class.active]="activeTab === 'status'"
-            (click)="activeTab = 'status'"
-          >
-            Estado
-          </button>
-          <button
             [class.active]="activeTab === 'role'"
             (click)="activeTab = 'role'"
           >
             Rol
+          </button>
+          <button
+            [class.active]="activeTab === 'status'"
+            (click)="activeTab = 'status'"
+          >
+            Estado
           </button>
           <button
             [class.active]="activeTab === 'creation'"
@@ -176,16 +176,16 @@
             Creación
           </button>
           <button
-            [class.active]="activeTab === 'modification'"
-            (click)="activeTab = 'modification'"
-          >
-            Modificación
-          </button>
-          <button
             [class.active]="activeTab === 'assignment'"
             (click)="activeTab = 'assignment'"
           >
             Asignación
+          </button>
+          <button
+            [class.active]="activeTab === 'modification'"
+            (click)="activeTab = 'modification'"
+          >
+            Modificación
           </button>
         </div>
 

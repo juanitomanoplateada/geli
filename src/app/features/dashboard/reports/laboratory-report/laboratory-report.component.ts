@@ -26,7 +26,7 @@ import { DropdownFilterComponent } from '../../../../shared/components/dropdown-
   styleUrls: ['./laboratory-report.component.scss'],
 })
 export class LaboratoryReportComponent implements OnInit {
-  activeTab: string = 'availability';
+  activeTab: string = 'location';
   isBrowser = false;
 
   @ViewChild('availabilityChartCanvas')
@@ -166,55 +166,55 @@ export class LaboratoryReportComponent implements OnInit {
       : 0;
   }
 
+  private mapLabsForExport(): any[] {
+    return this.filteredLaboratories.map((lab) => ({
+      ID: lab.id,
+      Nombre: lab.name,
+      Ubicación: `${lab.location.building} - Piso ${lab.location.floor}`,
+      Descripción: lab.description,
+      Disponibilidad: lab.availability,
+      'Cantidad de Equipos': lab.equipment.length,
+    }));
+  }
+
   exportToExcel(): void {
     const fileName = this.generateFileName('xlsx');
-    const worksheet = XLSX.utils.json_to_sheet(
-      this.filteredLaboratories.map((lab) => ({
-        ID: lab.id,
-        Nombre: lab.name,
-        Descripción: lab.description,
-        Disponibilidad: lab.availability,
-        Ubicación: `${lab.location.building} - Piso ${lab.location.floor}`,
-        'Cantidad de Equipos': lab.equipment.length,
-      }))
-    );
+    const worksheet = XLSX.utils.json_to_sheet(this.mapLabsForExport());
     const workbook = XLSX.utils.book_new();
+
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Laboratorios');
     XLSX.writeFile(workbook, fileName);
   }
 
   exportToCSV(): void {
     const fileName = this.generateFileName('csv');
-    const worksheet = XLSX.utils.json_to_sheet(
-      this.filteredLaboratories.map((lab) => ({
-        ID: lab.id,
-        Nombre: lab.name,
-        Descripción: lab.description,
-        Disponibilidad: lab.availability,
-        Ubicación: `${lab.location.building} - Piso ${lab.location.floor}`,
-        'Cantidad de Equipos': lab.equipment.length,
-      }))
-    );
+    const worksheet = XLSX.utils.json_to_sheet(this.mapLabsForExport());
     const csv = XLSX.utils.sheet_to_csv(worksheet);
-    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), fileName);
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, fileName);
   }
 
   async exportToPDF(): Promise<void> {
     const doc = new jsPDF('p', 'mm', 'a4');
-    const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 15;
+    const pageWidth = doc.internal.pageSize.getWidth();
     let y = margin;
 
+    // Título principal
     doc.setFontSize(18);
     doc.text('Reporte de Laboratorios', pageWidth / 2, y, { align: 'center' });
 
+    // Fecha y filtros
     y += 10;
     doc.setFontSize(10);
     doc.text(
       `Generado: ${new Date().toLocaleString()}`,
       pageWidth - margin,
       y,
-      { align: 'right' }
+      {
+        align: 'right',
+      }
     );
 
     y += 15;
@@ -234,23 +234,20 @@ export class LaboratoryReportComponent implements OnInit {
       y += 6;
     });
 
+    // Estadísticas
     y += 10;
     doc.text('Resumen:', margin, y);
-    y += 8;
-    doc.text(
+    const stats = [
       `• Disponible: ${this.getChartValue(this.availabilityChart, 0)}`,
-      margin,
-      y
-    );
-    y += 6;
-    doc.text(
       `• Ocupado: ${this.getChartValue(this.availabilityChart, 1)}`,
-      margin,
-      y
-    );
-    y += 6;
-    doc.text(`• Total: ${this.filteredLaboratories.length}`, margin, y);
+      `• Total: ${this.filteredLaboratories.length}`,
+    ];
+    stats.forEach((s) => {
+      y += 6;
+      doc.text(s, margin, y);
+    });
 
+    // Tabla
     y += 10;
     doc.text('Lista de Laboratorios:', margin, y);
     y += 5;
@@ -261,24 +258,23 @@ export class LaboratoryReportComponent implements OnInit {
         [
           'ID',
           'Nombre',
+          'Ubicación',
           'Descripción',
           'Disponibilidad',
-          'Ubicación',
           'Equipos',
         ],
       ],
-      body: this.filteredLaboratories.map((lab) => [
-        lab.id.toString(),
-        lab.name,
-        lab.description,
-        lab.availability,
-        `${lab.location.building} - Piso ${lab.location.floor}`,
-        lab.equipment.length.toString(),
-      ]),
+      body: this.mapLabsForExport().map((lab) =>
+        Object.values(lab).map((v) => String(v))
+      ),
       margin: { left: margin },
       styles: { fontSize: 8, cellPadding: 2 },
+      didDrawPage: (data) => {
+        if (data?.cursor?.y) y = data.cursor.y + 10;
+      },
     });
 
+    // Gráficas
     const chartRefs: {
       data: ChartData;
       type: 'bar' | 'line' | 'pie';
@@ -286,35 +282,29 @@ export class LaboratoryReportComponent implements OnInit {
     }[] = [
       {
         data: this.availabilityChart,
-        type: 'pie' as const,
+        type: 'pie',
         title: 'Distribución por Disponibilidad',
       },
       {
         data: this.equipmentChart,
-        type: 'bar' as const,
+        type: 'bar',
         title: 'Cantidad de Equipos por Laboratorio',
       },
       {
         data: this.locationChart,
-        type: 'pie' as const,
+        type: 'pie',
         title: 'Distribución por Ubicación',
       },
     ];
 
     for (const chart of chartRefs) {
-      const chartImg = await this.renderHighResChart(chart.data, chart.type);
+      const img = await this.renderHighResChart(chart.data, chart.type);
       doc.addPage();
       doc.setFontSize(14);
       doc.text(chart.title, margin, margin);
-      doc.addImage(
-        chartImg,
-        'PNG',
-        margin,
-        margin + 5,
-        pageWidth - margin * 2,
-        110
-      );
+      doc.addImage(img, 'PNG', margin, margin + 5, pageWidth - margin * 2, 110);
 
+      // Leyenda de datos
       const labels = chart.data.labels ?? [];
       const values = chart.data.datasets?.[0]?.data ?? [];
       let yCursor = margin + 120;

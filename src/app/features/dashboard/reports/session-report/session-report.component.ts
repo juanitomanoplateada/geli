@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChartData } from 'chart.js';
+import { Chart, ChartData } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -345,62 +345,248 @@ export class SessionReportComponent implements OnInit {
     };
   }
 
-  exportToExcel() {
-    const worksheet = XLSX.utils.json_to_sheet(this.filteredSessions);
+  generateFileName(extension: string): string {
+    const now = new Date();
+    const datePart = now.toISOString().slice(0, 10);
+    const timePart = `${now.getHours()}-${now.getMinutes()}`;
+    return `reporte_sesiones_${datePart}_${timePart}.${extension}`;
+  }
+
+  mapSessionsForExport(): any[] {
+    return this.filteredSessions.map((s) => ({
+      ID: s.id,
+      Laboratorio: s.lab,
+      Equipo: s.equipment,
+      Fecha: s.date,
+      Hora: s.time,
+      Responsable: s.responsible,
+      Correo: s.email,
+      Verificado: s.verifiedStatus,
+      'Estado para uso': s.usageStatus,
+      'Funciones utilizadas': (s.functionsUsed || []).join(', '),
+      'Minutos de uso': s.usageDuration ?? '',
+      'Cantidad de muestras': s.sampleCount ?? '',
+      Observaciones: s.observations || '',
+    }));
+  }
+
+  exportToExcel(): void {
+    const fileName = this.generateFileName('xlsx');
+    const worksheet = XLSX.utils.json_to_sheet(this.mapSessionsForExport());
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte');
-    const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([buffer], { type: 'application/octet-stream' });
-    saveAs(blob, `reporte_sesiones_${Date.now()}.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sesiones');
+    XLSX.writeFile(workbook, fileName);
   }
 
-  exportToCSV() {
-    const header = Object.keys(this.filteredSessions[0] || {}).join(',');
-    const rows = this.filteredSessions.map((s) =>
-      Object.values(s)
-        .map((v) => `"${Array.isArray(v) ? v.join(';') : v}"`)
-        .join(',')
+  exportToCSV(): void {
+    const fileName = this.generateFileName('csv');
+    const worksheet = XLSX.utils.json_to_sheet(this.mapSessionsForExport());
+    const csv = XLSX.utils.sheet_to_csv(worksheet);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, fileName);
+  }
+
+  async exportToPDF(): Promise<void> {
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const margin = 15;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let y = margin;
+
+    doc.setFontSize(18);
+    doc.text('Reporte de Sesiones de Uso de Equipos', pageWidth / 2, y, {
+      align: 'center',
+    });
+
+    y += 10;
+    doc.setFontSize(10);
+    doc.text(
+      `Generado: ${new Date().toLocaleString()}`,
+      pageWidth - margin,
+      y,
+      {
+        align: 'right',
+      }
     );
-    const csvContent = [header, ...rows].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, `reporte_sesiones_${Date.now()}.csv`);
+
+    y += 15;
+    doc.setFontSize(12);
+    doc.text('Filtros Aplicados:', margin, y);
+
+    const filters = [
+      `• Laboratorio: ${this.filters.lab || 'Todos'}`,
+      `• Equipo: ${this.filters.equipment || 'Todos'}`,
+      `• Estado verificado: ${this.filters.verifiedStatus || 'Todos'}`,
+      `• Estado de uso: ${this.filters.usageStatus || 'Todos'}`,
+      `• Responsable: ${this.filters.user || 'Todos'}`,
+      `• Función: ${this.filters.function || 'Todas'}`,
+      `• Fecha: ${this.filters.dateFrom || 'N/A'} - ${
+        this.filters.dateTo || 'N/A'
+      }`,
+      `• Hora: ${this.filters.timeFrom || 'N/A'} - ${
+        this.filters.timeTo || 'N/A'
+      }`,
+      `• Minutos de uso: ${this.filters.usageDurationMin ?? 'Min'} - ${
+        this.filters.usageDurationMax ?? 'Max'
+      }`,
+      `• Muestras: ${this.filters.sampleCountMin ?? 'Min'} - ${
+        this.filters.sampleCountMax ?? 'Max'
+      }`,
+    ];
+
+    filters.forEach((f) => doc.text(f, margin, (y += 6)));
+
+    y += 10;
+    doc.text('Lista de Sesiones:', margin, (y += 3));
+    y += 5;
+
+    autoTable(doc, {
+      startY: y,
+      head: [
+        [
+          'ID',
+          'Laboratorio',
+          'Equipo',
+          'Fecha',
+          'Hora',
+          'Verificado',
+          'Responsable',
+          'Correo',
+          'Estado',
+          'Min',
+          'Muestras',
+          'Funciones',
+          'Observaciones',
+        ],
+      ],
+      body: this.mapSessionsForExport().map((s) => Object.values(s)),
+      margin: { left: margin },
+      styles: { fontSize: 8, cellPadding: 2 },
+      didDrawPage: (data) => {
+        if (data?.cursor?.y) y = data.cursor.y + 10;
+      },
+    });
+
+    const chartRefs: {
+      data: ChartData;
+      type: 'bar' | 'line' | 'pie';
+      title: string;
+    }[] = [
+      { data: this.verifiedChart, type: 'pie', title: 'Estado Verificado' },
+      {
+        data: this.usageChart,
+        type: 'bar',
+        title: 'Minutos de Uso por Sesión',
+      },
+      { data: this.samplesChart, type: 'bar', title: 'Muestras por Sesión' },
+      { data: this.functionsChart, type: 'bar', title: 'Funciones Utilizadas' },
+      { data: this.labChart, type: 'pie', title: 'Laboratorios Usados' },
+      {
+        data: this.equipmentChart,
+        type: 'bar',
+        title: 'Distribución por Equipos',
+      },
+      { data: this.dateChart, type: 'line', title: 'Sesiones por Fecha' },
+      { data: this.timeChart, type: 'bar', title: 'Sesiones por Hora' },
+      { data: this.usageStatusChart, type: 'pie', title: 'Estado para Uso' },
+      {
+        data: this.responsibleChart,
+        type: 'bar',
+        title: 'Sesiones por Responsable',
+      },
+    ];
+
+    for (const chart of chartRefs) {
+      const img = await this.renderHighResChart(chart.data, chart.type);
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text(chart.title, margin, margin);
+      doc.addImage(img, 'PNG', margin, margin + 5, pageWidth - margin * 2, 110);
+
+      // Leyenda
+      const labels = chart.data.labels ?? [];
+      const values = chart.data.datasets?.[0]?.data ?? [];
+      let yCursor = margin + 120;
+      doc.setFontSize(11);
+      doc.text('Detalle de datos:', margin, yCursor);
+      labels.forEach((label, i) => {
+        const value = values[i];
+        if (label !== undefined && value !== undefined) {
+          yCursor += 6;
+          doc.text(`• ${label}: ${value}`, margin, yCursor);
+        }
+      });
+    }
+
+    doc.save(this.generateFileName('pdf'));
   }
 
-  exportToPDF() {
-    const doc = new jsPDF();
-    const headers = [
-      [
-        'ID',
-        'Lab',
-        'Equipo',
-        'Fecha',
-        'Hora',
-        'Verificado',
-        'Responsable',
-        'Correo',
-        'Estado',
-        'Min',
-        'Muestras',
-        'Funciones',
-        'Observaciones',
-      ],
-    ];
-    const body = this.filteredSessions.map((s) => [
-      s.id,
-      s.lab,
-      s.equipment,
-      s.date,
-      s.time,
-      s.verifiedStatus,
-      s.responsible,
-      s.email,
-      s.usageStatus,
-      s.usageDuration,
-      s.sampleCount,
-      (s.functionsUsed || []).join(', '),
-      s.observations,
-    ]);
-    (doc as any).autoTable({ head: headers, body });
-    doc.save(`reporte_sesiones_${Date.now()}.pdf`);
+  async renderHighResChart(
+    chartData: ChartData,
+    type: 'bar' | 'line' | 'pie',
+    width = 1200,
+    height = 800
+  ): Promise<string> {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return resolve('');
+
+      const chart = new Chart(ctx, {
+        type,
+        data: chartData,
+        options: {
+          responsive: false,
+          animation: false,
+          plugins: {
+            legend: { labels: { font: { size: 20 } } },
+          },
+          scales:
+            type !== 'pie'
+              ? {
+                  x: { ticks: { font: { size: 18 } } },
+                  y: { ticks: { font: { size: 18 } } },
+                }
+              : undefined,
+        },
+      });
+
+      setTimeout(() => {
+        ctx.font = 'bold 20px Arial';
+        ctx.fillStyle = '#111';
+        ctx.textAlign = 'center';
+
+        const meta = chart.getDatasetMeta(0);
+        const dataset = chart.data.datasets[0];
+
+        if (type === 'bar' || type === 'line') {
+          meta.data.forEach((element: any, i: number) => {
+            const value = dataset.data?.[i];
+            if (value !== undefined)
+              ctx.fillText(String(value), element.x, element.y - 10);
+          });
+        }
+
+        if (type === 'pie') {
+          const rawData = dataset.data as number[];
+          const total = rawData.reduce((a, b) => a + b, 0);
+          meta.data.forEach((arc: any, i: number) => {
+            const value = rawData[i];
+            const angle = (arc.startAngle + arc.endAngle) / 2;
+            const radius = arc.outerRadius * 0.75;
+            const x = arc.x + Math.cos(angle) * radius;
+            const y = arc.y + Math.sin(angle) * radius;
+            const percentage = Math.round((value / total) * 100);
+            ctx.fillText(`${percentage}%`, x, y);
+          });
+        }
+
+        const img = canvas.toDataURL('image/png');
+        chart.destroy();
+        resolve(img);
+      }, 500);
+    });
   }
 }

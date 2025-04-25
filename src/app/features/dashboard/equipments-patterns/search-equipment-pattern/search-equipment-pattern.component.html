@@ -91,11 +91,11 @@
     <div class="results-grid">
       <div class="results-header">
         <div>Nombre</div>
-        <div>Marca</div>
-        <div>Inventario</div>
-        <div>Disponibilidad</div>
         <div>Función</div>
         <div>Laboratorio</div>
+        <div>Disponibilidad</div>
+        <div>Marca</div>
+        <div>N° Inventario</div>
         <div>Acciones</div>
       </div>
 
@@ -104,11 +104,11 @@
         *ngFor="let item of equipmentResults; trackBy: trackById"
       >
         <div data-label="Nombre">{{ item.name }}</div>
-        <div data-label="Marca">{{ item.brand }}</div>
-        <div data-label="Inventario">{{ item.inventoryCode }}</div>
-        <div data-label="Disponibilidad">{{ item.availability }}</div>
         <div data-label="Función">{{ item.function.name }}</div>
         <div data-label="Laboratorio">{{ item.laboratory.name }}</div>
+        <div data-label="Disponibilidad">{{ item.availability }}</div>
+        <div data-label="Marca">{{ item.brand }}</div>
+        <div data-label="N° Inventario">{{ item.inventoryCode }}</div>
         <div data-label="Acciones">
           <button class="search-button" (click)="navigateToEdit(item.id)">
             Editar

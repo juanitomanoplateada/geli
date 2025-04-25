@@ -79,9 +79,9 @@
     <div class="results-grid">
       <div class="results-header">
         <div>Nombre</div>
+        <div>Ubicación</div>
         <div>Descripción</div>
         <div>Disponibilidad</div>
-        <div>Ubicación</div>
         <div>Acciones</div>
       </div>
 
@@ -90,12 +90,12 @@
         class="result-item"
       >
         <div data-label="Nombre">{{ lab.laboratoryName }}</div>
+        <div data-label="Ubicación">
+          {{ lab.location?.locationName || "-" }}
+        </div>
         <div data-label="Descripción">{{ lab.laboratoryDescription }}</div>
         <div data-label="Disponibilidad">
           {{ lab.laboratoryAvailability ? "Disponible" : "No disponible" }}
-        </div>
-        <div data-label="Ubicación">
-          {{ lab.location?.locationName || "-" }}
         </div>
         <div data-label="Acciones">
           <button class="search-button" (click)="navigateToEdit(lab.id)">

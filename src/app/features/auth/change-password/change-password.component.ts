@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Location } from '@angular/common';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../core/auth/services/auth.service';
 
 @Component({
   selector: 'app-change-password',
@@ -18,7 +20,11 @@ export class ChangePasswordComponent {
   message: string = '';
   hasError: boolean = false;
 
-  constructor(private location: Location) {}
+  constructor(
+    private location: Location,
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   goBack(): void {
     this.location.back();
@@ -76,10 +82,33 @@ export class ChangePasswordComponent {
 
     if (this.hasError) return;
 
-    // Aquí se realizaría la petición para cambiar la contraseña
-    console.log('✅ Contraseña cambiada exitosamente');
-    this.message = 'Contraseña cambiada exitosamente';
-    this.hasError = false;
+    const tempToken = localStorage.getItem('recovery_temp_token');
+    if (!tempToken) {
+      this.setError('❌ Token temporal no encontrado. Intenta de nuevo.');
+      return;
+    }
+
+    this.authService
+      .resetPasswordWithToken(tempToken, this.newPassword)
+      .subscribe({
+        next: (res) => {
+          this.message = res.message || '✅ Contraseña cambiada exitosamente';
+          this.hasError = false;
+
+          // Limpieza total
+          localStorage.removeItem('recovery_temp_token');
+          localStorage.removeItem('recovery_username');
+          localStorage.removeItem('access_token');
+
+          setTimeout(() => {
+            this.router.navigate(['/auth/login']);
+          }, 2000);
+        },
+        error: (err) => {
+          this.setError('❌ Error al cambiar la contraseña');
+          console.error(err);
+        },
+      });
   }
 
   private setError(msg: string): void {

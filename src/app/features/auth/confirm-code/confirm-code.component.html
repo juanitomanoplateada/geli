@@ -24,44 +24,49 @@
 
     <!-- Mensaje de retroalimentación -->
     <div
-      *ngIf="message"
+      *ngIf="feedbackMessage"
       class="confirm-code-message"
       [ngClass]="{ error: hasError, success: !hasError }"
     >
-      {{ message }}
+      {{ feedbackMessage }}
     </div>
 
-    <!-- Formulario -->
-    <form class="confirm-code-form" (ngSubmit)="onSubmit()">
-      <!-- Campo para código -->
-      <div class="confirm-code-input-group">
+    <!-- Formulario (ya no hace submit, solo organiza inputs y botón de reenvío) -->
+    <form class="confirm-code-form">
+      <!-- Inputs del código -->
+      <div class="confirm-code-input-group dynamic-input-group">
         <input
+          placeholder="•"
+          *ngFor="let _ of [].constructor(6); let i = index"
           type="text"
-          class="confirm-code-input"
-          [(ngModel)]="code"
-          name="code"
-          placeholder="Código de recuperación"
-          required
-          appUppercaseNospace
+          maxlength="1"
+          inputmode="numeric"
+          class="digit-input"
+          #codeInput
+          (input)="onDigitInput($event, i)"
+          (keydown)="onKeyNavigation($event, i)"
+          (paste)="onCodePaste($event)"
+          autocomplete="one-time-code"
         />
       </div>
-
-      <!-- Botón para continuar -->
-      <button type="submit" class="confirm-code-button" [disabled]="!code">
-        Continuar
-      </button>
 
       <!-- Botón para reenviar código -->
       <button
         type="button"
         class="confirm-code-button resend-button"
-        [disabled]="!canResend"
-        (click)="resendCode()"
+        [disabled]="!canResendCode || isResending"
+        (click)="resendVerificationCode()"
       >
-        Reenviar código
-        <span *ngIf="!canResend" class="resend-counter">
-          ({{ countdown }}s)
-        </span>
+        <ng-container *ngIf="!isResending; else loading">
+          Reenviar código
+          <span *ngIf="!canResendCode" class="resend-counter">
+            ({{ countdownSeconds }}s)
+          </span>
+        </ng-container>
+        <ng-template #loading>
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          Reenviando...
+        </ng-template>
       </button>
     </form>
   </main>

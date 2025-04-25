@@ -102,6 +102,7 @@
     border-radius: 5px;
     cursor: pointer;
     align-self: flex-end;
+    height: 45px;
 
     &:hover {
       background-color: #2471a3;
@@ -222,6 +223,7 @@
   .chart-tabs {
     .tab-buttons {
       display: flex;
+      justify-content: center;
       flex-wrap: wrap;
       gap: 0.5rem;
       margin-bottom: 1rem;
@@ -236,7 +238,6 @@
         &.active {
           background-color: #3498db;
           color: white;
-          font-weight: bold;
         }
 
         &:hover:not(.active) {
@@ -251,56 +252,11 @@
       gap: 2rem;
 
       canvas.chart {
+        display: flex;
         width: 100% !important;
         max-width: 100%;
-        height: auto !important;
-      }
-    }
-  }
-}
-
-/* Dropdowns personalizados */
-.dropdown {
-  position: relative;
-  width: 100%;
-
-  .selected {
-    padding: 10px;
-    border: 1px solid #ccc;
-    background-color: white;
-    cursor: pointer;
-    border-radius: 5px;
-    font-size: 0.95rem;
-    margin-top: 0.25rem;
-  }
-
-  .dropdown-list {
-    position: absolute;
-    top: 45px;
-    left: 0;
-    width: 100%;
-    background: white;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    z-index: 10;
-    max-height: 250px;
-    overflow-y: auto;
-
-    input {
-      width: 90%;
-      padding: 8px;
-      margin: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .option {
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 1px solid #eee;
-
-      &:hover {
-        background: #f0f0f0;
+        height: 100% !important;
+        max-height: 650px;
       }
     }
   }

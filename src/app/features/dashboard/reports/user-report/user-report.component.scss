@@ -291,8 +291,9 @@
 
     canvas.chart {
       width: 100% !important;
-      max-width: 500px;
-      height: auto !important;
+      max-width: 750px;
+      height: 100% !important;
+      max-height: 750px;
     }
 
     .hidden {

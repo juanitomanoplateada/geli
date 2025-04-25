@@ -114,11 +114,11 @@
       <div class="results-header">
         <div>Nombre</div>
         <div>Identificación</div>
-        <div>Estado</div>
         <div>Rol</div>
+        <div>Estado</div>
         <div>Creación</div>
-        <div>Modificación</div>
         <div>Asignación</div>
+        <div>Modificación</div>
         <div>Acciones</div>
       </div>
 
@@ -128,16 +128,16 @@
       >
         <div data-label="Nombre">{{ user.name }}</div>
         <div data-label="Identificación">{{ user.id }}</div>
-        <div data-label="Estado">{{ user.status }}</div>
         <div data-label="Rol">{{ user.role.name }}</div>
+        <div data-label="Estado">{{ user.status }}</div>
         <div data-label="Creación">
           {{ user.createdAt | date : "dd/MM/yyyy" }}
         </div>
-        <div data-label="Modificación">
-          {{ user.updatedAt | date : "dd/MM/yyyy" }}
-        </div>
         <div data-label="Asignación">
           {{ user.assignedAt | date : "dd/MM/yyyy" }}
+        </div>
+        <div data-label="Modificación">
+          {{ user.updatedAt | date : "dd/MM/yyyy" }}
         </div>
         <div data-label="Acciones">
           <button class="search-button" (click)="goToEditUser(user.id)">

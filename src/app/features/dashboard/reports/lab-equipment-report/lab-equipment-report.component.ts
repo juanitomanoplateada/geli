@@ -44,7 +44,7 @@ interface Equipment {
 })
 export class LabEquipmentReportComponent implements OnInit {
   isBrowser = false;
-  activeTab: 'availability' | 'function' = 'availability';
+  activeTab: 'availability' | 'function' = 'function';
 
   @ViewChild('availabilityChartCanvas') availabilityChartCanvas!: ElementRef;
   @ViewChild('functionChartCanvas') functionChartCanvas!: ElementRef;
@@ -155,16 +155,7 @@ export class LabEquipmentReportComponent implements OnInit {
 
   exportToExcel(): void {
     const fileName = this.generateFileName('xlsx');
-    const worksheet = XLSX.utils.json_to_sheet(
-      this.filteredEquipment.map((eq) => ({
-        ID: eq.id,
-        Nombre: eq.name,
-        Marca: eq.brand,
-        'N° Inventario': eq.inventoryNumber,
-        Disponibilidad: eq.availability,
-        Función: eq.function,
-      }))
-    );
+    const worksheet = XLSX.utils.json_to_sheet(this.mapEquipmentForExport());
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Equipos');
     XLSX.writeFile(workbook, fileName);
@@ -172,24 +163,17 @@ export class LabEquipmentReportComponent implements OnInit {
 
   exportToCSV(): void {
     const fileName = this.generateFileName('csv');
-    const worksheet = XLSX.utils.json_to_sheet(
-      this.filteredEquipment.map((eq) => ({
-        ID: eq.id,
-        Nombre: eq.name,
-        Marca: eq.brand,
-        'N° Inventario': eq.inventoryNumber,
-        Disponibilidad: eq.availability,
-        Función: eq.function,
-      }))
-    );
+    const worksheet = XLSX.utils.json_to_sheet(this.mapEquipmentForExport());
     const csv = XLSX.utils.sheet_to_csv(worksheet);
-    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), fileName);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+    saveAs(blob, fileName);
   }
 
   async exportToPDF(): Promise<void> {
     const doc = new jsPDF('p', 'mm', 'a4');
-    const margin = 15;
     const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 15;
     let y = margin;
 
     doc.setFontSize(18);
@@ -203,41 +187,46 @@ export class LabEquipmentReportComponent implements OnInit {
       `Generado: ${new Date().toLocaleString()}`,
       pageWidth - margin,
       y,
-      { align: 'right' }
+      {
+        align: 'right',
+      }
     );
 
     y += 15;
     doc.setFontSize(12);
     doc.text('Información del Laboratorio:', margin, y);
     y += 8;
-    doc.setFontSize(10);
-    doc.text(`• Nombre: ${this.selectedLab?.name}`, margin, y);
-    y += 6;
-    doc.text(`• Ubicación: ${this.selectedLab?.location}`, margin, y);
-    y += 6;
-    doc.text(`• Disponibilidad: ${this.selectedLab?.availability}`, margin, y);
-    y += 6;
-    doc.text(`• Total Equipos: ${this.filteredEquipment.length}`, margin, y);
 
-    y += 10;
+    const lab = this.selectedLab;
+    if (lab) {
+      doc.setFontSize(10);
+      doc.text(`• Nombre: ${lab.name}`, margin, y);
+      y += 6;
+      doc.text(`• Ubicación: ${lab.location}`, margin, y);
+      y += 6;
+      doc.text(`• Disponibilidad: ${lab.availability}`, margin, y);
+      y += 6;
+      doc.text(`• Total Equipos: ${this.filteredEquipment.length}`, margin, y);
+      y += 10;
+    }
+
     doc.setFontSize(12);
     doc.text('Listado de Equipos:', margin, y);
+    y += 5;
 
     autoTable(doc, {
-      startY: y + 5,
+      startY: y,
       head: [
-        ['ID', 'Nombre', 'Marca', 'N° Inventario', 'Disponibilidad', 'Función'],
+        ['ID', 'Nombre', 'Función', 'Marca', 'N° Inventario', 'Disponibilidad'],
       ],
-      body: this.filteredEquipment.map((eq) => [
-        eq.id.toString(),
-        eq.name,
-        eq.brand,
-        eq.inventoryNumber,
-        eq.availability,
-        eq.function,
-      ]),
+      body: this.mapEquipmentForExport().map((eq) =>
+        Object.values(eq).map((v) => String(v))
+      ),
       margin: { left: margin },
       styles: { fontSize: 9, cellPadding: 2 },
+      didDrawPage: (data) => {
+        if (data?.cursor?.y) y = data.cursor.y + 10;
+      },
     });
 
     const charts = [
@@ -267,7 +256,6 @@ export class LabEquipmentReportComponent implements OnInit {
         110
       );
 
-      // Leyenda numérica debajo
       const labels = chart.data.labels ?? [];
       const values = chart.data.datasets?.[0]?.data ?? [];
       let yCursor = margin + 120;
@@ -355,6 +343,17 @@ export class LabEquipmentReportComponent implements OnInit {
         resolve(img);
       }, 500);
     });
+  }
+
+  private mapEquipmentForExport(): any[] {
+    return this.filteredEquipment.map((eq) => ({
+      ID: eq.id,
+      Nombre: eq.name,
+      Función: eq.function,
+      Marca: eq.brand,
+      'N° Inventario': eq.inventoryNumber,
+      Disponibilidad: eq.availability,
+    }));
   }
 
   generateFileName(ext: string): string {

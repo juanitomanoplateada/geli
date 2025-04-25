@@ -93,9 +93,9 @@
             <tr>
               <th>ID</th>
               <th>Nombre</th>
+              <th>Ubicación</th>
               <th>Descripción</th>
               <th>Disponibilidad</th>
-              <th>Ubicación</th>
               <th>Equipos</th>
             </tr>
           </thead>
@@ -103,11 +103,11 @@
             <tr *ngFor="let lab of filteredLaboratories">
               <td data-label="ID">{{ lab.id }}</td>
               <td data-label="Nombre">{{ lab.name }}</td>
-              <td data-label="Descripción">{{ lab.description }}</td>
-              <td data-label="Disponibilidad">{{ lab.availability }}</td>
               <td data-label="Ubicación">
                 {{ lab.location.building }} - Piso {{ lab.location.floor }}
               </td>
+              <td data-label="Descripción">{{ lab.description }}</td>
+              <td data-label="Disponibilidad">{{ lab.availability }}</td>
               <td data-label="Equipos">{{ lab.equipment.length }}</td>
             </tr>
           </tbody>
@@ -121,16 +121,16 @@
         <h3 class="section-title">📈 Visualizaciones Gráficas</h3>
         <div class="tab-buttons">
           <button
-            [class.active]="activeTab === 'availability'"
-            (click)="activeTab = 'availability'"
-          >
-            Disponibilidad
-          </button>
-          <button
             [class.active]="activeTab === 'location'"
             (click)="activeTab = 'location'"
           >
             Ubicación
+          </button>
+          <button
+            [class.active]="activeTab === 'availability'"
+            (click)="activeTab = 'availability'"
+          >
+            Disponibilidad
           </button>
           <button
             [class.active]="activeTab === 'equipment'"

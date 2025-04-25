@@ -26,7 +26,7 @@ import { DropdownFilterComponent } from '../../../../shared/components/dropdown-
   styleUrls: ['./equipment-pattern-report.component.scss'],
 })
 export class EquipmentPatternReportComponent implements OnInit {
-  activeTab: 'availability' | 'function' | 'laboratory' = 'availability';
+  activeTab: 'availability' | 'function' | 'laboratory' = 'function';
   isBrowser = false;
 
   @ViewChild('availabilityChartCanvas')
@@ -381,11 +381,11 @@ export class EquipmentPatternReportComponent implements OnInit {
       this.filteredEquipment.map((eq) => ({
         ID: eq.id,
         Nombre: eq.name,
-        Marca: eq.brand,
-        'N° Inventario': eq.inventoryNumber,
-        Disponibilidad: eq.availability,
         Función: eq.function.name,
         Laboratorio: eq.laboratory.name,
+        Disponibilidad: eq.availability,
+        Marca: eq.brand,
+        'N° Inventario': eq.inventoryNumber,
       }))
     );
     const workbook = XLSX.utils.book_new();
@@ -399,11 +399,11 @@ export class EquipmentPatternReportComponent implements OnInit {
       this.filteredEquipment.map((eq) => ({
         ID: eq.id,
         Nombre: eq.name,
-        Marca: eq.brand,
-        'N° Inventario': eq.inventoryNumber,
-        Disponibilidad: eq.availability,
         Función: eq.function.name,
         Laboratorio: eq.laboratory.name,
+        Disponibilidad: eq.availability,
+        Marca: eq.brand,
+        'N° Inventario': eq.inventoryNumber,
       }))
     );
     const csv = XLSX.utils.sheet_to_csv(worksheet);

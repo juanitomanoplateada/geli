@@ -18,7 +18,7 @@ import autoTable from 'jspdf-autotable';
   styleUrls: ['./user-report.component.scss'],
 })
 export class UserReportComponent implements OnInit {
-  activeTab = 'status';
+  activeTab = 'role';
   dateFilterType: 'creation' | 'modification' | 'assignment' = 'creation';
   isBrowser = false;
 
@@ -159,41 +159,35 @@ export class UserReportComponent implements OnInit {
       : 0;
   }
 
+  private mapUsersForExport(): any[] {
+    return this.filteredUsers.map((user) => ({
+      ID: user.id,
+      Nombre: user.name,
+      Identificación: user.idNumber,
+      Rol: user.role,
+      Estado: user.status,
+      Creación: user.creationDate.toLocaleDateString(),
+      Asignación: user.assignmentDate.toLocaleDateString(),
+      Modificación: user.modificationDate.toLocaleDateString(),
+    }));
+  }
+
   exportToExcel(): void {
     const fileName = this.generateFileName('xlsx');
-    const worksheet = XLSX.utils.json_to_sheet(
-      this.filteredUsers.map((user) => ({
-        ID: user.id,
-        Nombre: user.name,
-        Identificación: user.idNumber,
-        Estado: user.status,
-        Rol: user.role,
-        Asignación: user.assignmentDate.toLocaleDateString(),
-        Creación: user.creationDate.toLocaleDateString(),
-        Modificación: user.modificationDate.toLocaleDateString(),
-      }))
-    );
+    const worksheet = XLSX.utils.json_to_sheet(this.mapUsersForExport());
     const workbook = XLSX.utils.book_new();
+
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuarios');
     XLSX.writeFile(workbook, fileName);
   }
 
   exportToCSV(): void {
     const fileName = this.generateFileName('csv');
-    const worksheet = XLSX.utils.json_to_sheet(
-      this.filteredUsers.map((user) => ({
-        ID: user.id,
-        Nombre: user.name,
-        Identificación: user.idNumber,
-        Estado: user.status,
-        Rol: user.role,
-        Asignación: user.assignmentDate.toLocaleDateString(),
-        Creación: user.creationDate.toLocaleDateString(),
-        Modificación: user.modificationDate.toLocaleDateString(),
-      }))
-    );
+    const worksheet = XLSX.utils.json_to_sheet(this.mapUsersForExport());
     const csv = XLSX.utils.sheet_to_csv(worksheet);
-    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), fileName);
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, fileName);
   }
 
   generateFileName(ext: string): string {
@@ -275,11 +269,10 @@ export class UserReportComponent implements OnInit {
 
   async onExportPDF(): Promise<void> {
     const doc = new jsPDF('p', 'mm', 'a4');
-    const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 15;
+    const pageWidth = doc.internal.pageSize.getWidth();
     let y = margin;
 
-    doc.setFont('helvetica', 'normal');
     doc.setFontSize(18);
     doc.text('Reporte de Usuarios', pageWidth / 2, y, { align: 'center' });
 
@@ -289,35 +282,34 @@ export class UserReportComponent implements OnInit {
       `Generado: ${new Date().toLocaleString()}`,
       pageWidth - margin,
       y,
-      { align: 'right' }
+      {
+        align: 'right',
+      }
     );
 
     y += 15;
     doc.setFontSize(12);
     doc.text('Filtros Aplicados:', margin, y);
-    y += 8;
+    y += 1;
 
     const labelMap = {
       creation: 'Creación',
       modification: 'Modificación',
       assignment: 'Asignación',
     };
+
     const filters = [
-      `• Estado: ${this.selectedStatus || 'Todos'}`,
       `• Rol: ${this.selectedRole || 'Todos'}`,
+      `• Estado: ${this.selectedStatus || 'Todos'}`,
       `• Rango de Fechas (${labelMap[this.dateFilterType]}): ${
         this.startDate || 'N/A'
       } - ${this.endDate || 'N/A'}`,
     ];
-    filters.forEach((f) => {
-      doc.text(f, margin, y);
-      y += 6;
-    });
 
+    filters.forEach((f) => doc.text(f, margin, (y += 6)));
     y += 10;
-    doc.text('Resumen:', margin, y);
-    y += 8;
 
+    doc.text('Resumen:', margin, y);
     const stats = [
       `• Activos: ${this.getChartValue(this.statusChart, 0)}`,
       `• Inactivos: ${this.getChartValue(this.statusChart, 1)}`,
@@ -325,12 +317,11 @@ export class UserReportComponent implements OnInit {
       `• Analistas de Calidad: ${this.getChartValue(this.roleChart, 0)}`,
       `• Personal Autorizado: ${this.getChartValue(this.roleChart, 1)}`,
     ];
-    stats.forEach((stat) => {
-      doc.text(stat, margin, y);
-      y += 6;
-    });
 
+    stats.forEach((stat) => doc.text(stat, margin, (y += 6)));
     y += 10;
+
+    y += 3;
     doc.text('Lista de Usuarios:', margin, y);
     y += 5;
 
@@ -341,28 +332,20 @@ export class UserReportComponent implements OnInit {
           'ID',
           'Nombre',
           'Identificación',
-          'Estado',
           'Rol',
+          'Estado',
           'Creación',
-          'Modificación',
           'Asignación',
+          'Modificación',
         ],
       ],
-      body: this.filteredUsers.map((u) => [
-        u.id.toString(),
-        u.name,
-        u.idNumber,
-        u.status,
-        u.role,
-        u.creationDate.toLocaleDateString(),
-        u.modificationDate.toLocaleDateString(),
-        u.assignmentDate.toLocaleDateString(),
-      ]),
+      body: this.mapUsersForExport().map((u) => Object.values(u)),
       margin: { left: margin },
       styles: { fontSize: 8, cellPadding: 2 },
-      columnStyles: {},
       didDrawPage: (data) => {
-        if (data?.cursor?.y != null) y = data.cursor.y + 10;
+        if (data?.cursor?.y) {
+          y = data.cursor.y + 10;
+        }
       },
     });
 
@@ -395,39 +378,27 @@ export class UserReportComponent implements OnInit {
     ];
 
     for (const chart of chartRefs) {
-      const chartImg = await this.renderHighResChart(chart.data, chart.type);
+      const img = await this.renderHighResChart(chart.data, chart.type);
       doc.addPage();
       doc.setFontSize(14);
       doc.text(chart.title, margin, margin);
-      doc.addImage(
-        chartImg,
-        'PNG',
-        margin,
-        margin + 5,
-        pageWidth - margin * 2,
-        110
-      );
+      doc.addImage(img, 'PNG', margin, margin + 5, pageWidth - margin * 2, 110);
 
-      // Añadir leyenda textual debajo
+      // Leyenda
       const labels = chart.data.labels ?? [];
       const values = chart.data.datasets?.[0]?.data ?? [];
       let yCursor = margin + 120;
-
       doc.setFontSize(11);
       doc.text('Detalle de datos:', margin, yCursor);
-      yCursor += 6;
-
-      for (let i = 0; i < labels.length; i++) {
-        const label = labels[i];
+      labels.forEach((label, i) => {
         const value = values[i];
         if (label !== undefined && value !== undefined) {
-          doc.text(`• ${label}: ${value}`, margin, yCursor);
           yCursor += 6;
+          doc.text(`• ${label}: ${value}`, margin, yCursor);
         }
-      }
+      });
     }
 
-    const fileName = this.generateFileName('pdf');
-    doc.save(fileName);
+    doc.save(this.generateFileName('pdf'));
   }
 }

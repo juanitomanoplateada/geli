@@ -78,22 +78,22 @@
             <tr>
               <th>ID</th>
               <th>Nombre</th>
-              <th>Marca</th>
-              <th>N° Inventario</th>
-              <th>Disponibilidad</th>
               <th>Función</th>
               <th>Laboratorio</th>
+              <th>Disponibilidad</th>
+              <th>Marca</th>
+              <th>N° Inventario</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let eq of filteredEquipment">
               <td data-label="ID">{{ eq.id }}</td>
               <td data-label="Nombre">{{ eq.name }}</td>
-              <td data-label="Marca">{{ eq.brand }}</td>
-              <td data-label="N° Inventario">{{ eq.inventoryNumber }}</td>
-              <td data-label="Disponibilidad">{{ eq.availability }}</td>
               <td data-label="Función">{{ eq.function.name }}</td>
               <td data-label="Laboratorio">{{ eq.laboratory.name }}</td>
+              <td data-label="Disponibilidad">{{ eq.availability }}</td>
+              <td data-label="Marca">{{ eq.brand }}</td>
+              <td data-label="N° Inventario">{{ eq.inventoryNumber }}</td>
             </tr>
           </tbody>
         </table>
@@ -106,12 +106,6 @@
         <h3 class="section-title">📈 Visualizaciones Gráficas</h3>
         <div class="tab-buttons">
           <button
-            [class.active]="activeTab === 'availability'"
-            (click)="activeTab = 'availability'"
-          >
-            Disponibilidad
-          </button>
-          <button
             [class.active]="activeTab === 'function'"
             (click)="activeTab = 'function'"
           >
@@ -122,6 +116,12 @@
             (click)="activeTab = 'laboratory'"
           >
             Laboratorio
+          </button>
+          <button
+            [class.active]="activeTab === 'availability'"
+            (click)="activeTab = 'availability'"
+          >
+            Disponibilidad
           </button>
         </div>
 

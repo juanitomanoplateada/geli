@@ -76,20 +76,20 @@
             <tr>
               <th>ID</th>
               <th>Nombre</th>
+              <th>Función</th>
               <th>Marca</th>
               <th>N° Inventario</th>
               <th>Disponibilidad</th>
-              <th>Función</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let eq of filteredEquipment">
               <td data-label="ID">{{ eq.id }}</td>
               <td data-label="Nombre">{{ eq.name }}</td>
+              <td data-label="Función">{{ eq.function }}</td>
               <td data-label="Marca">{{ eq.brand }}</td>
               <td data-label="N° Inventario">{{ eq.inventoryNumber }}</td>
               <td data-label="Disponibilidad">{{ eq.availability }}</td>
-              <td data-label="Función">{{ eq.function }}</td>
             </tr>
           </tbody>
         </table>
@@ -100,16 +100,16 @@
         <h3 class="section-title">📈 Visualizaciones</h3>
         <div class="tab-buttons">
           <button
-            [class.active]="activeTab === 'availability'"
-            (click)="activeTab = 'availability'"
-          >
-            Disponibilidad
-          </button>
-          <button
             [class.active]="activeTab === 'function'"
             (click)="activeTab = 'function'"
           >
             Función
+          </button>
+          <button
+            [class.active]="activeTab === 'availability'"
+            (click)="activeTab = 'availability'"
+          >
+            Disponibilidad
           </button>
         </div>
 
