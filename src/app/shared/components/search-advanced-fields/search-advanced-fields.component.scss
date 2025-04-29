@@ -1,0 +1,53 @@
+.advanced-search {
+  background-color: #fafafa;
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); // ligero ajuste
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    label {
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    input[type="date"],
+    input[type="time"],
+    input[type="text"],
+    input[type="number"],
+    select {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.95rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100%;
+      box-sizing: border-box;
+      height: 45px;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+      -webkit-appearance: none;
+      appearance: textfield;
+
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    }
+  }
+
+  // --- RESPONSIVE ---
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr; // Todos los filtros en 1 sola columna en pantallas pequeñas
+    padding: 1rem;
+  }
+}

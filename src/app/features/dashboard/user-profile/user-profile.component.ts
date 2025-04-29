@@ -1,6 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../core/auth/services/auth.service';
+import {
+  UserService,
+  UserRecordResponse,
+} from '../../../core/user/services/user.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -9,33 +15,79 @@ import { CommonModule } from '@angular/common';
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.scss'],
 })
-export class UserProfileComponent {
+export class UserProfileComponent implements OnInit {
+  // Datos de perfil
   userProfile = {
-    fullName: 'RAMIREZ RAMIREZ RAMIREZ',
-    userId: 'RAAA',
-    institutionalEmail: 'RAAA@uptc.edu.co',
-    userStatus: 'Activo',
-    role: 'Analista de Calidad',
+    fullName: '',
+    userId: '',
+    institutionalEmail: '',
+    userStatus: '',
+    role: '',
   };
 
+  // Campos cambio de contraseña
   currentPassword = '';
   newPassword = '';
   confirmPassword = '';
 
+  // Visibilidad de inputs
   isCurrentPasswordVisible = false;
-  invalidCurrentPassword: boolean = false;
-
   isNewPasswordVisible = false;
   isConfirmPasswordVisible = false;
 
-  isNewPasswordValid = false;
+  // Estado validaciones
+  invalidCurrentPassword = false;
   canShowNewPasswordFields = false;
+  isNewPasswordValid = false;
   canSubmitPasswordChange = false;
 
+  // Feedback al usuario
   feedbackMessage: string | null = null;
   isPasswordChangeSuccessful = false;
+  isLoadingPasswordChange = false;
 
-  toggleVisibility(field: 'current' | 'new' | 'confirm') {
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private userService: UserService
+  ) {}
+
+  ngOnInit(): void {
+    // Obtener email del usuario autenticado
+    const email = this.authService.getCurrentUserEmail();
+
+    // Cargar datos de perfil
+    this.userService.getUserByEmail(email).subscribe({
+      next: (user: UserRecordResponse) => {
+        this.userProfile = {
+          fullName: `${user.firstName} ${user.lastName}`,
+          userId: user.identification.toString(),
+          institutionalEmail: user.email,
+          userStatus: user.enabledStatus ? 'Activo' : 'Inactivo',
+          role: this.translateRole(user.role),
+        };
+      },
+      error: () => {
+        // Si falla, redirigir al login
+      },
+    });
+  }
+
+  /** Traduce el rol interno a etiqueta en español */
+  private translateRole(role: string): string {
+    switch (role) {
+      case 'QUALITY-ADMIN-USER':
+        return 'Administrador de Calidad';
+      case 'AUTHORIZED-USER':
+        return 'Usuario Autorizado';
+      // Añade más mapeos según tus roles
+      default:
+        return role;
+    }
+  }
+
+  /** Alterna visibilidad de contraseña */
+  toggleVisibility(field: 'current' | 'new' | 'confirm'): void {
     if (field === 'current')
       this.isCurrentPasswordVisible = !this.isCurrentPasswordVisible;
     if (field === 'new') this.isNewPasswordVisible = !this.isNewPasswordVisible;
@@ -43,20 +95,29 @@ export class UserProfileComponent {
       this.isConfirmPasswordVisible = !this.isConfirmPasswordVisible;
   }
 
-  onCurrentPasswordInput() {
-    const correctPasswordMock = 'claveDeEjemplo';
-    this.canShowNewPasswordFields =
-      this.currentPassword === correctPasswordMock;
-
-    this.invalidCurrentPassword =
-      this.currentPassword.length > 0 && !this.canShowNewPasswordFields;
-
-    if (!this.canShowNewPasswordFields) {
-      this.resetNewPasswordFields();
+  /** Valida la contraseña actual contra el backend */
+  onCurrentPasswordInput(): void {
+    if (!this.currentPassword) {
+      this.canShowNewPasswordFields = false;
+      this.invalidCurrentPassword = false;
+      return;
     }
+
+    this.authService.validateCurrentPassword(this.currentPassword).subscribe({
+      next: () => {
+        this.canShowNewPasswordFields = true;
+        this.invalidCurrentPassword = false;
+      },
+      error: () => {
+        this.canShowNewPasswordFields = false;
+        this.invalidCurrentPassword = true;
+        this.resetNewPasswordFields();
+      },
+    });
   }
 
-  onPasswordFieldsInput() {
+  /** Valida inputs de nueva contraseña y habilita el botón */
+  onPasswordFieldsInput(): void {
     const fieldsFilled = !!this.newPassword && !!this.confirmPassword;
     this.isNewPasswordValid = this.validatePasswordPolicy(this.newPassword);
     this.canSubmitPasswordChange =
@@ -65,29 +126,53 @@ export class UserProfileComponent {
       this.isNewPasswordValid;
   }
 
-  validatePasswordPolicy(password: string): boolean {
+  /** Regex de política de contraseña */
+  private validatePasswordPolicy(password: string): boolean {
     const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     return pattern.test(password);
   }
 
-  onSubmitPasswordChange() {
+  /** Envía el cambio de contraseña al backend */
+  onSubmitPasswordChange(): void {
     if (!this.canSubmitPasswordChange) return;
 
-    this.feedbackMessage = 'Contraseña cambiada exitosamente.';
-    this.isPasswordChangeSuccessful = true;
-    this.resetAllFields();
+    this.isLoadingPasswordChange = true;
+    this.feedbackMessage = null;
 
-    setTimeout(() => (this.feedbackMessage = null), 8000);
+    this.authService.changePassword(this.newPassword).subscribe({
+      next: (res) => {
+        this.isLoadingPasswordChange = false;
+        this.feedbackMessage =
+          res.message || 'Contraseña cambiada exitosamente.';
+        this.isPasswordChangeSuccessful = res.success ?? true;
+        this.resetAllFields();
+
+        // Cierra sesión tras mostrar feedback
+        setTimeout(() => {
+          this.feedbackMessage = null;
+          localStorage.clear();
+          this.router.navigate(['/auth/login']);
+        }, 4000);
+      },
+      error: () => {
+        this.isLoadingPasswordChange = false;
+        this.feedbackMessage = '❌ Error al cambiar la contraseña.';
+        this.isPasswordChangeSuccessful = false;
+        setTimeout(() => (this.feedbackMessage = null), 8000);
+      },
+    });
   }
 
-  resetNewPasswordFields() {
+  /** Limpia solo los campos de nueva contraseña */
+  private resetNewPasswordFields(): void {
     this.newPassword = '';
     this.confirmPassword = '';
     this.isNewPasswordValid = false;
     this.canSubmitPasswordChange = false;
   }
 
-  resetAllFields() {
+  /** Limpia todos los campos de contraseña */
+  private resetAllFields(): void {
     this.currentPassword = '';
     this.resetNewPasswordFields();
     this.canShowNewPasswordFields = false;

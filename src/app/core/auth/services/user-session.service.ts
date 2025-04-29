@@ -1,10 +1,14 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { decodeToken } from './token.utils';
+import { Router } from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
 export class UserSessionService {
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private router: Router
+  ) {}
 
   private isBrowser(): boolean {
     return isPlatformBrowser(this.platformId);
@@ -31,12 +35,20 @@ export class UserSessionService {
     if (!token) return false;
 
     const decoded = decodeToken(token);
-    return decoded?.exp * 1000 > Date.now();
+    const isValid = decoded?.exp * 1000 > Date.now();
+
+    if (!isValid) {
+      this.logout();
+      return false;
+    }
+
+    return true;
   }
 
   logout(): void {
     if (this.isBrowser()) {
       localStorage.clear();
+      this.router.navigate(['/auth/login']);
     }
   }
 }

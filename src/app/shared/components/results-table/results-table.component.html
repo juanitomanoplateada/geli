@@ -1,0 +1,70 @@
+<div class="results-container">
+  <div class="scroll-wrapper">
+    <div
+      class="results-grid"
+      [ngStyle]="{ 'grid-template-columns': gridTemplate }"
+      [attr.data-sorted-column]="sortedColumnIndex"
+    >
+      <!-- HEADER -->
+      <div class="results-header" id="results-header">
+        <div *ngFor="let col of columns" (click)="sortBy(col.key)">
+          {{ col.label }}
+          <span class="sort-icon" *ngIf="isSortingBy(col.key)">
+            {{ getSortIcon(col.key) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- FILAS -->
+      <div
+        *ngFor="let item of data; trackBy: trackByFunction"
+        class="result-item"
+      >
+        <div
+          *ngFor="let col of columns"
+          class="result-cell"
+          [attr.data-label]="col.label"
+        >
+          <ng-container [ngSwitch]="col.type">
+            <!-- Texto simple -->
+            <ng-container *ngSwitchCase="'text'">
+              {{ item[col.key] }}
+            </ng-container>
+
+            <!-- Indicador de estado -->
+            <ng-container *ngSwitchCase="'status'">
+              <div class="availability">
+                <span
+                  class="dot"
+                  [ngClass]="{
+                    available:
+                      item[col.key]?.toLowerCase() === 'activo' ||
+                      item[col.key]?.toLowerCase() === 'disponible',
+                    'not-available':
+                      item[col.key]?.toLowerCase() === 'inactivo' ||
+                      item[col.key]?.toLowerCase() === 'no disponible'
+                  }"
+                ></span>
+                {{ item[col.key] }}
+              </div>
+            </ng-container>
+
+            <!-- Botones de acción -->
+            <ng-container *ngSwitchCase="'actions'">
+              <div class="actions">
+                <button
+                  *ngFor="let action of actionButtons"
+                  (click)="action.action(item)"
+                  class="action-btn"
+                  [ngClass]="getColor(action, item)"
+                >
+                  {{ getLabel(action, item) }}
+                </button>
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

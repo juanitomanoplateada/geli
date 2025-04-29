@@ -1,12 +1,24 @@
 <div class="modal-backdrop" *ngIf="show">
   <div class="modal-box">
     <h3>{{ title }}</h3>
+
     <ng-content></ng-content>
+
     <div class="modal-actions">
-      <button class="confirm-btn" (click)="confirm.emit()">
-        {{ confirmLabel }}
+      <button
+        class="confirm-btn"
+        (click)="confirm.emit()"
+        [disabled]="isLoading"
+      >
+        <ng-container *ngIf="!isLoading; else loadingTemplate">
+          {{ confirmLabel }}
+        </ng-container>
+        <ng-template #loadingTemplate>
+          <span class="spinner"></span> Procesando...
+        </ng-template>
       </button>
-      <button class="cancel-btn" (click)="cancel.emit()">
+
+      <button class="cancel-btn" (click)="cancel.emit()" [disabled]="isLoading">
         {{ cancelLabel }}
       </button>
     </div>

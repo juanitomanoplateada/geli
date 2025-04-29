@@ -31,10 +31,14 @@ export class AuthService {
     });
   }
 
-  changePassword(newPassword: string): Observable<any> {
-    return this.http.post(`${this.apiUrlPassword}/change-password`, {
-      newPassword,
+  validateCurrentPassword(currentPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrlPassword}/validate`, {
+      currentPassword,
     });
+  }
+
+  changePassword(newPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrlPassword}/change`, { newPassword });
   }
 
   resetPasswordWithToken(
@@ -45,5 +49,12 @@ export class AuthService {
       tempToken,
       newPassword,
     });
+  }
+
+  getCurrentUserEmail(): string {
+    // Ejemplo: si guardas el token JWT en localStorage
+    const token = localStorage.getItem('auth_token')!;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.email;
   }
 }

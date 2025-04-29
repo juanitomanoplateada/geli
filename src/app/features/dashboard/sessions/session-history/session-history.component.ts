@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DropdownFilterComponent } from '../../../../shared/components/dropdown-filter/dropdown-filter.component';
 import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
 import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
+import { SearchAdvancedComponent } from '../../../../shared/components/search-advanced/search-advanced.component'; // Importamos el nuevo
 
 interface SessionRecord {
   id: number;
@@ -30,6 +31,7 @@ interface SessionRecord {
     DropdownFilterComponent,
     IntegerOnlyDirective,
     UppercaseDirective,
+    SearchAdvancedComponent, // ✅ nuevo
   ],
   templateUrl: './session-history.component.html',
   styleUrls: ['./session-history.component.scss'],
@@ -55,7 +57,7 @@ export class SessionHistoryComponent {
     sampleCountMin: null as number | null,
     sampleCountMax: null as number | null,
     function: '',
-    user: '',
+    user: '', // <-- aquí importante
   };
 
   sessionRecords: SessionRecord[] = [
@@ -102,39 +104,61 @@ export class SessionHistoryComponent {
     new Set(this.sessionRecords.map((s) => s.responsible))
   );
 
-  labSearch = '';
-  equipmentSearch = '';
-  functionSearch = '';
-  userSearch = '';
-
-  showLabDropdown = false;
-  showEquipmentDropdown = false;
-  showFunctionDropdown = false;
-  showUserDropdown = false;
-
-  get filteredLabs() {
-    return this.availableLabs.filter((lab) =>
-      lab.toLowerCase().includes(this.labSearch.toLowerCase())
-    );
-  }
-
-  get filteredEquipments() {
-    return this.availableEquipments.filter((equipment) =>
-      equipment.toLowerCase().includes(this.equipmentSearch.toLowerCase())
-    );
-  }
-
-  get filteredFunctions() {
-    return this.availableFunctions.filter((func) =>
-      func.toLowerCase().includes(this.functionSearch.toLowerCase())
-    );
-  }
-
-  get filteredUsers() {
-    return this.availableUsers.filter((user) =>
-      user.toLowerCase().includes(this.userSearch.toLowerCase())
-    );
-  }
+  // 💥 Nueva configuración dinámica de filtros
+  filtersConfig = [
+    {
+      key: 'lab',
+      type: 'dropdown',
+      label: 'Laboratorio',
+      options: this.availableLabs,
+    },
+    {
+      key: 'equipment',
+      type: 'dropdown',
+      label: 'Equipo / Patrón',
+      options: this.availableEquipments,
+    },
+    {
+      key: 'verifiedStatus',
+      type: 'select',
+      label: 'Estado - Verificado',
+      options: ['SI', 'NO'],
+    },
+    {
+      key: 'usageStatus',
+      type: 'select',
+      label: 'Estado - Para uso',
+      options: ['Disponible', 'No disponible'],
+    },
+    {
+      key: 'function',
+      type: 'dropdown',
+      label: 'Función utilizada',
+      options: this.availableFunctions,
+    },
+    {
+      key: 'user',
+      type: 'dropdown',
+      label: 'Responsable',
+      options: this.availableUsers,
+    },
+    { key: 'dateFrom', type: 'date', label: 'Fecha desde' },
+    { key: 'dateTo', type: 'date', label: 'Fecha hasta' },
+    { key: 'timeFrom', type: 'time', label: 'Hora desde' },
+    { key: 'timeTo', type: 'time', label: 'Hora hasta' },
+    {
+      key: 'usageDurationMin',
+      type: 'number',
+      label: 'Tiempo de uso desde (min)',
+    },
+    {
+      key: 'usageDurationMax',
+      type: 'number',
+      label: 'Tiempo de uso hasta (min)',
+    },
+    { key: 'sampleCountMin', type: 'number', label: 'Muestras desde' },
+    { key: 'sampleCountMax', type: 'number', label: 'Muestras hasta' },
+  ];
 
   get filteredSessions(): SessionRecord[] {
     return this.sessionRecords
@@ -223,13 +247,15 @@ export class SessionHistoryComponent {
       function: '',
       user: '',
     };
-
-    this.labSearch = '';
-    this.equipmentSearch = '';
-    this.functionSearch = '';
-    this.userSearch = '';
     this.searchQuery = '';
-
     this.onSearch();
   }
+
+  get functionsUsedDisplay(): string {
+    if (!this.selectedSession?.functionsUsed?.length) {
+      return 'NO APLICA';
+    }
+    return this.selectedSession.functionsUsed.join(', ').toUpperCase();
+  }
+
 }

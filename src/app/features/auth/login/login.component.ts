@@ -21,6 +21,8 @@ export class LoginComponent {
   message: string = '';
   hasError: boolean = false;
 
+  isLoading: boolean = false;
+
   constructor(private authService: AuthService, private router: Router) {}
 
   togglePasswordVisibility(): void {
@@ -30,6 +32,7 @@ export class LoginComponent {
   onLogin(): void {
     const cleanUsername = this.username.trim().toLowerCase();
 
+    this.isLoading = true;
     this.authService.login(cleanUsername, this.password).subscribe({
       next: (response) => {
         const token = response.access_token;
@@ -38,7 +41,6 @@ export class LoginComponent {
         const user = decoded?.preferred_username || '';
         const roles = decoded?.realm_access?.roles || [];
 
-        // 🔐 Guardar sesión
         localStorage.setItem('auth_token', token);
         localStorage.setItem('username', user);
         localStorage.setItem('roles', JSON.stringify(roles));
@@ -49,12 +51,14 @@ export class LoginComponent {
 
         setTimeout(() => {
           this.router.navigate(['/dashboard']);
+          this.isLoading = false;
         }, 1000);
       },
       error: (err) => {
         console.error('Login error:', err);
         this.message = 'Usuario o contraseña incorrectos';
         this.hasError = true;
+        this.isLoading = false;
 
         setTimeout(() => {
           this.message = '';

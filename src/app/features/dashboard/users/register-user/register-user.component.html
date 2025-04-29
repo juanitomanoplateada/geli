@@ -20,6 +20,7 @@
         />
         <span class="domain-display">&#64;uptc.edu.co</span>
       </div>
+
       <div
         *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched"
         class="error-message"
@@ -50,6 +51,7 @@
           appUppercase
         />
       </div>
+
       <div
         *ngIf="
           userForm.get('firstName')?.invalid &&
@@ -79,6 +81,7 @@
         placeholder="Número de identificación"
         class="form-control"
         appUppercaseNospace
+        appIntegerOnly
       />
       <div
         *ngIf="
@@ -94,17 +97,13 @@
     <!-- Grupo: Rol -->
     <div class="form-group">
       <label for="role">Rol</label>
-      <select
-        id="role"
-        class="form-control"
-        formControlName="role"
-        (change)="handleRoleChange($event)"
-      >
+      <select id="role" class="form-control" formControlName="role">
         <option value="" disabled selected>Seleccione un rol</option>
         <option *ngFor="let role of availableRoles" [value]="role">
           {{ role }}
         </option>
       </select>
+
       <div
         *ngIf="userForm.get('role')?.invalid && userForm.get('role')?.touched"
         class="error-message"
@@ -113,31 +112,25 @@
       </div>
     </div>
 
-    <!-- Grupo: Fecha de Asignación -->
-    <div class="form-group" *ngIf="showAssignmentDateField()">
-      <label for="assignmentDate">Fecha de Asignación</label>
-      <input
-        id="assignmentDate"
-        type="date"
-        class="form-control"
-        formControlName="assignmentDate"
-        [min]="todayDate"
-      />
+    <!-- Grupo: Cargo -->
+    <div class="form-group">
+      <label for="cargo">Cargo</label>
+      <app-dropdown-search-addable
+        [options]="availableCargos"
+        [selectedValue]="cargoValue"
+        (select)="userForm.get('cargo')?.setValue($event)"
+        (addNew)="onCreateCargo($event)"
+      ></app-dropdown-search-addable>
+
       <div
-        *ngIf="userForm.get('assignmentDate')?.errors?.['required'] && userForm.get('assignmentDate')?.touched"
+        *ngIf="userForm.get('cargo')?.invalid && userForm.get('cargo')?.touched"
         class="error-message"
       >
-        Debe seleccionar una fecha
-      </div>
-      <div
-        *ngIf="userForm.get('assignmentDate')?.errors?.['pastDate'] && userForm.get('assignmentDate')?.touched"
-        class="error-message"
-      >
-        La fecha debe ser hoy o futura
+        Debe seleccionar o agregar un cargo
       </div>
     </div>
 
-    <!-- Grupo: Mensaje de retroalimentación -->
+    <!-- Mensaje de Retroalimentación -->
     <div
       *ngIf="feedbackMessage"
       [ngClass]="feedbackSuccess ? 'feedback success' : 'feedback error'"
@@ -146,27 +139,34 @@
       {{ feedbackMessage }}
     </div>
 
-    <!-- Grupo: Botones -->
+    <!-- Botones de Acción -->
     <div class="button-group">
-      <button type="button" class="btn cancel-btn" (click)="resetForm()">
+      <button
+        type="button"
+        class="btn cancel-btn"
+        (click)="resetForm()"
+        [disabled]="isSubmitting"
+      >
         Cancelar
       </button>
+
       <button
         type="submit"
         class="btn submit-btn"
-        [disabled]="!userForm.valid || emailAlreadyExists"
+        [disabled]="!userForm.valid || emailAlreadyExists || isSubmitting"
       >
         Registrar Persona
       </button>
     </div>
 
-    <!-- Modal: Confirmación -->
+    <!-- Modal de Confirmación -->
     <div class="modal-backdrop" *ngIf="showConfirmationModal">
       <app-confirm-modal
         [title]="'Confirmar Registro'"
         [show]="showConfirmationModal"
         [confirmLabel]="'Confirmar'"
         [cancelLabel]="'Cancelar'"
+        [isLoading]="isSubmitting"
         (confirm)="confirmRegistration()"
         (cancel)="cancelConfirmation()"
       >
@@ -181,10 +181,7 @@
             <strong>Identificación:</strong> {{ userForm.value.identification }}
           </li>
           <li><strong>Rol:</strong> {{ userForm.value.role }}</li>
-          <li *ngIf="userForm.value.role === 'Personal Autorizado'">
-            <strong>Fecha de asignación:</strong>
-            {{ userForm.value.assignmentDate }}
-          </li>
+          <li><strong>Cargo:</strong> {{ userForm.value.cargo }}</li>
         </ul>
       </app-confirm-modal>
     </div>

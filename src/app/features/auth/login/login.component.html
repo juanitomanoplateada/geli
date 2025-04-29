@@ -59,9 +59,9 @@
       <button
         type="submit"
         class="login-button"
-        [disabled]="!username || !password"
+        [disabled]="!username || !password || isLoading"
       >
-        Acceder
+        {{ isLoading ? "⏳ Accediendo..." : "Acceder" }}
       </button>
     </form>
 

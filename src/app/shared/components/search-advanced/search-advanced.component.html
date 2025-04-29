@@ -1,0 +1,58 @@
+<div class="search-bar">
+  <!-- Input principal de búsqueda -->
+  <input
+    type="text"
+    appUppercase
+    [(ngModel)]="searchQuery"
+    (ngModelChange)="searchQueryChange.emit($event)"
+    (keyup.enter)="onSearch()"
+    placeholder="Buscar..."
+    class="search-input"
+    [disabled]="isLoading"
+  />
+
+  <!-- Botón de buscar -->
+  <button (click)="onSearch()" class="search-button" [disabled]="isLoading">
+    🔍 <span *ngIf="!isLoading">Buscar</span>
+    <span *ngIf="isLoading">Buscando...</span>
+  </button>
+
+  <!-- Botón de búsqueda avanzada -->
+  <button
+    (click)="onToggleAdvanced()"
+    class="advanced-search-btn"
+    [disabled]="isLoading"
+  >
+    {{ showAdvancedSearch ? "Ocultar filtros" : "Búsqueda avanzada" }}
+  </button>
+</div>
+
+<!-- Panel de filtros avanzados -->
+<div *ngIf="showAdvancedSearch" class="advanced-search">
+  <!-- Sección para seleccionar filtros visibles -->
+  <app-advanced-search-filters
+    [availableFilters]="availableFilterKeys"
+    [activeFilters]="activeFilterKeys"
+    (activeFiltersChange)="onActiveFiltersChange($event)"
+  ></app-advanced-search-filters>
+
+  <!-- Renderizado de campos activos -->
+  <app-search-advanced-fields
+    [filters]="filters"
+    [options]="options"
+    [fieldsConfig]="activeFieldsConfig"
+    [isLoading]="isLoading"
+    (filtersChange)="filtersChange.emit($event)"
+  ></app-search-advanced-fields>
+
+  <!-- Botón para limpiar filtros -->
+  <div class="filter-actions">
+    <button
+      class="clear-filters-btn"
+      (click)="onClear()"
+      [disabled]="isLoading"
+    >
+      Limpiar filtros
+    </button>
+  </div>
+</div>

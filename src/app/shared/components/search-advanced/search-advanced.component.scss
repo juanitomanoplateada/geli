@@ -1,0 +1,139 @@
+.search-bar {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  .search-input {
+    flex: 1 1 300px;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-width: 200px;
+  }
+
+  .search-button,
+  .advanced-search-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    min-width: 140px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* Botón Buscar */
+  .search-button {
+    background-color: #007bff; /* Azul */
+    color: white;
+
+    &:hover {
+      background-color: #0056b3; /* Azul más oscuro */
+    }
+  }
+
+  /* Botón Búsqueda avanzada */
+  .advanced-search-btn {
+    background-color: #6c757d; /* Gris */
+    color: white;
+
+    &:hover {
+      background-color: #5a6268; /* Gris más oscuro */
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .search-input {
+      flex: 1 1 auto;
+      width: 100%;
+    }
+
+    .search-button,
+    .advanced-search-btn {
+      width: 100%;
+    }
+  }
+}
+
+/* Estilos para filtros avanzados */
+.advanced-search {
+  margin-top: 1rem;
+}
+
+/* Botón limpiar filtros */
+.filter-actions {
+  margin-top: 1.5rem;
+  text-align: right;
+
+  .clear-filters-btn {
+    padding: 0.6rem 1.2rem;
+    background-color: #f44336;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.9rem;
+
+    &:hover {
+      background-color: #d32f2f;
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  }
+
+  @media (max-width: 768px) {
+    text-align: center;
+    .clear-filters-btn {
+      width: 100%;
+    }
+  }
+}
+
+/* Botones de Activar/Desactivar */
+.actions-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.toggle-status-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+  min-width: 140px;
+  text-align: center;
+
+  &.activate {
+    background-color: #28a745; /* Verde */
+
+    &:hover {
+      background-color: #218838; /* Verde más oscuro */
+    }
+  }
+
+  &.deactivate {
+    background-color: #dc3545; /* Rojo */
+
+    &:hover {
+      background-color: #c82333; /* Rojo más oscuro */
+    }
+  }
+}

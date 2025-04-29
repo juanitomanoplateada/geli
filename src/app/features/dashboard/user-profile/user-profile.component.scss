@@ -192,3 +192,18 @@ h3 {
     font-size: 0.95rem;
   }
 }
+
+.status-dot {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  &.active {
+    background-color: #4caf50; // verde
+  }
+  &.inactive {
+    background-color: #f44336; // rojo
+  }
+}

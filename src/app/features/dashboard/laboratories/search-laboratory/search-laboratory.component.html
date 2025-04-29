@@ -1,118 +1,36 @@
 <div class="search-container">
-  <!-- Búsqueda principal -->
-  <div class="search-bar">
-    <input
-      type="text"
-      [(ngModel)]="searchQuery"
-      (keyup)="onKeyUp($event)"
-      placeholder="Buscar por nombre o descripción..."
-      class="search-input"
-      [disabled]="isLoading"
-    />
+  <app-search-advanced
+    [searchQuery]="searchQuery"
+    [filters]="filters"
+    [isLoading]="isLoading"
+    [showAdvancedSearch]="showAdvancedSearch"
+    [fieldsConfig]="fieldsConfig"
+    [availableFilterKeys]="availableFilterKeys"
+    [activeFilterKeys]="activeFilterKeys"
+    (searchQueryChange)="searchQuery = $event"
+    (filtersChange)="filters = $event; performSearch()"
+    (activeFilterKeysChange)="activeFilterKeys = $event"
+    (triggerSearch)="performSearch()"
+    (clearFilters)="resetSearch()"
+    (toggleAdvanced)="toggleFilters()"
+  ></app-search-advanced>
 
-    <button
-      (click)="performSearch()"
-      class="search-button"
-      [disabled]="isLoading"
-    >
-      <span class="search-icon">🔍</span>
-      <span *ngIf="!isLoading">Buscar</span>
-      <span *ngIf="isLoading">Buscando...</span>
-    </button>
-
-    <button
-      (click)="toggleAdvancedSearch()"
-      class="advanced-search-btn"
-      [disabled]="isLoading"
-    >
-      {{ showAdvancedSearch ? "Ocultar filtros" : "Búsqueda avanzada" }}
-    </button>
-  </div>
-
-  <!-- Filtros avanzados -->
-  <div *ngIf="showAdvancedSearch" class="advanced-search">
-    <!-- Filtro: Disponibilidad -->
-    <div class="filter-group">
-      <label for="availabilityFilter">Disponibilidad:</label>
-      <select
-        id="availabilityFilter"
-        [(ngModel)]="filters.availability"
-        (change)="performSearch()"
-        [disabled]="isLoading"
-      >
-        <option value="">Todas</option>
-        <option value="Disponible">Disponible</option>
-        <option value="No disponible">No disponible</option>
-      </select>
-    </div>
-
-    <!-- Filtro: Ubicación con buscador embebido -->
-    <div class="filter-group">
-      <label>Ubicación:</label>
-      <app-dropdown-filter
-        [options]="availableLocations"
-        [selected]="filters.location"
-        [placeholder]="'Seleccione ubicación...'"
-        [allowEmpty]="'Todas'"
-        (selectedChange)="onLocationChange($event)"
-      ></app-dropdown-filter>
-    </div>
-
-    <button
-      (click)="clearFilters()"
-      class="clear-filters-btn"
-      [disabled]="isLoading"
-    >
-      Limpiar filtros
-    </button>
-  </div>
-
-  <!-- Estado de carga -->
   <div *ngIf="isLoading" class="loading-state">
     <div class="spinner"></div>
     <p>Buscando laboratorios...</p>
   </div>
 
-  <!-- Resultados -->
-  <div *ngIf="!isLoading && laboratories.length > 0" class="results-container">
-    <h3>Resultados ({{ laboratories.length }})</h3>
-    <div class="results-grid">
-      <div class="results-header">
-        <div>Nombre</div>
-        <div>Ubicación</div>
-        <div>Descripción</div>
-        <div>Disponibilidad</div>
-        <div>Acciones</div>
-      </div>
+  <app-results-table
+    *ngIf="!isLoading && laboratories.length > 0"
+    [columns]="columns"
+    [data]="laboratories"
+    [actionButtons]="actionButtons"
+    [sortEnabled]="true"
+  ></app-results-table>
 
-      <div
-        *ngFor="let lab of laboratories; trackBy: trackById"
-        class="result-item"
-      >
-        <div data-label="Nombre">{{ lab.laboratoryName }}</div>
-        <div data-label="Ubicación">
-          {{ lab.location?.locationName || "-" }}
-        </div>
-        <div data-label="Descripción">{{ lab.laboratoryDescription }}</div>
-        <div data-label="Disponibilidad">
-          {{ lab.laboratoryAvailability ? "Disponible" : "No disponible" }}
-        </div>
-        <div data-label="Acciones">
-          <button class="search-button" (click)="navigateToEdit(lab.id)">
-            Editar
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Sin resultados -->
-  <div
-    *ngIf="!isLoading && searchQuery && laboratories.length === 0"
-    class="no-results"
-  >
-    <p>No se encontraron laboratorios para "{{ searchQuery }}"</p>
-    <button (click)="clearFilters()" class="try-again-btn">
+  <div *ngIf="!isLoading && laboratories.length === 0" class="no-results">
+    <p>{{ buildNoResultsMessage() }}</p>
+    <button (click)="resetSearch()" class="try-again-btn">
       Limpiar búsqueda
     </button>
   </div>

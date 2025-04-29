@@ -1,0 +1,34 @@
+<div
+  class="dropdown"
+  [class.disabled]="disabled"
+  appClickOutside
+  (appClickOutside)="close()"
+>
+  <div class="selected" (click)="toggleDropdown()">
+    {{ selectedValue || placeholder }}
+  </div>
+
+  <div class="dropdown-list" *ngIf="showDropdown()">
+    <input
+      type="text"
+      [ngModel]="searchTerm()"
+      (ngModelChange)="searchTerm.set($event.toUpperCase())"
+      placeholder="Buscar..."
+      title="Buscar opciones"
+      aria-label="Buscar opción"
+      appUppercase
+    />
+
+    <div
+      class="option"
+      *ngFor="let opt of filteredOptions"
+      (click)="onSelect(opt)"
+    >
+      {{ opt }}
+    </div>
+
+    <div class="option add-new" *ngIf="canAddNew()" (click)="onAddNew()">
+      ➕ Agregar “{{ searchTerm().trim() }}”
+    </div>
+  </div>
+</div>

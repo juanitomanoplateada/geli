@@ -13,6 +13,7 @@ export class ConfirmModalComponent {
   @Input() show: boolean = false;
   @Input() confirmLabel: string = 'Confirmar';
   @Input() cancelLabel: string = 'Cancelar';
+  @Input() isLoading: boolean = false; // 👈 NUEVO
 
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();

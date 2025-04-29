@@ -1,0 +1,18 @@
+<div class="filter-visibility">
+  <div class="filter-buttons">
+    <h3>Filtros visibles:</h3>
+    <button (click)="selectAll()">Seleccionar todos</button>
+    <button (click)="deselectAll()">Deseleccionar todos</button>
+  </div>
+
+  <div class="filter-checkboxes">
+    <label *ngFor="let filter of availableFilters">
+      <input
+        type="checkbox"
+        [checked]="activeFilters.includes(filter.key)"
+        (change)="toggleFilter(filter.key)"
+      />
+      {{ filter.label }}
+    </label>
+  </div>
+</div>

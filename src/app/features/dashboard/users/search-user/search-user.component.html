@@ -1,158 +1,64 @@
 <div class="search-container">
-  <!-- Barra de búsqueda principal -->
-  <div class="search-bar">
-    <input
-      type="text"
-      [(ngModel)]="query"
-      (keyup)="onKeyUp($event)"
-      placeholder="Buscar por nombre o identificación..."
-      class="search-input"
-      [disabled]="loading"
-    />
+  <!-- Barra de búsqueda y búsqueda avanzada -->
+  <app-search-advanced
+    [searchQuery]="query"
+    [filters]="filters"
+    [isLoading]="loading"
+    [showAdvancedSearch]="showFilters"
+    [fieldsConfig]="fieldsConfig"
+    [availableFilterKeys]="availableFilterKeys"
+    [activeFilterKeys]="activeFilterKeys"
+    (searchQueryChange)="query = $event"
+    (filtersChange)="onFiltersChange($event)"
+    (activeFilterKeysChange)="activeFilterKeys = $event"
+    (triggerSearch)="performSearch()"
+    (clearFilters)="resetSearch()"
+    (toggleAdvanced)="toggleFilters()"
+  ></app-search-advanced>
 
-    <button
-      (click)="performSearch()"
-      class="search-button"
-      [disabled]="loading"
-    >
-      <span class="search-icon">🔍</span>
-      <span *ngIf="!loading">Buscar</span>
-      <span *ngIf="loading">Buscando...</span>
-    </button>
-
-    <button
-      (click)="toggleFilters()"
-      class="advanced-search-btn"
-      [disabled]="loading"
-    >
-      {{ showFilters ? "Ocultar filtros" : "Búsqueda avanzada" }}
-    </button>
-  </div>
-
-  <!-- Filtros avanzados -->
-  <div *ngIf="showFilters" class="advanced-search">
-    <div class="filter-group">
-      <label for="statusFilter">Estado:</label>
-      <select
-        id="statusFilter"
-        [(ngModel)]="filters.status"
-        (change)="performSearch()"
-        [disabled]="loading"
-      >
-        <option value="">Todos</option>
-        <option value="Activo">Activo</option>
-        <option value="Inactivo">Inactivo</option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label for="dateTypeFilter">Tipo de fecha:</label>
-      <select
-        id="dateTypeFilter"
-        [(ngModel)]="filters.dateType"
-        [disabled]="loading"
-      >
-        <option value="createdAt">Creación</option>
-        <option value="updatedAt">Modificación</option>
-        <option value="assignedAt">Asignada</option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label for="startDate">Fecha desde:</label>
-      <input
-        type="date"
-        id="startDate"
-        [(ngModel)]="filters.startDate"
-        [disabled]="loading"
-      />
-    </div>
-
-    <div class="filter-group">
-      <label for="endDate">Fecha hasta:</label>
-      <input
-        type="date"
-        id="endDate"
-        [(ngModel)]="filters.endDate"
-        [disabled]="loading"
-      />
-    </div>
-
-    <div class="filter-group">
-      <label for="roleFilter">Rol:</label>
-      <select
-        id="roleFilter"
-        [(ngModel)]="filters.role"
-        (change)="performSearch()"
-        [disabled]="loading"
-      >
-        <option value="">Todos</option>
-        <option value="Personal Autorizado">Personal Autorizado</option>
-        <option value="Analista de Calidad">Analista de Calidad</option>
-      </select>
-    </div>
-
-    <button
-      (click)="resetSearch()"
-      class="clear-filters-btn"
-      [disabled]="loading"
-    >
-      Limpiar filtros
-    </button>
-  </div>
-
-  <!-- Indicador de carga -->
+  <!-- Estado de carga -->
   <div *ngIf="loading" class="loading-state">
     <div class="spinner"></div>
     <p>Buscando usuarios...</p>
   </div>
 
-  <!-- Resultados -->
-  <div *ngIf="!loading && results.length > 0" class="results-container">
-    <h3>Resultados ({{ results.length }})</h3>
-    <div class="results-grid">
-      <div class="results-header">
-        <div>Nombre</div>
-        <div>Identificación</div>
-        <div>Rol</div>
-        <div>Estado</div>
-        <div>Creación</div>
-        <div>Asignación</div>
-        <div>Modificación</div>
-        <div>Acciones</div>
-      </div>
-
-      <div
-        *ngFor="let user of results; trackBy: trackByUserId"
-        class="result-item"
-      >
-        <div data-label="Nombre">{{ user.name }}</div>
-        <div data-label="Identificación">{{ user.id }}</div>
-        <div data-label="Rol">{{ user.role.name }}</div>
-        <div data-label="Estado">{{ user.status }}</div>
-        <div data-label="Creación">
-          {{ user.createdAt | date : "dd/MM/yyyy" }}
-        </div>
-        <div data-label="Asignación">
-          {{ user.assignedAt | date : "dd/MM/yyyy" }}
-        </div>
-        <div data-label="Modificación">
-          {{ user.updatedAt | date : "dd/MM/yyyy" }}
-        </div>
-        <div data-label="Acciones">
-          <button class="search-button" (click)="goToEditUser(user.id)">
-            Editar
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Resultados de usuarios -->
+  <app-results-table
+    *ngIf="!loading && users.length > 0"
+    [columns]="columns"
+    [data]="users"
+    [actionButtons]="actionButtons"
+    [sortEnabled]="true"
+    [trackByFunction]="trackByIdentification"
+  ></app-results-table>
 
   <!-- Sin resultados -->
-  <div *ngIf="!loading && query && results.length === 0" class="no-results">
-    <p>No se encontraron usuarios para "{{ query }}"</p>
+  <div *ngIf="hasSearched && !loading && users.length === 0" class="no-results">
+    <p>{{ buildNoResultsMessage() }}</p>
     <button (click)="resetSearch()" class="try-again-btn">
       Limpiar búsqueda
     </button>
   </div>
+
+  <app-confirm-modal
+    *ngIf="selectedUser"
+    [title]="
+      selectedUser.status === 'Activo'
+        ? '¿Desactivar usuario?'
+        : '¿Activar usuario?'
+    "
+    [show]="showConfirmModal"
+    [confirmLabel]="selectedUser.status === 'Activo' ? 'Desactivar' : 'Activar'"
+    [cancelLabel]="'Cancelar'"
+    [isLoading]="confirmLoading"
+    (confirm)="confirmToggleStatus()"
+    (cancel)="closeConfirmModal()"
+  >
+    <div class="user-info">
+      <p><strong>Nombre:</strong> {{ selectedUser.fullName }}</p>
+      <p><strong>Correo:</strong> {{ selectedUser.email }}</p>
+      <p><strong>Identificación:</strong> {{ selectedUser.identification }}</p>
+      <p><strong>Estado actual:</strong> {{ selectedUser.status }}</p>
+    </div>
+  </app-confirm-modal>
 </div>

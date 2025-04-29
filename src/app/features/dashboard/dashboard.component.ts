@@ -63,12 +63,17 @@ export class DashboardComponent implements OnInit {
   }
 
   getTranslatedRole(): string {
-    const translations: { [key: string]: string } = {
-      'AUTHORIZED-USER': 'PERSONAL AUTORIZADO',
+    const translations: Record<string, string> = {
       'QUALITY-ADMIN-USER': 'ANALISTA DE CALIDAD',
+      'AUTHORIZED-USER': 'PERSONAL AUTORIZADO',
     };
-
-    const role = this.roles[0]; // puedes cambiar esto si tienes múltiples roles visibles
-    return translations[role] || role;
+    // prioriza ANALISTA, si no existe devuelve PERSONAL, si ninguno, vacío
+    if (this.roles.includes('QUALITY-ADMIN-USER')) {
+      return translations['QUALITY-ADMIN-USER'];
+    }
+    if (this.roles.includes('AUTHORIZED-USER')) {
+      return translations['AUTHORIZED-USER'];
+    }
+    return '';
   }
 }

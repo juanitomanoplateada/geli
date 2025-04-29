@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DropdownFilterComponent } from '../../../../shared/components/dropdown-filter/dropdown-filter.component';
 import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
 import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
+import { SearchAdvancedComponent } from '../../../../shared/components/search-advanced/search-advanced.component'; // 👈 ahora solo este
 
 interface SessionRecord {
   id: number;
@@ -30,6 +31,7 @@ interface SessionRecord {
     DropdownFilterComponent,
     IntegerOnlyDirective,
     UppercaseDirective,
+    SearchAdvancedComponent, // 👈 aquí importas tu nuevo search avanzado
   ],
   templateUrl: './personal-session-history.component.html',
   styleUrls: ['./personal-session-history.component.scss'],
@@ -98,6 +100,20 @@ export class PersonalSessionHistoryComponent {
   ];
   availableFunctions = ['Medición', 'Calibración', 'Alimentación continua'];
 
+  availableFilterKeys = [
+    { key: 'date', label: 'Fecha' },
+    { key: 'time', label: 'Hora' },
+    { key: 'lab', label: 'Laboratorio' },
+    { key: 'equipment', label: 'Equipo / Patrón' },
+    { key: 'verifiedStatus', label: 'Estado - Verificado' },
+    { key: 'usageStatus', label: 'Estado - Para uso' },
+    { key: 'usageDuration', label: 'Tiempo de uso (min)' },
+    { key: 'sampleCount', label: 'Cantidad de muestras' },
+    { key: 'function', label: 'Función utilizada' },
+  ];
+
+  activeFilterKeys = this.availableFilterKeys.map((f) => f.key); // Todos activos por defecto
+
   get filteredSessions(): SessionRecord[] {
     const filtered = this.sessionRecords.filter((session) => {
       const matchesQuery =
@@ -109,46 +125,36 @@ export class PersonalSessionHistoryComponent {
       const matchesLab =
         !this.filters.lab ||
         session.lab.toLowerCase() === this.filters.lab.toLowerCase();
-
       const matchesEquipment =
         !this.filters.equipment ||
         session.equipment.toLowerCase() ===
           this.filters.equipment.toLowerCase();
-
       const matchesDateFrom =
         !this.filters.dateFrom || session.date >= this.filters.dateFrom;
-
       const matchesDateTo =
         !this.filters.dateTo || session.date <= this.filters.dateTo;
-
       const matchesTimeFrom =
         !this.filters.timeFrom || session.time >= this.filters.timeFrom;
-
       const matchesTimeTo =
         !this.filters.timeTo || session.time <= this.filters.timeTo;
-
       const matchesVerifiedStatus =
         !this.filters.verifiedStatus ||
         session.verifiedStatus.toLowerCase() ===
           this.filters.verifiedStatus.toLowerCase();
-
       const matchesUsageStatus =
         !this.filters.usageStatus ||
         session.usageStatus.toLowerCase() ===
           this.filters.usageStatus.toLowerCase();
-
       const matchesUsageDuration =
         (!this.filters.usageDurationMin ||
           session.usageDuration! >= this.filters.usageDurationMin) &&
         (!this.filters.usageDurationMax ||
           session.usageDuration! <= this.filters.usageDurationMax);
-
       const matchesSampleCount =
         (!this.filters.sampleCountMin ||
           session.sampleCount! >= this.filters.sampleCountMin) &&
         (!this.filters.sampleCountMax ||
           session.sampleCount! <= this.filters.sampleCountMax);
-
       const matchesFunction =
         !this.filters.function ||
         session.functionsUsed?.some(
@@ -211,8 +217,16 @@ export class PersonalSessionHistoryComponent {
       sampleCountMax: null,
       function: '',
     };
-
     this.searchQuery = '';
     this.onSearch();
+  }
+  get functionsUsedDisplay(): string {
+    if (
+      !this.selectedSession?.functionsUsed ||
+      this.selectedSession.functionsUsed.length === 0
+    ) {
+      return 'NO APLICA';
+    }
+    return this.selectedSession.functionsUsed.join(', ').toUpperCase();
   }
 }

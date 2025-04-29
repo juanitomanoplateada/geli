@@ -19,7 +19,16 @@
         </div>
         <div class="profile-data-row">
           <span class="data-label">Estado del Perfil:</span>
-          <span class="data-value">{{ userProfile.userStatus }}</span>
+          <span class="data-value">
+            <span
+              class="status-dot"
+              [ngClass]="{
+                active: userProfile.userStatus === 'Activo',
+                inactive: userProfile.userStatus === 'Inactivo'
+              }"
+            ></span>
+            {{ userProfile.userStatus }}
+          </span>
         </div>
         <div class="profile-data-row">
           <span class="data-label">Rol:</span>
@@ -119,9 +128,15 @@
         <button
           type="submit"
           class="submit-btn"
-          [disabled]="!canSubmitPasswordChange"
+          [disabled]="!canSubmitPasswordChange || isLoadingPasswordChange"
         >
-          Cambiar Contraseña
+          <ng-container *ngIf="!isLoadingPasswordChange; else loading">
+            Cambiar Contraseña
+          </ng-container>
+          <ng-template #loading>
+            <span class="spinner-border spinner-border-sm" role="status"></span>
+            Cambiando contraseña...
+          </ng-template>
         </button>
 
         <div

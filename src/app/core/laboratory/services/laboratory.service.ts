@@ -1,17 +1,19 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Laboratory } from '../models/laboratory.model';
 
 @Injectable({ providedIn: 'root' })
 export class LaboratoryService {
-  private apiUrl = 'http://localhost:8080/api/v1/laboratories'; // Ajusta la URL de tu backend
+  private apiUrl = 'http://localhost:8080/api/v1/laboratories';
 
   constructor(private http: HttpClient) {}
 
-  getLaboratories(token: string): Observable<any[]> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-    return this.http.get<any[]>(this.apiUrl, { headers });
+  getLaboratories(): Observable<Laboratory[]> {
+    return this.http.get<Laboratory[]>(this.apiUrl);
+  }
+
+  filterLaboratories(filters: any): Observable<Laboratory[]> {
+    return this.http.post<Laboratory[]>(`${this.apiUrl}/filter`, filters);
   }
 }
