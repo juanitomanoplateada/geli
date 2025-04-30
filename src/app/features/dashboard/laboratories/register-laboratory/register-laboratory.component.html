@@ -54,12 +54,14 @@
     <!-- Lugar -->
     <div class="form-group">
       <label for="locationName">Lugar <span class="required">*</span></label>
-      <app-dropdown-search-addable
+      <app-dropdown-search-entity
         [options]="availableLocations"
-        [selectedValue]="selectedLocation"
+        [selectedValue]="selectedLocationOrProposed"
         (select)="onSelectLocation($event)"
-        placeholder="Busque la ubicación a seleccionar"
-      ></app-dropdown-search-addable>
+        (addNew)="onProposedLocation($event)"
+        placeholder="Busque o cree la ubicación a seleccionar"
+      ></app-dropdown-search-entity>
+
       <div
         *ngIf="
           labForm.get('locationName')?.invalid &&
@@ -94,7 +96,7 @@
 
     <!-- Observaciones -->
     <div class="form-group" *ngIf="labForm.get('status')?.value === 'INACTIVO'">
-      <label for="notes">Observaciones</label>
+      <label for="notes">Observaciones<span class="required">*</span></label>
       <textarea
         id="notes"
         class="form-control auto-expand"
@@ -118,10 +120,19 @@
 
     <!-- Botones -->
     <div class="button-group">
-      <button type="button" class="btn cancel-btn" (click)="resetForm()">
+      <button
+        type="button"
+        class="btn cancel-btn"
+        (click)="resetForm()"
+        [disabled]="isSubmitting"
+      >
         Cancelar
       </button>
-      <button type="submit" class="btn submit-btn" [disabled]="!labForm.valid">
+      <button
+        type="submit"
+        class="btn submit-btn"
+        [disabled]="!labForm.valid || isSubmitting"
+      >
         Registrar Laboratorio
       </button>
     </div>
@@ -132,6 +143,7 @@
       [show]="showConfirmationModal"
       [confirmLabel]="'Confirmar'"
       [cancelLabel]="'Cancelar'"
+      [isLoading]="isSubmitting"
       (confirm)="confirmSubmit()"
       (cancel)="cancelConfirmation()"
     >
@@ -143,6 +155,15 @@
         <li><strong>Estado:</strong> {{ labForm.value.status }}</li>
         <li><strong>Observaciones:</strong> {{ labForm.value.notes }}</li>
       </ul>
+
+      <!-- Feedback en el modal -->
+      <div
+        *ngIf="showModalFeedback"
+        [ngClass]="modalFeedbackSuccess ? 'feedback success' : 'feedback error'"
+        class="feedback"
+      >
+        {{ modalFeedbackMessage }}
+      </div>
     </app-confirm-modal>
   </form>
 </div>

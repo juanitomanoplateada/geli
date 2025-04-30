@@ -5,7 +5,9 @@
   <form [formGroup]="labForm" (ngSubmit)="submitForm()">
     <!-- Nombre (Deshabilitado) -->
     <div class="form-group">
-      <label for="labName">Nombre del Laboratorio</label>
+      <label for="labName"
+        >Nombre del Laboratorio<span class="required">*</span></label
+      >
       <input
         id="labName"
         type="text"
@@ -42,14 +44,17 @@
     </div>
 
     <!-- Lugar -->
+    <!-- Lugar -->
     <div class="form-group">
       <label for="locationName">Lugar <span class="required">*</span></label>
-      <app-dropdown-search-addable
+      <app-dropdown-search-entity
         [options]="availableLocations"
-        [selectedValue]="selectedLocation"
+        [selectedValue]="selectedLocationOrProposed"
         (select)="onSelectLocation($event)"
+        (addNew)="onProposedLocation($event)"
         placeholder="Busque o agregue un lugar"
-      ></app-dropdown-search-addable>
+      ></app-dropdown-search-entity>
+
       <div
         *ngIf="
           labForm.get('locationName')?.invalid &&
@@ -84,7 +89,7 @@
 
     <!-- Observaciones -->
     <div class="form-group" *ngIf="labForm.get('status')?.value === 'INACTIVO'">
-      <label for="notes">Observaciones</label>
+      <label for="notes">Observaciones <span class="required">*</span></label>
       <textarea
         id="notes"
         class="form-control auto-expand"
@@ -108,11 +113,24 @@
 
     <!-- Botones -->
     <div class="button-group">
-      <button type="button" class="btn cancel-btn" (click)="resetForm()">
-        Cancelar
+      <button
+        type="button"
+        class="btn cancel-btn"
+        [disabled]="isSubmitting"
+        (click)="goBack()"
+      >
+        Volver
       </button>
-      <button type="submit" class="btn submit-btn" [disabled]="!labForm.valid">
-        Actualizar Laboratorio
+      <button
+        type="submit"
+        class="btn submit-btn"
+        [disabled]="
+          labForm.invalid ||
+          (labForm.get('status')?.value === 'INACTIVO' &&
+            !labForm.get('notes')?.value?.trim())
+        "
+      >
+        Guardar Cambios
       </button>
     </div>
 
@@ -122,17 +140,32 @@
       [show]="showConfirmationModal"
       [confirmLabel]="'Actualizar'"
       [cancelLabel]="'Cancelar'"
+      [isLoading]="isSubmitting"
       (confirm)="confirmUpdate()"
       (cancel)="cancelConfirmation()"
     >
-      <p>Revise los datos antes de guardar los cambios:</p>
+      <p>Por favor confirme los cambios antes de guardar:</p>
       <ul class="summary-list">
-        <li><strong>Nombre:</strong> {{ labForm.value.labName }}</li>
-        <li><strong>Descripción:</strong> {{ labForm.value.description }}</li>
-        <li><strong>Lugar:</strong> {{ labForm.value.locationName }}</li>
-        <li><strong>Estado:</strong> {{ labForm.value.status }}</li>
-        <li><strong>Observaciones:</strong> {{ labForm.value.notes }}</li>
+        <li><strong>Nombre:</strong> {{ labForm.get("labName")?.value }}</li>
+        <li>
+          <strong>Descripción:</strong> {{ labForm.get("description")?.value }}
+        </li>
+        <li>
+          <strong>Lugar:</strong> {{ labForm.get("locationName")?.value }}
+        </li>
+        <li><strong>Estado:</strong> {{ labForm.get("status")?.value }}</li>
+        <li>
+          <strong>Observaciones:</strong> {{ labForm.get("notes")?.value }}
+        </li>
       </ul>
+
+      <div
+        *ngIf="modalFeedbackMessage"
+        class="feedback"
+        [ngClass]="modalFeedbackSuccess ? 'success' : 'error'"
+      >
+        {{ modalFeedbackMessage }}
+      </div>
     </app-confirm-modal>
   </form>
 </div>

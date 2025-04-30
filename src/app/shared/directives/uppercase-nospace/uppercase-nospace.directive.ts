@@ -8,7 +8,7 @@ export class UppercaseNospaceDirective {
   constructor(private el: ElementRef<HTMLInputElement>) {}
 
   @HostListener('input', ['$event'])
-  onInput(event: Event) {
+  onInput(event: Event): void {
     const input = this.el.nativeElement;
 
     const start = input.selectionStart;
@@ -23,6 +23,10 @@ export class UppercaseNospaceDirective {
       if (start !== null && end !== null) {
         input.setSelectionRange(start, end);
       }
+
+      // Disparar evento para actualizar el FormControl
+      const newEvent = new Event('input', { bubbles: true });
+      input.dispatchEvent(newEvent);
     }
   }
 }

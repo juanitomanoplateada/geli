@@ -6,8 +6,13 @@ import { Router } from '@angular/router';
 import { SearchAdvancedComponent } from '../../../../shared/components/search-advanced/search-advanced.component';
 import { ResultsTableComponent } from '../../../../shared/components/results-table/results-table.component';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
+
 import { FieldConfig } from '../../../../shared/model/field-config.model';
 import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
+import {
+  LocationService,
+  LocationDto,
+} from '../../../../core/location/services/location.service';
 
 interface LaboratoryRecord {
   id: number;
@@ -31,7 +36,7 @@ interface FilterKey {
 
 interface Filters {
   status: '' | 'Activo' | 'Inactivo';
-  locationName?: string;
+  locationId?: number;
 }
 
 @Component({
@@ -51,7 +56,7 @@ export class SearchLaboratoryComponent implements OnInit {
   query = '';
   filters: Filters = {
     status: '',
-    locationName: '',
+    locationId: undefined,
   };
 
   laboratories: LaboratoryRecord[] = [];
@@ -67,7 +72,6 @@ export class SearchLaboratoryComponent implements OnInit {
 
   columns: ColumnConfig[] = [
     { key: 'labName', label: 'Nombre', type: 'text' },
-    { key: 'description', label: 'Descripción', type: 'text' },
     { key: 'locationName', label: 'Lugar', type: 'text' },
     { key: 'status', label: 'Estado', type: 'status' },
     { key: 'notes', label: 'Observaciones', type: 'text' },
@@ -76,39 +80,53 @@ export class SearchLaboratoryComponent implements OnInit {
 
   fieldsConfig: FieldConfig[] = [
     {
+      key: 'locationId', // ahora usamos el ID
+      label: 'Lugar',
+      type: 'dropdown',
+      allowEmptyOption: 'Todos',
+    },
+    {
       key: 'status',
       label: 'Estado',
       type: 'select',
       options: ['Activo', 'Inactivo'],
       allowEmptyOption: 'Todos',
     },
-    {
-      key: 'locationName',
-      label: 'Lugar',
-      type: 'dropdown',
-      allowEmptyOption: 'Todos',
-    },
   ];
 
   options: { [key: string]: any[] } = {
-    locationName: [
-      { label: 'Bloque A', value: 'Bloque A' },
-      { label: 'Bloque B', value: 'Bloque B' },
-      { label: 'Edificio Central', value: 'Edificio Central' },
-      { label: 'Sala de Cómputo', value: 'Sala de Cómputo' },
-    ],
+    locationId: [],
   };
 
   availableFilterKeys: FilterKey[] = [
+    { key: 'locationId', label: 'Lugar' },
     { key: 'status', label: 'Estado' },
-    { key: 'locationName', label: 'Lugar' },
   ];
   activeFilterKeys: string[] = this.availableFilterKeys.map((f) => f.key);
 
-  constructor(private router: Router, private labService: LaboratoryService) {}
+  constructor(
+    private router: Router,
+    private labService: LaboratoryService,
+    private locationService: LocationService
+  ) {}
 
   ngOnInit(): void {
+    this.loadLocationOptions();
     this.performSearch();
+  }
+
+  private loadLocationOptions(): void {
+    this.locationService.getAll().subscribe({
+      next: (locations: LocationDto[]) => {
+        this.options['locationId'] = locations.map((l) => ({
+          label: l.locationName,
+          value: l.id,
+        }));
+      },
+      error: () => {
+        this.options['locationId'] = [];
+      },
+    });
   }
 
   get isFilterReady(): boolean {
@@ -121,16 +139,12 @@ export class SearchLaboratoryComponent implements OnInit {
   }
 
   performSearch(): void {
-    /*this.hasSearched = true;
-    this.lastQuery = this.query.trim();
-    this.lastFilters = { ...this.filters };
     this.loading = true;
 
     const payload: any = {
-      labName: this.query.trim() || undefined,
-      description: this.query.trim() || undefined,
-      locationName: this.filters.locationName || undefined,
-      status:
+      laboratoryName: this.query.trim() || undefined,
+      locationId: this.filters.locationId || undefined,
+      laboratoryAvailability:
         this.filters.status === 'Activo'
           ? true
           : this.filters.status === 'Inactivo'
@@ -138,34 +152,43 @@ export class SearchLaboratoryComponent implements OnInit {
           : undefined,
     };
 
-    Object.keys(payload).forEach(
-      (k) => payload[k] === undefined && delete payload[k]
-    );
+    Object.keys(payload).forEach((k) => {
+      if (payload[k] === undefined || payload[k] === '') {
+        delete payload[k];
+      }
+    });
 
     this.labService.filterLaboratories(payload).subscribe({
       next: (res) => {
-        this.laboratories = res.map((l: any) => ({
+        this.lastQuery = this.query.trim();
+        this.lastFilters = { ...this.filters };
+        this.hasSearched = true;
+
+        this.laboratories = (res || []).map((l: any) => ({
           id: l.id,
-          labName: l.labName,
-          description: l.description,
-          locationName: l.locationName,
-          status: l.status ? 'Activo' : 'Inactivo',
-          notes: l.notes || '—',
+          labName: l.laboratoryName,
+          description: l.laboratoryDescription,
+          locationName: l.location?.locationName || '—',
+          status: l.laboratoryAvailability ? 'Activo' : 'Inactivo',
+          notes: l.laboratoryObservations || '—',
         }));
+
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error al buscar laboratorios:', err);
         this.laboratories = [];
+        this.hasSearched = true;
         this.loading = false;
       },
-    });*/
+    });
   }
 
   resetSearch(): void {
     this.query = '';
     this.filters = {
       status: '',
-      locationName: '',
+      locationId: undefined,
     };
     this.activeFilterKeys = [...this.availableFilterKeys.map((f) => f.key)];
     this.performSearch();
@@ -180,11 +203,16 @@ export class SearchLaboratoryComponent implements OnInit {
     const parts: string[] = [];
 
     if (this.lastQuery)
-      parts.push(
-        `nombre o descripción conteniendo "${this.lastQuery.toUpperCase()}"`
+      parts.push(`nombre conteniendo "${this.lastQuery.toUpperCase()}"`);
+    if (this.lastFilters.locationId) {
+      const locationOption = this.options['locationId']?.find(
+        (opt) => opt.value === this.lastFilters.locationId
       );
-    if (this.lastFilters.locationName)
-      parts.push(`ubicación "${this.lastFilters.locationName}"`);
+      const locationLabel = locationOption
+        ? locationOption.label
+        : `ID ${this.lastFilters.locationId}`;
+      parts.push(`ubicación "${locationLabel}"`);
+    }
     if (this.lastFilters.status)
       parts.push(`estado "${this.lastFilters.status}"`);
 
@@ -209,21 +237,7 @@ export class SearchLaboratoryComponent implements OnInit {
   }
 
   confirmToggleStatus(): void {
-    /*if (!this.selectedLab) return;
-    const newStatus = this.selectedLab.status !== 'Activo';
-    this.confirmLoading = true;
-    this.labService
-      .toggleLaboratoryStatus(this.selectedLab.id, newStatus)
-      .subscribe({
-        next: () => {
-          this.performSearch();
-          this.closeConfirmModal();
-        },
-        error: () => {
-          this.confirmLoading = false;
-          this.closeConfirmModal();
-        },
-      });*/
+    // Implementar si tienes endpoint de estado
   }
 
   actionButtons = [

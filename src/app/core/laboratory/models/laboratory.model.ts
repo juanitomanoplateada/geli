@@ -1,15 +1,11 @@
 export interface Laboratory {
-  id: number;
+  id?: number;
   laboratoryName: string;
   laboratoryDescription: string;
   location: {
-    id: number;
+    id?: number;
     locationName: string;
-    locationType: {
-      id: number;
-      locationTypeName: string;
-    };
-    parentLocation: string;
   };
   laboratoryAvailability: boolean;
+  laboratoryObservations?: string;
 }

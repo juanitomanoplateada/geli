@@ -2,14 +2,24 @@
   <div class="filter-group" *ngFor="let field of fieldsConfig">
     <label>{{ field.label }}:</label>
 
-    <!-- Campos de texto, número, fecha o tiempo -->
+    <!-- Input para text, number, time -->
     <input
-      *ngIf="['text', 'number', 'date', 'time'].includes(field.type)"
+      *ngIf="['text', 'number', 'time'].includes(field.type)"
       [type]="field.type"
       [(ngModel)]="filters[field.key]"
       (change)="emitFilters()"
       [placeholder]="field.placeholder"
       [min]="field.type === 'number' ? 0 : null"
+      title="Ingrese"
+    />
+
+    <!-- Input para date con blur en vez de change -->
+    <input
+      *ngIf="field.type === 'date'"
+      type="date"
+      [(ngModel)]="filters[field.key]"
+      (blur)="emitFilters()"
+      [placeholder]="field.placeholder"
       title="Ingrese"
     />
 

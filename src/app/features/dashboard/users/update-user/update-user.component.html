@@ -13,7 +13,9 @@
   <form [formGroup]="userForm" (ngSubmit)="submitForm()">
     <!-- Correo Institucional -->
     <div class="form-group">
-      <label for="email">Correo Institucional</label>
+      <label for="email"
+        >Correo Institucional <span class="required">*</span></label
+      >
       <div class="email-input-group">
         <input
           id="email"
@@ -30,7 +32,7 @@
 
     <!-- Nombre Completo -->
     <div class="form-group">
-      <label>Nombre Completo</label>
+      <label>Nombre Completo <span class="required">*</span></label>
       <div class="name-split-row">
         <input
           type="text"
@@ -53,7 +55,9 @@
 
     <!-- Identificación -->
     <div class="form-group">
-      <label for="identification">Identificación</label>
+      <label for="identification"
+        >Identificación <span class="required">*</span></label
+      >
       <input
         id="identification"
         type="text"
@@ -68,7 +72,7 @@
 
     <!-- Rol -->
     <div class="form-group">
-      <label for="role">Rol</label>
+      <label for="role">Rol <span class="required">*</span></label>
       <select
         id="role"
         class="form-control"
@@ -81,7 +85,7 @@
 
     <!-- Cargo -->
     <div class="form-group">
-      <label for="cargo">Cargo</label>
+      <label for="cargo">Cargo <span class="required">*</span></label>
       <p class="helper-text">
         🔎 Busque primero el cargo. Si no lo encuentra, escriba uno nuevo para
         agregarlo.
@@ -95,7 +99,7 @@
 
     <!-- Estado -->
     <div class="form-group">
-      <label for="status">Estado</label>
+      <label for="status">Estado <span class="required">*</span></label>
       <select id="status" class="form-control" formControlName="status">
         <option *ngFor="let s of availableStatuses" [value]="s">
           <span

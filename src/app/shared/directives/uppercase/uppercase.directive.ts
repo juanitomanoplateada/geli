@@ -20,9 +20,14 @@ export class UppercaseDirective {
     if (originalValue !== uppercasedValue) {
       input.value = uppercasedValue;
 
+      // Mantener la posición del cursor
       if (start !== null && end !== null) {
         input.setSelectionRange(start, end);
       }
+
+      // Disparar evento para actualizar el FormControl
+      const newEvent = new Event('input', { bubbles: true });
+      input.dispatchEvent(newEvent);
     }
   }
 }

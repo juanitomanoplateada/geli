@@ -183,23 +183,29 @@ export class SearchUserComponent implements OnInit {
   }
 
   performSearch(): void {
+    if (
+      (this.filters.modificationDateFrom &&
+        this.filters.modificationDateFrom.length < 10) ||
+      (this.filters.modificationDateTo &&
+        this.filters.modificationDateTo.length < 10)
+    ) {
+      this.loading = false;
+      return;
+    }
+
     this.hasSearched = true;
     this.lastQuery = this.query.trim();
     this.lastFilters = { ...this.filters };
     this.loading = true;
 
     const q = this.query.trim() || undefined;
+
     const payload: any = {
       firstName: q,
       lastName: q,
       identification: q,
       email: q,
-      enabledStatus:
-        this.filters.status === 'Activo'
-          ? true
-          : this.filters.status === 'Inactivo'
-          ? false
-          : undefined,
+      enabledStatus: this.getEnabledStatusValue(this.filters.status), // ✅ aquí
       role:
         this.filters.role === 'Personal Autorizado'
           ? 'AUTHORIZED-USER'
@@ -210,7 +216,6 @@ export class SearchUserComponent implements OnInit {
         typeof this.filters.positionId === 'number'
           ? this.filters.positionId
           : undefined,
-
       modificationStatusDateFrom:
         this.filters.modificationDateFrom || undefined,
       modificationStatusDateTo: this.filters.modificationDateTo || undefined,
@@ -219,6 +224,8 @@ export class SearchUserComponent implements OnInit {
     Object.keys(payload).forEach(
       (k) => payload[k] === undefined && delete payload[k]
     );
+
+    console.log('Payload:', payload); // ✅ para depurar
 
     this.userService.filterUsers(payload).subscribe({
       next: (res) => {
@@ -332,4 +339,9 @@ export class SearchUserComponent implements OnInit {
       color: 'primary',
     },
   ];
+  private getEnabledStatusValue(status: string): boolean | undefined {
+    if (status === 'Activo') return true;
+    if (status === 'Inactivo') return false;
+    return undefined;
+  }
 }

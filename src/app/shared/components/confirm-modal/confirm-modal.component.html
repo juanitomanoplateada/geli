@@ -9,6 +9,7 @@
         class="confirm-btn"
         (click)="confirm.emit()"
         [disabled]="isLoading"
+        [ngClass]="{ 'disabled-btn': isLoading }"
       >
         <ng-container *ngIf="!isLoading; else loadingTemplate">
           {{ confirmLabel }}
@@ -18,7 +19,12 @@
         </ng-template>
       </button>
 
-      <button class="cancel-btn" (click)="cancel.emit()" [disabled]="isLoading">
+      <button
+        class="cancel-btn"
+        (click)="cancel.emit()"
+        [disabled]="isLoading"
+        [ngClass]="{ 'disabled-btn': isLoading }"
+      >
         {{ cancelLabel }}
       </button>
     </div>
