@@ -12,6 +12,11 @@ export interface CreateUserRequest {
   positionId: number;
 }
 
+export interface PositionResponse {
+  id: number;
+  name: string;
+}
+
 export interface UserRecordResponse {
   id: number;
   keycloakId: string;
@@ -23,6 +28,7 @@ export interface UserRecordResponse {
   role: string;
   modificationStatusDate: string;
   creationDate: string;
+  position?: PositionResponse;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -85,6 +91,21 @@ export class UserService {
       );
   }
 
+  updateUser(
+    userId: number,
+    data: { isActive: boolean; positionId?: number; positionName?: string }
+  ): Observable<UserRecordResponse> {
+    return this.http
+      .put<UserRecordResponse>(`${this.baseUrl}/${userId}`, data)
+      .pipe(
+        map((user) => ({
+          ...user,
+          creationDate: this.formatDate(user.creationDate),
+          modificationStatusDate: this.formatDate(user.modificationStatusDate),
+        }))
+      );
+  }
+
   checkEmailExists(email: string): Observable<boolean> {
     return this.http.get<boolean>(`${this.baseUrl}/exists-by-email`, {
       params: { email },
@@ -128,5 +149,15 @@ export class UserService {
           modificationStatusDate: this.formatDate(user.modificationStatusDate),
         }))
       );
+  }
+
+  getUserById(userId: number): Observable<UserRecordResponse> {
+    return this.http.get<UserRecordResponse>(`${this.baseUrl}/${userId}`).pipe(
+      map((user) => ({
+        ...user,
+        creationDate: this.formatDate(user.creationDate),
+        modificationStatusDate: this.formatDate(user.modificationStatusDate),
+      }))
+    );
   }
 }

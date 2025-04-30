@@ -1,22 +1,25 @@
-.update-lab-container {
-  max-width: 600px;
+.register-container {
+  max-width: 700px;
   margin: 2rem auto;
   padding: 2rem;
   background-color: #ffffff;
-  border: 1px solid #dcdde1;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  -webkit-user-select: none;
+  user-select: none;
 
-h1 {
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-}
+  h1 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
 
-.subtitle {
-  color: #7f8c8d;
-  margin-bottom: 2rem;
-  font-size: 1rem;
+  .subtitle {
+    color: #7f8c8d;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    text-align: center;
+  }
 }
 
 .form-group {
@@ -24,28 +27,44 @@ h1 {
 
   label {
     display: block;
-    font-weight: 600;
-    color: #2c3e50;
     margin-bottom: 0.5rem;
+    color: #2c3e50;
+    font-weight: 500;
   }
 
   .form-control {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #b2bec3;
+    border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 1rem;
-    transition: border-color 0.3s;
+    transition: border-color 0.3s ease;
 
     &:focus {
+      border-color: #3498db;
       outline: none;
-      border-color: #2980b9;
     }
   }
 
-  textarea.form-control {
-    resize: vertical;
+  select.form-control {
+    appearance: none;
+    background-image: url('data:image/svg+xml,<svg fill="%233498db" height="24" viewBox="0 0 24 24" width="24"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
   }
+}
+
+.auto-expand {
+  resize: none;
+  overflow: hidden;
+  transition: height 0.2s ease-in-out;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
 }
 
 .button-group {
@@ -56,34 +75,105 @@ h1 {
 
   .btn {
     padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    border: none;
     font-size: 1rem;
+    border: none;
+    border-radius: 6px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: background-color 0.3s ease;
+
+    &.cancel-btn {
+      background-color: #e74c3c;
+      color: white;
+
+      &:hover {
+        background-color: #c0392b;
+      }
+    }
+
+    &.submit-btn {
+      background-color: green;
+      color: white;
+
+      &:hover {
+        background-color: darkgreen;
+      }
+
+      &:disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+// Estilo personalizado del contenido de app-confirm-modal
+::ng-deep app-confirm-modal {
+  p {
+    text-align: center;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: #555;
   }
 
-  .cancel-btn {
-    background-color: #bdc3c7;
+  .summary-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 2rem;
+    font-size: 0.95rem;
     color: #2c3e50;
 
-    &:hover {
-      background-color: #95a5a6;
+    li {
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: flex-start;
+
+      &::before {
+        content: "•";
+        color: #3498db;
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+        line-height: 1;
+      }
+
+      strong {
+        font-weight: 600;
+        color: #1d3557;
+        margin-right: 0.25rem;
+      }
     }
   }
 
-  .submit-btn {
-    background-color: #27ae60;
-    color: white;
+  .modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
 
-    &:hover {
-      background-color: #2ecc71;
+    .btn {
+      padding: 0.6rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
 
-    &:disabled {
-      background-color: #dfe6e9;
-      color: #7f8c8d;
-      cursor: not-allowed;
+    .submit-btn {
+      background-color: green;
+      color: white;
+
+      &:hover {
+        background-color: darkgreen;
+      }
+    }
+
+    .cancel-btn {
+      background-color: #e74c3c;
+      color: white;
+
+      &:hover {
+        background-color: #c0392b;
+      }
     }
   }
 }

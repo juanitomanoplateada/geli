@@ -23,6 +23,7 @@ export class UserProfileComponent implements OnInit {
     institutionalEmail: '',
     userStatus: '',
     role: '',
+    position: ''
   };
 
   // Campos cambio de contraseña
@@ -59,12 +60,14 @@ export class UserProfileComponent implements OnInit {
     // Cargar datos de perfil
     this.userService.getUserByEmail(email).subscribe({
       next: (user: UserRecordResponse) => {
+        console.log(user);
         this.userProfile = {
           fullName: `${user.firstName} ${user.lastName}`,
           userId: user.identification.toString(),
           institutionalEmail: user.email,
           userStatus: user.enabledStatus ? 'Activo' : 'Inactivo',
           role: this.translateRole(user.role),
+          position: user.position?.name ?? 'Sin posición'
         };
       },
       error: () => {
@@ -77,9 +80,9 @@ export class UserProfileComponent implements OnInit {
   private translateRole(role: string): string {
     switch (role) {
       case 'QUALITY-ADMIN-USER':
-        return 'Administrador de Calidad';
+        return 'ANALISTA DE CALIDAD';
       case 'AUTHORIZED-USER':
-        return 'Usuario Autorizado';
+        return 'PERSONAL AUTORIZADO';
       // Añade más mapeos según tus roles
       default:
         return role;

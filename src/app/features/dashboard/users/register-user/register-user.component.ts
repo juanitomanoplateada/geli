@@ -48,6 +48,10 @@ export class RegisterUserComponent implements OnInit {
   emailAlreadyExists = false;
   isSubmitting = false;
 
+  showModalFeedback = false;
+  modalFeedbackMessage = '';
+  modalFeedbackSuccess = false;
+
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
@@ -78,15 +82,6 @@ export class RegisterUserComponent implements OnInit {
   get institutionalEmail(): string {
     const prefix = this.userForm.get('email')?.value || '';
     return `${prefix}@uptc.edu.co`.toLowerCase();
-  }
-
-  onCreateCargo(name: string) {
-    const upper = name.trim().toUpperCase();
-    this.positionService.create({ name: upper }).subscribe((dto) => {
-      this.availablePositions.push(dto);
-      this.availableCargos.push(dto.name);
-      this.userForm.get('cargo')?.setValue(dto.name);
-    });
   }
 
   submitForm(): void {
@@ -122,49 +117,71 @@ export class RegisterUserComponent implements OnInit {
   confirmRegistration(): void {
     if (this.isSubmitting) return;
 
-    // map your Spanish role to Keycloak role
+    this.isSubmitting = true;
+
     const roleMap: Record<string, string> = {
       'PERSONAL AUTORIZADO': 'AUTHORIZED-USER',
       'ANALISTA DE CALIDAD': 'QUALITY-ADMIN-USER',
     };
     const mappedRole = roleMap[this.userForm.value.role!];
 
-    // determine whether the user picked an existing position or typed a new one
     const selectedName = this.userForm.value.cargo!.trim().toUpperCase();
     const existing = this.availablePositions.find(
       (p) => p.name === selectedName
     );
 
-    // build the payload with the right field
-    const payload: any = {
+    const payload: CreateUserRequest = {
       email: this.institutionalEmail.toUpperCase(),
       firstName: this.userForm.value.firstName!,
       lastName: this.userForm.value.lastName!,
       identification: this.userForm.value.identification!,
       role: mappedRole,
+      positionId: existing?.id || 0,
     };
 
-    if (existing) {
-      // ✔ existing position
-      payload.positionId = existing.id;
-    } else {
-      // ➕ new position
-      payload.positionName = selectedName;
-    }
+    const createUser = () => {
+      this.userService.createUser(payload).subscribe({
+        next: () => {
+          this.modalFeedback('✅ Usuario registrado exitosamente.', true);
+          setTimeout(() => {
+            this.resetForm();
+            this.showConfirmationModal = false;
+            this.isSubmitting = false;
+          }, 2000); // Espera 2 segundos antes de cerrar
+        },
+        error: () => {
+          this.modalFeedback('❌ Error al registrar usuario.', false);
+          this.isSubmitting = false;
+        },
+      });
+    };
 
-    // send
-    this.isSubmitting = true;
-    this.userService.createUser(payload).subscribe({
-      next: () => {
-        this.showFeedback('✅ Persona registrada exitosamente.', true);
-        this.resetForm();
-        this.isSubmitting = false;
-      },
-      error: () => {
-        this.showFeedback('❌ Error al registrar usuario.', false);
-        this.isSubmitting = false;
-      },
-    });
+    if (!existing) {
+      this.positionService.create({ name: selectedName }).subscribe({
+        next: (newPosition) => {
+          this.availablePositions.push(newPosition);
+          this.availableCargos.push(newPosition.name);
+          payload.positionId = newPosition.id;
+          createUser();
+        },
+        error: () => {
+          this.modalFeedback('❌ Error al crear el cargo.', false);
+          this.isSubmitting = false;
+        },
+      });
+    } else {
+      createUser();
+    }
+  }
+
+  private modalFeedback(message: string, success: boolean) {
+    this.modalFeedbackMessage = message;
+    this.modalFeedbackSuccess = success;
+    this.showModalFeedback = true;
+
+    setTimeout(() => {
+      this.showModalFeedback = false;
+    }, 5000); // Muestra el mensaje durante 2 segundos
   }
 
   resetForm(): void {

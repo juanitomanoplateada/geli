@@ -25,28 +25,28 @@ import { ClickOutsideDirective } from '../../directives/click-outside/click-outs
   styleUrls: ['./dropdown-filter.component.scss'],
 })
 export class DropdownFilterComponent {
-  @Input() options: string[] = [];
-  @Input() selected: string = '';
+  @Input() options: (string | { label: string; value: any })[] = [];
+  @Input() selected: any = '';
   @Input() placeholder: string = 'Seleccione...';
   @Input() allowEmpty: string = 'Todos';
-  @Output() selectedChange = new EventEmitter<string>();
+  @Output() selectedChange = new EventEmitter<any>();
 
   showDropdown = signal(false);
   searchTerm = signal('');
 
-  get filteredOptions(): string[] {
-    return this.options.filter((opt) =>
-      opt.toLowerCase().includes(this.searchTerm().toLowerCase())
-    );
+  // 🔍 Filtro compatible con string u objeto
+  get filteredOptions(): (string | { label: string; value: any })[] {
+    const term = this.searchTerm().trim().toLowerCase();
+    return term === ''
+      ? this.options || []
+      : (this.options || []).filter((opt) => {
+          const label = typeof opt === 'string' ? opt : opt.label;
+          return label.toLowerCase().includes(term);
+        });
   }
 
-  toggleDropdown() {
-    this.showDropdown.set(!this.showDropdown());
-    this.searchTerm.set('');
-  }
-
-  select(option: string) {
-    this.selectedChange.emit(option);
+  select(option: string | { label: string; value: any }) {
+    this.selectedChange.emit(this.getValue(option));
     this.showDropdown.set(false);
   }
 
@@ -55,7 +55,35 @@ export class DropdownFilterComponent {
     this.showDropdown.set(false);
   }
 
+  toggleDropdown() {
+    this.showDropdown.set(!this.showDropdown());
+    this.searchTerm.set('');
+  }
+
   closeDropdown() {
     this.showDropdown.set(false);
+  }
+
+  getLabel(opt: string | { label: string; value: any }): string {
+    return typeof opt === 'string' ? opt : opt.label;
+  }
+
+  getValue(opt: string | { label: string; value: any }): any {
+    return typeof opt === 'string' ? opt : opt.value;
+  }
+
+  searchTermValue(): string {
+    return this.searchTerm();
+  }
+  getLabelFromValue(value: any): string {
+    if (value === '' || value === null || value === undefined) return '';
+
+    const match = this.options.find((opt) =>
+      typeof opt === 'string' ? opt === value : opt.value === value
+    );
+
+    if (!match) return value; // ← evita romper si no encuentra
+
+    return this.getLabel(match);
   }
 }

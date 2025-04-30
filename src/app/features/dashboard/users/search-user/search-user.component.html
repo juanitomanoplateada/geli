@@ -1,11 +1,13 @@
 <div class="search-container">
   <!-- Barra de búsqueda y búsqueda avanzada -->
   <app-search-advanced
+  *ngIf="isFilterReady && !loading"
     [searchQuery]="query"
     [filters]="filters"
     [isLoading]="loading"
     [showAdvancedSearch]="showFilters"
     [fieldsConfig]="fieldsConfig"
+    [options]="options"
     [availableFilterKeys]="availableFilterKeys"
     [activeFilterKeys]="activeFilterKeys"
     (searchQueryChange)="query = $event"

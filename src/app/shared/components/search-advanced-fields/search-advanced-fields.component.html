@@ -23,22 +23,30 @@
       [allowEmpty]="field.allowEmptyOption || 'Todas'"
     ></app-dropdown-filter>
 
-    <!-- Select clásico HTML -->
     <select
       *ngIf="field.type === 'select'"
       [(ngModel)]="filters[field.key]"
       (change)="emitFilters()"
       title="Seleccione"
     >
-      <!-- 🚀 Mostrar opción Todos/Todas si existe -->
-      <option *ngIf="field.allowEmptyOption" value="">
+      <!-- Opción vacía -->
+      <option *ngIf="field.allowEmptyOption" [value]="''">
         {{ field.allowEmptyOption }}
       </option>
 
-      <!-- 🚀 Listar opciones normales -->
-      <option *ngFor="let opt of field.options" [value]="opt">
-        {{ opt }}
-      </option>
+      <!-- Si las opciones son de tipo string[] -->
+      <ng-container *ngIf="isStringArray(field.options)">
+        <option *ngFor="let opt of field.options" [value]="opt">
+          {{ opt }}
+        </option>
+      </ng-container>
+
+      <!-- Si las opciones son de tipo { label, value }[] -->
+      <ng-container *ngIf="isObjectArray(field.options)">
+        <option *ngFor="let opt of field.options" [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      </ng-container>
     </select>
   </div>
 </div>

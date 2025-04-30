@@ -3,14 +3,16 @@
   <p class="subtitle">Ingrese los datos del nuevo laboratorio.</p>
 
   <form [formGroup]="labForm" (ngSubmit)="submitForm()">
-    <!-- Nombre del Laboratorio -->
+    <!-- Nombre -->
     <div class="form-group">
-      <label for="labName">Nombre del Laboratorio</label>
+      <label for="labName"
+        >Nombre del Laboratorio <span class="required">*</span></label
+      >
       <input
         id="labName"
         type="text"
-        formControlName="labName"
         class="form-control"
+        formControlName="labName"
         appUppercase
         placeholder="Ej: Laboratorio de Física"
       />
@@ -26,11 +28,13 @@
 
     <!-- Descripción -->
     <div class="form-group">
-      <label for="description">Descripción</label>
+      <label for="description"
+        >Descripción <span class="required">*</span></label
+      >
       <textarea
         id="description"
-        formControlName="description"
         class="form-control auto-expand"
+        formControlName="description"
         rows="1"
         appUppercase
         placeholder="Describa brevemente el laboratorio"
@@ -47,15 +51,15 @@
       </div>
     </div>
 
-    <!-- Lugar (Dropdown Reutilizable) -->
+    <!-- Lugar -->
     <div class="form-group">
-      <label for="location">Lugar</label>
-      <app-dropdown-search
-        [options]="locationOptions"
+      <label for="locationName">Lugar <span class="required">*</span></label>
+      <app-dropdown-search-addable
+        [options]="availableLocations"
         [selectedValue]="selectedLocation"
         (select)="onSelectLocation($event)"
-        placeholder="Seleccione un lugar"
-      ></app-dropdown-search>
+        placeholder="Busque la ubicación a seleccionar"
+      ></app-dropdown-search-addable>
       <div
         *ngIf="
           labForm.get('locationName')?.invalid &&
@@ -63,21 +67,53 @@
         "
         class="error-message"
       >
-        Debe seleccionar un lugar
+        Debe seleccionar o agregar un lugar
       </div>
     </div>
 
-    <!-- Disponibilidad -->
+    <!-- Estado Actual -->
     <div class="form-group">
-      <label for="availability">¿Disponible?</label>
+      <label for="status">Estado Actual <span class="required">*</span></label>
       <select
-        id="availability"
-        formControlName="availability"
+        id="status"
         class="form-control"
+        formControlName="status"
+        (change)="onStatusChange()"
       >
-        <option [value]="true">Sí</option>
-        <option [value]="false">No</option>
+        <option value="" disabled selected>Seleccione un estado</option>
+        <option value="ACTIVO">ACTIVO</option>
+        <option value="INACTIVO">INACTIVO</option>
       </select>
+      <div
+        *ngIf="labForm.get('status')?.invalid && labForm.get('status')?.touched"
+        class="error-message"
+      >
+        Seleccione el estado actual del laboratorio
+      </div>
+    </div>
+
+    <!-- Observaciones -->
+    <div class="form-group" *ngIf="labForm.get('status')?.value === 'INACTIVO'">
+      <label for="notes">Observaciones</label>
+      <textarea
+        id="notes"
+        class="form-control auto-expand"
+        formControlName="notes"
+        rows="2"
+        appUppercase
+        placeholder="Indique las razones por las que el laboratorio está inactivo"
+        (input)="autoResize($event)"
+      ></textarea>
+      <div
+        *ngIf="
+          notesRequired &&
+          labForm.get('notes')?.invalid &&
+          labForm.get('notes')?.touched
+        "
+        class="error-message"
+      >
+        Debe ingresar observaciones si el laboratorio está inactivo
+      </div>
     </div>
 
     <!-- Botones -->
@@ -90,7 +126,7 @@
       </button>
     </div>
 
-    <!-- Modal Reutilizable -->
+    <!-- Modal de Confirmación -->
     <app-confirm-modal
       [title]="'Confirmar Registro'"
       [show]="showConfirmationModal"
@@ -104,7 +140,8 @@
         <li><strong>Nombre:</strong> {{ labForm.value.labName }}</li>
         <li><strong>Descripción:</strong> {{ labForm.value.description }}</li>
         <li><strong>Lugar:</strong> {{ labForm.value.locationName }}</li>
-        <li><strong>Disponible:</strong> {{ availabilityText }}</li>
+        <li><strong>Estado:</strong> {{ labForm.value.status }}</li>
+        <li><strong>Observaciones:</strong> {{ labForm.value.notes }}</li>
       </ul>
     </app-confirm-modal>
   </form>

@@ -9,8 +9,8 @@ import { ResultsTableComponent } from '../../../../shared/components/results-tab
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 
 import { UserService } from '../../../../core/user/services/user.service';
+import { PositionService } from '../../../../core/position/services/position.service';
 
-// Data models
 interface UserRecord {
   id: number;
   fullName: string;
@@ -18,7 +18,7 @@ interface UserRecord {
   email: string;
   role: string;
   status: string;
-  createdAt: string;
+  position?: string;
   updatedAt: string;
 }
 
@@ -34,14 +34,17 @@ interface ActionButton {
   color?: string | ((row: any) => string);
 }
 
-// Updated filters: four date fields
 interface Filters {
   role: '' | 'Personal Autorizado' | 'Analista de Calidad';
   status: '' | 'Activo' | 'Inactivo';
-  creationDateFrom: string;
-  creationDateTo: string;
+  positionId?: number | null;
   modificationDateFrom: string;
   modificationDateTo: string;
+}
+
+interface PositionDTO {
+  id: number;
+  name: string;
 }
 
 @Component({
@@ -58,121 +61,120 @@ interface Filters {
   styleUrls: ['./search-user.component.scss'],
 })
 export class SearchUserComponent implements OnInit {
-  actionButtons: ActionButton[] = [
-    {
-      label: (user) => (user.status === 'Activo' ? 'Desactivar' : 'Activar'),
-      action: (user) => this.openConfirmModal(user),
-      color: (user) => (user.status === 'Activo' ? 'danger' : 'info'),
-    },
-  ];
-
-  hasSearched = false;
-
-  // Query and filters
   query = '';
   filters: Filters = {
     role: '',
     status: '',
-    creationDateFrom: '',
-    creationDateTo: '',
+    positionId: null,
     modificationDateFrom: '',
     modificationDateTo: '',
   };
+
+  users: UserRecord[] = [];
+  positions: PositionDTO[] = [];
+  loading = false;
   showFilters = false;
+  hasSearched = false;
+  selectedUser: UserRecord | null = null;
+  showConfirmModal = false;
+  confirmLoading = false;
 
-  // Advanced search configuration with four date inputs
-  fieldsConfig: FieldConfig[] = [
-    {
-      key: 'role',
-      label: 'Rol',
-      type: 'select',
-      options: ['Personal Autorizado', 'Analista de Calidad'],
-      allowEmptyOption: 'Todos',
-    },
-    {
-      key: 'status',
-      label: 'Estado',
-      type: 'select',
-      options: ['Activo', 'Inactivo'],
-      allowEmptyOption: 'Todos',
-    },
-    {
-      key: 'creationDateFrom',
-      label: 'Fecha de creación desde',
-      type: 'date',
-      placeholder: 'dd/mm/yyyy',
-    },
-    {
-      key: 'creationDateTo',
-      label: 'Fecha de creación hasta',
-      type: 'date',
-      placeholder: 'dd/mm/yyyy',
-    },
-    {
-      key: 'modificationDateFrom',
-      label: 'Fecha de modificación desde',
-      type: 'date',
-      placeholder: 'dd/mm/yyyy',
-    },
-    {
-      key: 'modificationDateTo',
-      label: 'Fecha de modificación hasta',
-      type: 'date',
-      placeholder: 'dd/mm/yyyy',
-    },
-  ];
+  lastQuery = '';
+  lastFilters: Filters = { ...this.filters };
 
-  // Available and active filter keys
-  availableFilterKeys = [
-    { key: 'role', label: 'Rol' },
-    { key: 'status', label: 'Estado' },
-    { key: 'creationDateFrom', label: 'Fecha de creación desde' },
-    { key: 'creationDateTo', label: 'Fecha de creación hasta' },
-    { key: 'modificationDateFrom', label: 'Fecha de modificación desde' },
-    { key: 'modificationDateTo', label: 'Fecha de modificación hasta' },
-  ];
-  activeFilterKeys: string[] = [
-    'role',
-    'status',
-    'creationDateFrom',
-    'creationDateTo',
-    'modificationDateFrom',
-    'modificationDateTo',
-  ];
-
-  // Table configuration
   columns: ColumnConfig[] = [
     { key: 'fullName', label: 'Nombre completo', type: 'text' },
     { key: 'identification', label: 'Identificación', type: 'text' },
     { key: 'email', label: 'Correo institucional', type: 'text' },
     { key: 'role', label: 'Rol', type: 'text' },
     { key: 'status', label: 'Estado', type: 'status' },
-    { key: 'createdAt', label: 'Fecha de creación', type: 'text' },
+    { key: 'position', label: 'Cargo', type: 'text' },
     { key: 'updatedAt', label: 'Fecha de modificación', type: 'text' },
     { key: 'actions', label: 'Acciones', type: 'actions' },
   ];
 
-  // Data/state
-  users: UserRecord[] = [];
-  selectedUser: UserRecord | null = null;
-  showConfirmModal = false;
-  confirmLoading = false;
-  loading = false;
+  fieldsConfig: FieldConfig[] = [];
 
-  lastQuery = '';
-  lastFilters: Filters = {
-    role: '',
-    status: '',
-    creationDateFrom: '',
-    creationDateTo: '',
-    modificationDateFrom: '',
-    modificationDateTo: '',
-  };
+  availableFilterKeys = [
+    { key: 'role', label: 'Rol' },
+    { key: 'status', label: 'Estado' },
+    { key: 'positionId', label: 'Cargo' },
+    { key: 'modificationDateFrom', label: 'Fecha de modificación desde' },
+    { key: 'modificationDateTo', label: 'Fecha de modificación hasta' },
+  ];
 
-  constructor(private router: Router, private userService: UserService) {}
+  activeFilterKeys = this.availableFilterKeys.map((f) => f.key);
+
+  options: { [key: string]: any[] } = {};
+
+  constructor(
+    private router: Router,
+    private userService: UserService,
+    private positionService: PositionService
+  ) {}
 
   ngOnInit(): void {
-    this.performSearch();
+    this.loading = true;
+
+    this.positionService.getAll().subscribe({
+      next: (res) => {
+        this.positions = res;
+
+        this.options['positionId'] = res.map((p) => ({
+          label: p.name,
+          value: p.id,
+        }));
+
+        this.fieldsConfig = [
+          {
+            key: 'role',
+            label: 'Rol',
+            type: 'select',
+            options: ['Personal Autorizado', 'Analista de Calidad'],
+            allowEmptyOption: 'Todos',
+          },
+          {
+            key: 'status',
+            label: 'Estado',
+            type: 'select',
+            options: ['Activo', 'Inactivo'],
+            allowEmptyOption: 'Todos',
+          },
+          {
+            key: 'positionId',
+            label: 'Cargo',
+            type: 'dropdown',
+            allowEmptyOption: 'Todos',
+          },
+          {
+            key: 'modificationDateFrom',
+            label: 'Fecha de modificación desde',
+            type: 'date',
+            placeholder: 'dd/mm/yyyy',
+          },
+          {
+            key: 'modificationDateTo',
+            label: 'Fecha de modificación hasta',
+            type: 'date',
+            placeholder: 'dd/mm/yyyy',
+          },
+        ];
+
+        this.loading = false;
+        this.performSearch();
+      },
+      error: () => {
+        this.loading = false;
+        this.positions = [];
+        this.performSearch();
+      },
+    });
+  }
+
+  get isFilterReady(): boolean {
+    return (
+      this.fieldsConfig.length > 0 && !!this.options?.['positionId']?.length
+    );
   }
 
   onFiltersChange(updated: Partial<Filters>) {
@@ -180,12 +182,12 @@ export class SearchUserComponent implements OnInit {
     this.performSearch();
   }
 
-  // --- Backend-driven search with four date filters ---
   performSearch(): void {
     this.hasSearched = true;
     this.lastQuery = this.query.trim();
     this.lastFilters = { ...this.filters };
     this.loading = true;
+
     const q = this.query.trim() || undefined;
     const payload: any = {
       firstName: q,
@@ -204,26 +206,30 @@ export class SearchUserComponent implements OnInit {
           : this.filters.role === 'Analista de Calidad'
           ? 'QUALITY-ADMIN-USER'
           : undefined,
-      creationDateFrom: this.filters.creationDateFrom || undefined,
-      creationDateTo: this.filters.creationDateTo || undefined,
+      positionId:
+        typeof this.filters.positionId === 'number'
+          ? this.filters.positionId
+          : undefined,
+
       modificationStatusDateFrom:
         this.filters.modificationDateFrom || undefined,
       modificationStatusDateTo: this.filters.modificationDateTo || undefined,
     };
+
     Object.keys(payload).forEach(
       (k) => payload[k] === undefined && delete payload[k]
     );
 
     this.userService.filterUsers(payload).subscribe({
       next: (res) => {
-        this.users = (res || []).map((u: any) => ({
+        this.users = res.map((u: any) => ({
           id: u.id,
           fullName: `${u.firstName} ${u.lastName}`,
           identification: u.identification,
           email: u.email,
           role: this.mapRole(u.role),
           status: u.enabledStatus ? 'Activo' : 'Inactivo',
-          createdAt: u.creationDate,
+          position: u.position?.name || '—',
           updatedAt: u.modificationStatusDate,
         }));
         this.loading = false;
@@ -236,24 +242,15 @@ export class SearchUserComponent implements OnInit {
   }
 
   resetSearch(): void {
-    this.hasSearched = false;
     this.query = '';
     this.filters = {
-      status: '',
       role: '',
-      creationDateFrom: '',
-      creationDateTo: '',
+      status: '',
+      positionId: null,
       modificationDateFrom: '',
       modificationDateTo: '',
     };
-    this.activeFilterKeys = [
-      'status',
-      'role',
-      'creationDateFrom',
-      'creationDateTo',
-      'modificationDateFrom',
-      'modificationDateTo',
-    ];
+    this.activeFilterKeys = this.availableFilterKeys.map((f) => f.key);
     this.performSearch();
   }
 
@@ -262,43 +259,24 @@ export class SearchUserComponent implements OnInit {
     if (!this.showFilters) this.resetSearch();
   }
 
-  onKeyUp(event: KeyboardEvent): void {
-    if (event.key === 'Enter') this.performSearch();
-  }
-
-  // --- No-results message including all date filters ---
   buildNoResultsMessage(): string {
     const parts: string[] = [];
 
-    if (this.lastQuery) {
+    if (this.lastQuery)
       parts.push(`texto que contenga "${this.lastQuery.toUpperCase()}"`);
-    }
-    if (this.lastFilters.status) {
+    if (this.lastFilters.status)
       parts.push(`estado "${this.lastFilters.status}"`);
+    if (this.lastFilters.role) parts.push(`rol "${this.lastFilters.role}"`);
+    if (this.lastFilters.positionId) {
+      const cargo = this.positions.find(
+        (p) => p.id === this.lastFilters.positionId
+      )?.name;
+      if (cargo) parts.push(`cargo "${cargo}"`);
     }
-    if (this.lastFilters.role) {
-      parts.push(`rol "${this.lastFilters.role}"`);
-    }
-    if (this.lastFilters.creationDateFrom) {
-      parts.push(
-        `fecha de creación desde "${this.lastFilters.creationDateFrom}"`
-      );
-    }
-    if (this.lastFilters.creationDateTo) {
-      parts.push(
-        `fecha de creación hasta "${this.lastFilters.creationDateTo}"`
-      );
-    }
-    if (this.lastFilters.modificationDateFrom) {
-      parts.push(
-        `fecha de modificación desde "${this.lastFilters.modificationDateFrom}"`
-      );
-    }
-    if (this.lastFilters.modificationDateTo) {
-      parts.push(
-        `fecha de modificación hasta "${this.lastFilters.modificationDateTo}"`
-      );
-    }
+    if (this.lastFilters.modificationDateFrom)
+      parts.push(`fecha desde "${this.lastFilters.modificationDateFrom}"`);
+    if (this.lastFilters.modificationDateTo)
+      parts.push(`fecha hasta "${this.lastFilters.modificationDateTo}"`);
 
     return parts.length
       ? `No se encontraron usuarios con ${parts.join(', ')}.`
@@ -313,6 +291,13 @@ export class SearchUserComponent implements OnInit {
     this.selectedUser = user;
     this.showConfirmModal = true;
   }
+
+  closeConfirmModal(): void {
+    this.showConfirmModal = false;
+    this.confirmLoading = false;
+    this.selectedUser = null;
+  }
+
   confirmToggleStatus(): void {
     if (!this.selectedUser) return;
     const newStatus = this.selectedUser.status !== 'Activo';
@@ -331,12 +316,6 @@ export class SearchUserComponent implements OnInit {
       });
   }
 
-  closeConfirmModal(): void {
-    this.showConfirmModal = false;
-    this.confirmLoading = false;
-    this.selectedUser = null;
-  }
-
   private mapRole(r: string) {
     return r === 'AUTHORIZED-USER'
       ? 'Personal Autorizado'
@@ -344,4 +323,13 @@ export class SearchUserComponent implements OnInit {
       ? 'Analista de Calidad'
       : r;
   }
+
+  actionButtons: ActionButton[] = [
+    {
+      label: 'Editar',
+      action: (user) =>
+        this.router.navigate([`/dashboard/users/update-user/${user.id}`]),
+      color: 'primary',
+    },
+  ];
 }

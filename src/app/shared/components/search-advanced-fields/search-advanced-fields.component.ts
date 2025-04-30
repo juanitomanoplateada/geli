@@ -26,4 +26,15 @@ export class SearchAdvancedFieldsComponent {
   emitFilters() {
     this.filtersChange.emit(this.filters);
   }
+  isStringArray(value: any): value is string[] {
+    return Array.isArray(value) && typeof value[0] === 'string';
+  }
+
+  isObjectArray(value: any): value is { label: string; value: any }[] {
+    return (
+      Array.isArray(value) &&
+      typeof value[0] === 'object' &&
+      'label' in value[0]
+    );
+  }
 }

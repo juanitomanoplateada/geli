@@ -1,59 +1,138 @@
-<div class="update-lab-container">
-  <h1>Actualización de Laboratorio</h1>
-  <p class="subtitle">Modifique la información del laboratorio seleccionado.</p>
+<div class="register-container">
+  <h1>Actualizar Laboratorio</h1>
+  <p class="subtitle">Modifique los datos del laboratorio seleccionado.</p>
 
-  <form [formGroup]="labForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="labForm" (ngSubmit)="submitForm()">
+    <!-- Nombre (Deshabilitado) -->
     <div class="form-group">
-      <label for="nombre">Nombre del laboratorio</label>
+      <label for="labName">Nombre del Laboratorio</label>
       <input
-        id="nombre"
+        id="labName"
         type="text"
-        formControlName="nombre"
-        placeholder="Ej: Laboratorio de Física"
         class="form-control"
+        formControlName="labName"
+        appUppercase
+        [disabled]="false"
       />
     </div>
 
+    <!-- Descripción -->
     <div class="form-group">
-      <label for="descripcion">Descripción</label>
-      <textarea
-        id="descripcion"
-        formControlName="descripcion"
-        placeholder="Descripción del laboratorio"
-        class="form-control"
-        rows="3"
-      ></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="lugar">Lugar</label>
-      <select id="lugar" formControlName="lugar" class="form-control">
-        <option value="" disabled>Seleccione un lugar</option>
-        <option *ngFor="let lugar of lugares" [value]="lugar">
-          {{ lugar }}
-        </option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="disponibilidad">Disponibilidad</label>
-      <select
-        id="disponibilidad"
-        formControlName="disponibilidad"
-        class="form-control"
+      <label for="description"
+        >Descripción <span class="required">*</span></label
       >
-        <option value="true">Disponible</option>
-        <option value="false">No disponible</option>
-      </select>
+      <textarea
+        id="description"
+        class="form-control auto-expand"
+        formControlName="description"
+        rows="1"
+        appUppercase
+        placeholder="Describa brevemente el laboratorio"
+        (input)="autoResize($event)"
+      ></textarea>
+      <div
+        *ngIf="
+          labForm.get('description')?.invalid &&
+          labForm.get('description')?.touched
+        "
+        class="error-message"
+      >
+        La descripción es obligatoria
+      </div>
     </div>
 
+    <!-- Lugar -->
+    <div class="form-group">
+      <label for="locationName">Lugar <span class="required">*</span></label>
+      <app-dropdown-search-addable
+        [options]="availableLocations"
+        [selectedValue]="selectedLocation"
+        (select)="onSelectLocation($event)"
+        placeholder="Busque o agregue un lugar"
+      ></app-dropdown-search-addable>
+      <div
+        *ngIf="
+          labForm.get('locationName')?.invalid &&
+          labForm.get('locationName')?.touched
+        "
+        class="error-message"
+      >
+        Debe seleccionar o agregar un lugar
+      </div>
+    </div>
+
+    <!-- Estado -->
+    <div class="form-group">
+      <label for="status">Estado Actual <span class="required">*</span></label>
+      <select
+        id="status"
+        class="form-control"
+        formControlName="status"
+        (change)="onStatusChange()"
+      >
+        <option value="" disabled>Seleccione un estado</option>
+        <option value="ACTIVO">ACTIVO</option>
+        <option value="INACTIVO">INACTIVO</option>
+      </select>
+      <div
+        *ngIf="labForm.get('status')?.invalid && labForm.get('status')?.touched"
+        class="error-message"
+      >
+        Seleccione el estado actual del laboratorio
+      </div>
+    </div>
+
+    <!-- Observaciones -->
+    <div class="form-group" *ngIf="labForm.get('status')?.value === 'INACTIVO'">
+      <label for="notes">Observaciones</label>
+      <textarea
+        id="notes"
+        class="form-control auto-expand"
+        formControlName="notes"
+        rows="2"
+        appUppercase
+        placeholder="Indique las razones si el laboratorio está inactivo"
+        (input)="autoResize($event)"
+      ></textarea>
+      <div
+        *ngIf="
+          notesRequired &&
+          labForm.get('notes')?.invalid &&
+          labForm.get('notes')?.touched
+        "
+        class="error-message"
+      >
+        Debe ingresar observaciones si el laboratorio está inactivo
+      </div>
+    </div>
+
+    <!-- Botones -->
     <div class="button-group">
-      <button type="button" class="btn cancel-btn" (click)="onCancel()">
+      <button type="button" class="btn cancel-btn" (click)="resetForm()">
         Cancelar
       </button>
       <button type="submit" class="btn submit-btn" [disabled]="!labForm.valid">
-        Guardar Cambios
+        Actualizar Laboratorio
       </button>
     </div>
+
+    <!-- Modal de Confirmación -->
+    <app-confirm-modal
+      [title]="'Confirmar Actualización'"
+      [show]="showConfirmationModal"
+      [confirmLabel]="'Actualizar'"
+      [cancelLabel]="'Cancelar'"
+      (confirm)="confirmUpdate()"
+      (cancel)="cancelConfirmation()"
+    >
+      <p>Revise los datos antes de guardar los cambios:</p>
+      <ul class="summary-list">
+        <li><strong>Nombre:</strong> {{ labForm.value.labName }}</li>
+        <li><strong>Descripción:</strong> {{ labForm.value.description }}</li>
+        <li><strong>Lugar:</strong> {{ labForm.value.locationName }}</li>
+        <li><strong>Estado:</strong> {{ labForm.value.status }}</li>
+        <li><strong>Observaciones:</strong> {{ labForm.value.notes }}</li>
+      </ul>
+    </app-confirm-modal>
   </form>
 </div>

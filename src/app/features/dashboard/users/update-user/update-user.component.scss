@@ -1,78 +1,86 @@
-.update-container {
-  max-width: 600px;
-  margin: 2rem auto;
+.register-container {
+  max-width: 700px;
+  margin: 0rem auto;
   padding: 2rem;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  -webkit-user-select: none;
+  user-select: none;
 
-h1 {
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  color: #7f8c8d;
-  margin-bottom: 2rem;
-  font-size: 1rem;
+  h1 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+  .subtitle {
+    color: #7f8c8d;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    text-align: center;
+  }
 }
 
 .form-group {
   margin-bottom: 1.5rem;
-  position: relative;
-}
 
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #2c3e50;
-  font-weight: 500;
-}
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+    font-weight: 500;
+  }
+  .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
 
-.form-control {
-  width: 95%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
+    &:focus {
+      border-color: #3498db;
+      outline: none;
+    }
+  }
+  select.form-control {
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg fill="%233498db" height="24" viewBox="0 0 24 24" width="24"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+  }
 }
 
 .email-input-group {
   display: flex;
   align-items: center;
+
+  .email-input {
+    flex-grow: 1;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+  }
+  .domain-display {
+    padding: 0.75rem;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-left: none;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    color: #495057;
+    font-size: 0.95rem;
+  }
 }
 
-.email-input {
-  width: auto;
-  flex-grow: 1;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  border-right: none;
-}
+.name-split-row {
+  display: flex;
+  gap: 1rem;
 
-.domain-display {
-  padding: 0.75rem;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-  border-left: none;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-  color: #495057;
-}
-
-.form-control:focus {
-  border-color: #3498db;
-  outline: none;
-}
-
-select.form-control {
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 1rem;
+  input {
+    flex: 1;
+  }
 }
 
 .error-message {
@@ -86,63 +94,184 @@ select.form-control {
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 2rem;
-}
 
-.btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
+  .btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 
-.cancel-btn {
-  background-color: #e74c3c;
-  color: white;
-}
-
-.cancel-btn:hover {
-  background-color: #c0392b;
-}
-
-.submit-btn {
-  background-color: #2ecc71;
-  color: white;
-}
-
-.submit-btn:hover {
-  background-color: #27ae60;
-}
-
-.submit-btn:disabled {
-  background-color: #95a5a6;
-  cursor: not-allowed;
-}
-
-.name-split-row {
-  display: flex;
-  gap: 1rem;
-
-  input {
-    flex: 1;
+    &.cancel-btn {
+      background-color: #e74c3c;
+      color: white;
+      &:hover {
+        background-color: #c0392b;
+      }
+    }
+    &.submit-btn {
+      background-color: green;
+      color: white;
+      &:hover {
+        background-color: darkgreen;
+      }
+      &:disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+      }
+    }
   }
 }
 
 .feedback {
   margin-top: 1rem;
   padding: 0.75rem;
-  border-radius: 4px;
+  border-radius: 6px;
   font-weight: 500;
+  text-align: center;
+  transition: all 0.3s ease;
+
+  &.success {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  &.error {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+}
+
+/* Ajustes para el modal de confirmación */
+::ng-deep app-confirm-modal {
+  .summary-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 2rem;
+    font-size: 0.95rem;
+    color: #2c3e50;
+
+    li {
+      margin: 0.5rem 0;
+      display: flex;
+      align-items: flex-start;
+
+      &::before {
+        content: "•";
+        color: #3498db;
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+      }
+      strong {
+        font-weight: 600;
+        color: #1d3557;
+        margin-right: 0.25rem;
+      }
+    }
+  }
+  p {
+    text-align: center;
+    color: #555;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+  .modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+
+    .btn {
+      padding: 0.6rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .submit-btn {
+      background-color: #27ae60;
+      color: white;
+      &:hover {
+        background-color: #1e874b;
+      }
+    }
+    .cancel-btn {
+      background-color: #e74c3c;
+      color: white;
+      &:hover {
+        background-color: #c0392b;
+      }
+    }
+  }
+}
+
+.spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #ffffff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.dates-header {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2rem;
+  margin-bottom: 1rem;
+
+  small {
+    font-size: 0.85rem;
+    color: #555;
+  }
+}
+
+.subtitle {
+  color: #7f8c8d;
+  font-size: 1rem;
+  margin-bottom: 2rem;
   text-align: center;
 }
 
-.feedback.success {
-  background-color: #d4edda;
-  color: #155724;
+/* Estado con dots */
+.status-dot {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+.dot-active {
+  background-color: #2ecc71; /* verde */
+}
+.dot-inactive {
+  background-color: #e74c3c; /* rojo */
 }
 
-.feedback.error {
-  background-color: #f8d7da;
-  color: #721c24;
+/* Mensaje informativo cuando se agrega cargo */
+.info-message {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #2e7d32;
 }
+
+.helper-text {
+  margin: 0.25rem 0 0.75rem 0;
+  font-size: 0.85rem;
+  color: #555;
+}
+

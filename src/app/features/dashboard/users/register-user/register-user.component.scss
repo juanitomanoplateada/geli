@@ -255,3 +255,15 @@
     transform: rotate(360deg);
   }
 }
+
+.required {
+  color: red;
+  margin-left: 4px;
+  font-weight: bold;
+}
+
+.helper-text {
+  margin: 0.25rem 0 0.75rem 0;
+  font-size: 0.85rem;
+  color: #555;
+}

@@ -1,37 +1,65 @@
 <div class="search-container">
   <app-search-advanced
-    [searchQuery]="searchQuery"
+    *ngIf="isFilterReady && !loading"
+    [searchQuery]="query"
     [filters]="filters"
-    [isLoading]="isLoading"
-    [showAdvancedSearch]="showAdvancedSearch"
+    [isLoading]="loading"
+    [showAdvancedSearch]="showFilters"
     [fieldsConfig]="fieldsConfig"
+    [options]="options"
     [availableFilterKeys]="availableFilterKeys"
     [activeFilterKeys]="activeFilterKeys"
-    (searchQueryChange)="searchQuery = $event"
-    (filtersChange)="filters = $event; performSearch()"
+    (searchQueryChange)="query = $event"
+    (filtersChange)="onFiltersChange($event)"
     (activeFilterKeysChange)="activeFilterKeys = $event"
     (triggerSearch)="performSearch()"
     (clearFilters)="resetSearch()"
     (toggleAdvanced)="toggleFilters()"
   ></app-search-advanced>
 
-  <div *ngIf="isLoading" class="loading-state">
+  <div *ngIf="loading" class="loading-state">
     <div class="spinner"></div>
     <p>Buscando laboratorios...</p>
   </div>
 
   <app-results-table
-    *ngIf="!isLoading && laboratories.length > 0"
+    *ngIf="!loading && laboratories.length > 0"
     [columns]="columns"
     [data]="laboratories"
     [actionButtons]="actionButtons"
     [sortEnabled]="true"
+    [trackByFunction]="trackById"
   ></app-results-table>
 
-  <div *ngIf="!isLoading && laboratories.length === 0" class="no-results">
+  <div
+    *ngIf="hasSearched && !loading && laboratories.length === 0"
+    class="no-results"
+  >
     <p>{{ buildNoResultsMessage() }}</p>
     <button (click)="resetSearch()" class="try-again-btn">
       Limpiar búsqueda
     </button>
   </div>
+
+  <app-confirm-modal
+    *ngIf="selectedLab"
+    [title]="
+      selectedLab.status === 'Activo'
+        ? '¿Desactivar laboratorio?'
+        : '¿Activar laboratorio?'
+    "
+    [show]="showConfirmModal"
+    [confirmLabel]="selectedLab.status === 'Activo' ? 'Desactivar' : 'Activar'"
+    [cancelLabel]="'Cancelar'"
+    [isLoading]="confirmLoading"
+    (confirm)="confirmToggleStatus()"
+    (cancel)="closeConfirmModal()"
+  >
+    <div class="user-info">
+      <p><strong>Nombre:</strong> {{ selectedLab.labName }}</p>
+      <p><strong>Descripción:</strong> {{ selectedLab.description }}</p>
+      <p><strong>Lugar:</strong> {{ selectedLab.locationName }}</p>
+      <p><strong>Estado actual:</strong> {{ selectedLab.status }}</p>
+    </div>
+  </app-confirm-modal>
 </div>

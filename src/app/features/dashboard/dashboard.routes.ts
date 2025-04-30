@@ -7,10 +7,12 @@ import { sessionsRoutes } from './sessions/sessions.routes';
 import { reportsRoutes } from './reports/reports.routes';
 import { UserProfileComponent } from './user-profile/user-profile.component';
 import { RoleGuard } from '../../core/auth/guards/role.guard';
+import { AssignEquipmentPermissionsComponent } from './assign-equipment-permissions/assign-equipment-permissions.component';
 
 export const dashboardRoutes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
+  { path: 'assign-equipment-permissions', component: AssignEquipmentPermissionsComponent },
   {
     path: 'users',
     canActivate: [RoleGuard],
