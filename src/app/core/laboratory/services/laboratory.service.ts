@@ -33,4 +33,11 @@ export class LaboratoryService {
   updateLaboratory(id: number, lab: Laboratory): Observable<Laboratory> {
     return this.http.put<Laboratory>(`${this.apiUrl}/${id}`, lab);
   }
+
+  /** GET: Verificar si un laboratorio existe por nombre */
+  existsByName(name: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/exists-by-name`, {
+      params: { laboratoryName: name },
+    });
+  }
 }

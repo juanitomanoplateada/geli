@@ -62,11 +62,14 @@ export class UpdateUserComponent implements OnInit {
   isSubmitting = false;
 
   userForm = this.fb.group({
-    email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._-]+$/)]],
-    firstName: ['', Validators.required],
-    lastName: ['', Validators.required],
-    identification: ['', Validators.required],
-    role: ['', Validators.required],
+    email: [
+      { value: '', disabled: true },
+      [Validators.required, Validators.pattern(/^[a-zA-Z0-9._-]+$/)],
+    ],
+    firstName: [{ value: '', disabled: true }, Validators.required],
+    lastName: [{ value: '', disabled: true }, Validators.required],
+    identification: [{ value: '', disabled: true }, Validators.required],
+    role: [{ value: '', disabled: true }, Validators.required],
     cargo: ['', Validators.required],
     status: ['', Validators.required],
   });

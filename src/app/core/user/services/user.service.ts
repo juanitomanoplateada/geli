@@ -65,30 +65,10 @@ export class UserService {
     );
   }
 
-  filterUsers(filters: any): Observable<UserRecordResponse[]> {
-    return this.http
-      .post<UserRecordResponse[]>(`${this.baseUrl}/filter`, filters)
-      .pipe(
-        map((users) => {
-          // Imprimir todos los usuarios filtrados
-          console.log('Usuarios filtrados recibidos:', users);
-
-          return users.map((user) => {
-            // Imprimir las fechas antes de formatearlas
-            console.log(
-              `User ${user.id} - creationDate: ${user.creationDate}, modificationStatusDate: ${user.modificationStatusDate}`
-            );
-
-            return {
-              ...user,
-              creationDate: this.formatDate(user.creationDate),
-              modificationStatusDate: this.formatDate(
-                user.modificationStatusDate
-              ),
-            };
-          });
-        })
-      );
+  filterUsers(payload: any): Observable<any[]> {
+    return this.http.post<any[]>(`${this.baseUrl}/filter`, payload).pipe(
+      map((res) => (Array.isArray(res) ? res : [])) // 👈 blindaje
+    );
   }
 
   updateUser(

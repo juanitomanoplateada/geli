@@ -68,10 +68,14 @@ export class RegisterUserComponent implements OnInit {
   });
 
   ngOnInit() {
-    // Load positions from server
     this.positionService.getAll().subscribe((list) => {
-      this.availablePositions = list;
-      this.availableCargos = list.map((p) => p.name);
+      if (Array.isArray(list)) {
+        this.availablePositions = list;
+        this.availableCargos = list.map((p) => p.name);
+      } else {
+        this.availablePositions = [];
+        this.availableCargos = [];
+      }
     });
   }
 

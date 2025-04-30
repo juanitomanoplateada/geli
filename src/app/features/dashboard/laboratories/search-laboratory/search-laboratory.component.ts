@@ -117,8 +117,8 @@ export class SearchLaboratoryComponent implements OnInit {
 
   private loadLocationOptions(): void {
     this.locationService.getAll().subscribe({
-      next: (locations: LocationDto[]) => {
-        this.options['locationId'] = locations.map((l) => ({
+      next: (locations: LocationDto[] | null) => {
+        this.options['locationId'] = (locations ?? []).map((l) => ({
           label: l.locationName,
           value: l.id,
         }));

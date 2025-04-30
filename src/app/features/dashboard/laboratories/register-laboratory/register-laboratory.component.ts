@@ -47,6 +47,9 @@ export class RegisterLaboratoryComponent implements OnInit {
   modalFeedbackSuccess = false;
   showModalFeedback = false;
 
+  labNameAlreadyExists = false;
+  labNameChecking = false;
+
   constructor(
     private fb: FormBuilder,
     private locationService: LocationService,
@@ -63,11 +66,44 @@ export class RegisterLaboratoryComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadLocations();
+    this.labForm.get('labName')?.valueChanges.subscribe((value) => {
+      this.checkIfLabNameExists(value);
+    });
+  }
+
+  private checkIfLabNameExists(name: string | null): void {
+    if (!name || typeof name !== 'string') {
+      this.labNameAlreadyExists = false;
+      return;
+    }
+
+    const trimmed = name.trim().toUpperCase();
+    if (!trimmed) {
+      this.labNameAlreadyExists = false;
+      return;
+    }
+
+    this.labNameChecking = true;
+
+    this.laboratoryService.existsByName(trimmed).subscribe({
+      next: (exists: boolean) => {
+        this.labNameAlreadyExists = exists;
+        this.labNameChecking = false;
+      },
+      error: () => {
+        this.labNameAlreadyExists = false;
+        this.labNameChecking = false;
+      },
+    });
   }
 
   private loadLocations(): void {
     this.locationService.getAll().subscribe({
       next: (locations) => {
+        if (!locations) {
+          this.availableLocations = [];
+          return;
+        }
         this.availableLocations = locations.map((l) => ({
           label: l.locationName,
           value: { id: l.id, locationName: l.locationName },
@@ -207,5 +243,4 @@ export class RegisterLaboratoryComponent implements OnInit {
       return { id: 0, locationName: this.proposedLocationName };
     return null;
   }
-
 }

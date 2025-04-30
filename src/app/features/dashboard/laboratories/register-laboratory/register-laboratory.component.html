@@ -24,6 +24,9 @@
       >
         El nombre es obligatorio
       </div>
+      <div *ngIf="labNameAlreadyExists" class="error-message">
+        Ya existe un laboratorio con este nombre.
+      </div>
     </div>
 
     <!-- Descripción -->
@@ -131,7 +134,7 @@
       <button
         type="submit"
         class="btn submit-btn"
-        [disabled]="!labForm.valid || isSubmitting"
+        [disabled]="!labForm.valid || isSubmitting || labNameAlreadyExists"
       >
         Registrar Laboratorio
       </button>

@@ -24,7 +24,6 @@
           placeholder="Usuario Institucional"
           class="form-control email-input"
           appUppercaseNospace
-          [disabled]="true"
         />
         <span class="domain-display">&#64;uptc.edu.co</span>
       </div>
@@ -40,7 +39,6 @@
           placeholder="Nombres"
           class="form-control"
           appUppercase
-          [disabled]="true"
         />
         <input
           type="text"
@@ -48,7 +46,6 @@
           placeholder="Apellidos"
           class="form-control"
           appUppercase
-          [disabled]="true"
         />
       </div>
     </div>
@@ -66,7 +63,6 @@
         class="form-control"
         appUppercaseNospace
         appIntegerOnly
-        [disabled]="true"
       />
     </div>
 
@@ -77,7 +73,6 @@
         id="role"
         class="form-control"
         formControlName="role"
-        [disabled]="true"
       >
         <option *ngFor="let r of availableRoles" [value]="r">{{ r }}</option>
       </select>

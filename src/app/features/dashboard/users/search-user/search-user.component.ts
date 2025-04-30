@@ -107,6 +107,8 @@ export class SearchUserComponent implements OnInit {
 
   options: { [key: string]: any[] } = {};
 
+  noResults = false;
+
   constructor(
     private router: Router,
     private userService: UserService,
@@ -118,9 +120,11 @@ export class SearchUserComponent implements OnInit {
 
     this.positionService.getAll().subscribe({
       next: (res) => {
-        this.positions = res;
+        const positionList = Array.isArray(res) ? res : [];
 
-        this.options['positionId'] = res.map((p) => ({
+        this.positions = positionList;
+
+        this.options['positionId'] = positionList.map((p) => ({
           label: p.name,
           value: p.id,
         }));
@@ -164,8 +168,9 @@ export class SearchUserComponent implements OnInit {
         this.performSearch();
       },
       error: () => {
-        this.loading = false;
         this.positions = [];
+        this.options['positionId'] = [];
+        this.loading = false;
         this.performSearch();
       },
     });
@@ -194,6 +199,7 @@ export class SearchUserComponent implements OnInit {
     }
 
     this.hasSearched = true;
+    this.noResults = false; // Reinicia antes de buscar
     this.lastQuery = this.query.trim();
     this.lastFilters = { ...this.filters };
     this.loading = true;
@@ -205,7 +211,7 @@ export class SearchUserComponent implements OnInit {
       lastName: q,
       identification: q,
       email: q,
-      enabledStatus: this.getEnabledStatusValue(this.filters.status), // ✅ aquí
+      enabledStatus: this.getEnabledStatusValue(this.filters.status),
       role:
         this.filters.role === 'Personal Autorizado'
           ? 'AUTHORIZED-USER'
@@ -225,10 +231,16 @@ export class SearchUserComponent implements OnInit {
       (k) => payload[k] === undefined && delete payload[k]
     );
 
-    console.log('Payload:', payload); // ✅ para depurar
-
     this.userService.filterUsers(payload).subscribe({
       next: (res) => {
+        // Blindaje absoluto: si no es array, lo tratamos como vacío
+        if (!Array.isArray(res)) {
+          this.users = [];
+          this.noResults = true;
+          this.loading = false;
+          return;
+        }
+
         this.users = res.map((u: any) => ({
           id: u.id,
           fullName: `${u.firstName} ${u.lastName}`,
@@ -239,10 +251,8 @@ export class SearchUserComponent implements OnInit {
           position: u.position?.name || '—',
           updatedAt: u.modificationStatusDate,
         }));
-        this.loading = false;
-      },
-      error: () => {
-        this.users = [];
+
+        this.noResults = res.length === 0;
         this.loading = false;
       },
     });
