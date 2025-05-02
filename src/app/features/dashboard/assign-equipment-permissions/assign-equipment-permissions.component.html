@@ -1,0 +1,70 @@
+<div class="assign-equipment-permissions">
+  <h1>Asignar Permisos de Uso de Equipos</h1>
+
+  <!-- Selección de usuario -->
+  <div class="user-select-section">
+    <label for="user">Seleccione un usuario</label>
+    <app-dropdown-search
+      [options]="userOptions"
+      [selectedValue]="selectedUser"
+      (select)="onUserSelect($event)"
+      placeholder="Buscar usuario..."
+    ></app-dropdown-search>
+  </div>
+
+  <!-- Resumen de equipos autorizados -->
+  <div
+    class="permissions-summary"
+    *ngIf="selectedUser && authorizedEquipments.length > 0"
+  >
+    <h3>Equipos autorizados para {{ selectedUser }}</h3>
+    <ul>
+      <li *ngFor="let eq of authorizedEquipments">
+        {{ eq.name }} ({{ eq.inventoryCode }})
+      </li>
+    </ul>
+
+    <button (click)="savePermissions()" class="save-btn">
+      Guardar cambios
+    </button>
+  </div>
+
+  <!-- Filtros y búsqueda -->
+  <app-search-advanced
+    *ngIf="selectedUser"
+    [searchQuery]="searchQuery"
+    [filters]="filters"
+    [isLoading]="isLoading"
+    [showAdvancedSearch]="showAdvancedSearch"
+    [fieldsConfig]="fieldsConfig"
+    [options]="options"
+    [availableFilterKeys]="availableFilterKeys"
+    [activeFilterKeys]="activeFilterKeys"
+    (searchQueryChange)="searchQuery = $event"
+    (filtersChange)="onFiltersChange($event)"
+    (activeFilterKeysChange)="activeFilterKeys = $event"
+    (triggerSearch)="performSearch()"
+    (clearFilters)="resetSearch()"
+    (toggleAdvanced)="toggleAdvancedSearch()"
+  ></app-search-advanced>
+
+  <!-- Tabla con checkbox por equipo -->
+  <app-results-table-checkbox
+    *ngIf="!isLoading && equipmentResults.length > 0"
+    [columns]="columns"
+    [data]="equipmentResults"
+    [checkedItems]="authorizedEquipments"
+    (checkedItemsChange)="updateAuthorizedEquipments($event)"
+  ></app-results-table-checkbox>
+
+  <!-- Sin resultados -->
+  <div
+    *ngIf="hasSearched && !isLoading && equipmentResults.length === 0"
+    class="no-results"
+  >
+    <p>No se encontraron equipos con los filtros actuales.</p>
+    <button (click)="resetSearch()" class="try-again-btn">
+      Limpiar búsqueda
+    </button>
+  </div>
+</div>

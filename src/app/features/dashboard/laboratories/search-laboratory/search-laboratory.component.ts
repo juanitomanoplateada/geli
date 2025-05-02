@@ -74,7 +74,6 @@ export class SearchLaboratoryComponent implements OnInit {
     { key: 'labName', label: 'Nombre', type: 'text' },
     { key: 'locationName', label: 'Lugar', type: 'text' },
     { key: 'status', label: 'Estado', type: 'status' },
-    { key: 'notes', label: 'Observaciones', type: 'text' },
     { key: 'actions', label: 'Acciones', type: 'actions' },
   ];
 

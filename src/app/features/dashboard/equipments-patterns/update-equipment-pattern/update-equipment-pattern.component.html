@@ -1,1 +1,166 @@
-<p>update-equipment-pattern works!</p>
+<div class="register-container">
+  <h1>Actualizar Equipo / Patrón</h1>
+  <p class="subtitle">Modifique los datos del equipo o patrón seleccionado.</p>
+
+  <form [formGroup]="equipmentForm" (ngSubmit)="submitForm()">
+    <!-- Código -->
+    <div class="form-group">
+      <label for="inventoryCode"
+        >Código de Inventario <span class="required">*</span></label
+      >
+      <input
+        id="inventoryCode"
+        type="text"
+        class="form-control"
+        formControlName="inventoryCode"
+        placeholder="Ej: EQP-001"
+        appUppercaseNospace
+      />
+    </div>
+
+    <!-- Nombre -->
+    <div class="form-group">
+      <label for="name"
+        >Nombre del Equipo / Patrón <span class="required">*</span></label
+      >
+      <input
+        id="name"
+        type="text"
+        class="form-control"
+        formControlName="name"
+        placeholder="Ej: Osciloscopio Tektronix"
+        appUppercase
+      />
+    </div>
+
+    <!-- Marca -->
+    <div class="form-group">
+      <label for="brand">Marca</label>
+      <input
+        id="brand"
+        type="text"
+        class="form-control"
+        [value]="selectedBrandOrProposed"
+        disabled
+      />
+    </div>
+
+    <!-- Funciones -->
+    <div class="form-group">
+      <label>Funciones</label>
+      <div class="tag-container">
+        <span class="tag" *ngFor="let func of selectedFunctions">
+          {{ func.functionName }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Laboratorio -->
+    <div class="form-group">
+      <label for="lab">Laboratorio <span class="required">*</span></label>
+      <app-dropdown-search-entity-obj
+        [options]="labOptions"
+        [selectedValue]="selectedLab"
+        (select)="onSelectLab($event)"
+        placeholder="Seleccione un laboratorio"
+      ></app-dropdown-search-entity-obj>
+    </div>
+
+    <!-- Estado -->
+    <div class="form-group">
+      <label for="availability">Estado <span class="required">*</span></label>
+      <select
+        id="availability"
+        class="form-control"
+        formControlName="availability"
+        (change)="onAvailabilityChange()"
+      >
+        <option value="" disabled selected>Seleccione un estado</option>
+        <option value="ACTIVO">ACTIVO</option>
+        <option value="INACTIVO">INACTIVO</option>
+      </select>
+    </div>
+
+    <!-- Observaciones -->
+    <div
+      class="form-group"
+      *ngIf="equipmentForm.get('availability')?.value === 'INACTIVO'"
+    >
+      <label for="notes">Observaciones <span class="required">*</span></label>
+      <textarea
+        id="notes"
+        class="form-control auto-expand"
+        formControlName="notes"
+        rows="2"
+        placeholder="Explique por qué el equipo está inactivo"
+        appUppercase
+        (input)="autoResize($event)"
+      ></textarea>
+      <div
+        *ngIf="
+          equipmentForm.get('notes')?.invalid &&
+          equipmentForm.get('notes')?.touched
+        "
+        class="error-message"
+      >
+        Las observaciones son obligatorias cuando el estado es INACTIVO.
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="button-group">
+      <button
+        type="button"
+        class="btn cancel-btn"
+        [disabled]="isSubmitting"
+        (click)="goBack()"
+      >
+        Volver
+      </button>
+
+      <button
+        type="submit"
+        class="btn submit-btn"
+        [disabled]="
+          !equipmentForm.valid ||
+          selectedFunctions.length === 0 ||
+          (notesRequired && equipmentForm.get('notes')?.invalid)
+        "
+      >
+        Guardar Cambios
+      </button>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <app-confirm-modal
+      [title]="'Confirmar Actualización'"
+      [show]="showConfirmationModal"
+      [confirmLabel]="'Confirmar'"
+      [cancelLabel]="'Cancelar'"
+      [isLoading]="isSubmitting"
+      (confirm)="confirmSubmit()"
+      (cancel)="cancelConfirmation()"
+    >
+      <p>Por favor confirme los cambios antes de actualizar:</p>
+      <ul class="summary-list">
+        <li>
+          <strong>Código de Inventario:</strong> {{ formSummary.inventoryCode }}
+        </li>
+        <li><strong>Nombre:</strong> {{ formSummary.name }}</li>
+        <li><strong>Marca:</strong> {{ formSummary.brand }}</li>
+        <li><strong>Funciones:</strong> {{ formSummary.functions }}</li>
+        <li><strong>Laboratorio:</strong> {{ formSummary.lab }}</li>
+        <li><strong>Estado:</strong> {{ formSummary.availability }}</li>
+        <li><strong>Observaciones:</strong> {{ formSummary.notes }}</li>
+      </ul>
+
+      <div
+        *ngIf="showModalFeedback"
+        [ngClass]="modalFeedbackSuccess ? 'feedback success' : 'feedback error'"
+        class="feedback"
+      >
+        {{ modalFeedbackMessage }}
+      </div>
+    </app-confirm-modal>
+  </form>
+</div>

@@ -1,19 +1,24 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SearchAdvancedComponent } from '../../../shared/components/search-advanced/search-advanced.component';
-import { ResultsTableComponent } from '../../../shared/components/results-table/results-table.component';
-import { DropdownFilterComponent } from '../../../shared/components/dropdown-filter/dropdown-filter.component';
-import { FieldConfig } from '../../../shared/model/field-config.model';
+import { Router } from '@angular/router';
 
-interface Equipment {
+import { DropdownSearchComponent } from '../../../shared/components/dropdown-search/dropdown-search.component';
+import { SearchAdvancedComponent } from '../../../shared/components/search-advanced/search-advanced.component';
+import { ResultsTableCheckboxComponent } from '../../../shared/components/results-table-checkbox/results-table-checkbox.component';
+
+import { FieldConfig } from '../../../shared/model/field-config.model';
+import { ColumnConfig } from '../../../shared/model/column-config.model';
+
+interface EquipmentRecord {
   id: number;
-  equipmentName: string;
-  brand: string;
-  inventoryNumber: string;
+  name: string;
+  function: string;
   laboratory: string;
-  availability: boolean;
-  functions: string[];
+  availability: string;
+  brand: string;
+  inventoryCode: string;
+  [key: string]: any; // acceso dinámico para columnas
 }
 
 @Component({
@@ -22,37 +27,50 @@ interface Equipment {
   imports: [
     CommonModule,
     FormsModule,
+    DropdownSearchComponent,
     SearchAdvancedComponent,
-    ResultsTableComponent,
-    DropdownFilterComponent,
+    ResultsTableCheckboxComponent,
   ],
   templateUrl: './assign-equipment-permissions.component.html',
   styleUrls: ['./assign-equipment-permissions.component.scss'],
 })
 export class AssignEquipmentPermissionsComponent implements OnInit {
+  // Opciones de usuarios
+  userOptions = ['Ana Pérez', 'Luis Gómez', 'Carlos Rivera'];
+  selectedUser: string | null = null;
+
+  // Estado de búsqueda
+  searchQuery = '';
+  isLoading = false;
+  showAdvancedSearch = false;
+  hasSearched = false;
+
   // Filtros
-  query = '';
-  filters = {
-    laboratory: '',
+  filters: any = {
     availability: '',
     function: '',
-  };
-  activeFilterKeys = ['laboratory', 'availability', 'function'];
-
-  // Opciones fijas
-  options = {
-    laboratory: ['Lab Química', 'Lab Física', 'Lab Computo'],
-    availability: ['Disponible', 'No disponible'],
-    function: ['Análisis', 'Calibración', 'Medición'],
+    laboratory: '',
+    brand: '',
   };
 
-  fieldsConfig = [
+  fieldsConfig: FieldConfig[] = [
+    {
+      key: 'brand',
+      label: 'Marca',
+      type: 'dropdown',
+      allowEmptyOption: 'Todas',
+    },
+    {
+      key: 'function',
+      label: 'Función',
+      type: 'dropdown',
+      allowEmptyOption: 'Todas',
+    },
     {
       key: 'laboratory',
       label: 'Laboratorio',
-      type: 'select',
-      options: ['Lab Química', 'Lab Física', 'Lab Computo'],
-      allowEmptyOption: 'Todos',
+      type: 'dropdown',
+      allowEmptyOption: 'Todas',
     },
     {
       key: 'availability',
@@ -61,126 +79,145 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
       options: ['Disponible', 'No disponible'],
       allowEmptyOption: 'Todas',
     },
-    {
-      key: 'function',
-      label: 'Función',
-      type: 'select',
-      options: ['Análisis', 'Calibración', 'Medición'],
-      allowEmptyOption: 'Todas',
-    },
   ];
 
-  equipmentList: Equipment[] = [
-    {
-      id: 1,
-      equipmentName: 'Espectrofotómetro',
-      brand: 'Shimadzu',
-      inventoryNumber: 'EQ-001',
-      laboratory: 'Lab Química',
-      availability: true,
-      functions: ['Análisis'],
-    },
-    {
-      id: 2,
-      equipmentName: 'Multímetro Digital',
-      brand: 'Fluke',
-      inventoryNumber: 'EQ-002',
-      laboratory: 'Lab Física',
-      availability: false,
-      functions: ['Medición'],
-    },
-    {
-      id: 3,
-      equipmentName: 'Balanza Analítica',
-      brand: 'Ohaus',
-      inventoryNumber: 'EQ-003',
-      laboratory: 'Lab Química',
-      availability: true,
-      functions: ['Calibración'],
-    },
+  columns: ColumnConfig[] = [
+    { key: 'inventoryCode', label: 'N° Inventario', type: 'text' },
+    { key: 'name', label: 'Nombre', type: 'text' },
+    { key: 'brand', label: 'Marca', type: 'text' },
+    { key: 'function', label: 'Función', type: 'text' },
+    { key: 'laboratory', label: 'Laboratorio', type: 'text' },
+    { key: 'availability', label: 'Disponibilidad', type: 'status' },
   ];
 
-  filteredEquipments: Equipment[] = [];
-  selectedIds = new Set<number>();
+  availableFilterKeys = [
+    { key: 'brand', label: 'Marca' },
+    { key: 'function', label: 'Función' },
+    { key: 'laboratory', label: 'Laboratorio' },
+    { key: 'availability', label: 'Disponibilidad' },
+  ];
+  activeFilterKeys = this.availableFilterKeys.map((f) => f.key);
 
-  loading = false;
-  showFilters = false;
-  hasSearched = false;
+  options: { [key: string]: any[] } = {
+    availability: ['Disponible', 'No disponible'],
+    function: ['Medición', 'Calibración', 'Análisis'],
+    laboratory: ['Lab Física', 'Lab Química', 'Lab Electrónica'],
+    brand: ['Fluke', 'Keysight', 'Agilent'],
+  };
 
-  ngOnInit(): void {
-    this.filteredEquipments = [...this.equipmentList];
-  }
+  // Resultados
+  equipmentResults: EquipmentRecord[] = [];
+  authorizedEquipments: EquipmentRecord[] = [];
 
-  toggleFilters(): void {
-    this.showFilters = !this.showFilters;
-  }
+  constructor() {}
 
-  resetSearch(): void {
-    this.query = '';
-    this.filters = {
-      laboratory: '',
-      availability: '',
-      function: '',
-    };
-    this.activeFilterKeys = ['laboratory', 'availability', 'function'];
+  ngOnInit(): void {}
+
+  onUserSelect(user: string): void {
+    this.selectedUser = user;
     this.performSearch();
   }
 
-  onFiltersChange(updated: any) {
-    this.filters = { ...this.filters, ...updated };
+  onFiltersChange(updatedFilters: any): void {
+    this.filters = { ...this.filters, ...updatedFilters };
     this.performSearch();
   }
 
   performSearch(): void {
-    this.hasSearched = true;
-    const q = this.query.trim().toLowerCase();
+    this.isLoading = true;
 
-    this.filteredEquipments = this.equipmentList.filter((e) => {
-      return (
-        (!q ||
-          e.equipmentName.toLowerCase().includes(q) ||
-          e.brand.toLowerCase().includes(q) ||
-          e.inventoryNumber.toLowerCase().includes(q)) &&
-        (!this.filters.laboratory ||
-          e.laboratory === this.filters.laboratory) &&
-        (!this.filters.availability ||
-          (this.filters.availability === 'Disponible' && e.availability) ||
-          (this.filters.availability === 'No disponible' && !e.availability)) &&
-        (!this.filters.function || e.functions.includes(this.filters.function))
-      );
-    });
+    // Simulación de resultados
+    const mockResults: EquipmentRecord[] = [
+      {
+        id: 1,
+        name: 'Multímetro',
+        function: 'Medición',
+        laboratory: 'Lab Electrónica',
+        availability: 'Disponible',
+        brand: 'Fluke',
+        inventoryCode: 'EQ-001',
+      },
+      {
+        id: 2,
+        name: 'Osciloscopio',
+        function: 'Calibración',
+        laboratory: 'Lab Física',
+        availability: 'No disponible',
+        brand: 'Keysight',
+        inventoryCode: 'EQ-002',
+      },
+      {
+        id: 3,
+        name: 'Espectrofotómetro',
+        function: 'Análisis',
+        laboratory: 'Lab Química',
+        availability: 'Disponible',
+        brand: 'Agilent',
+        inventoryCode: 'EQ-003',
+      },
+    ];
+
+    const query = this.searchQuery.trim().toLowerCase();
+    const { availability, function: func, laboratory, brand } = this.filters;
+
+    setTimeout(() => {
+      this.equipmentResults = mockResults.filter((eq) => {
+        const matchQuery =
+          !query ||
+          eq.name.toLowerCase().includes(query) ||
+          eq.inventoryCode.toLowerCase().includes(query);
+        const matchAvailability =
+          !availability || eq.availability === availability;
+        const matchFunction = !func || eq.function === func;
+        const matchLab = !laboratory || eq.laboratory === laboratory;
+        const matchBrand = !brand || eq.brand === brand;
+
+        return (
+          matchQuery &&
+          matchAvailability &&
+          matchFunction &&
+          matchLab &&
+          matchBrand
+        );
+      });
+
+      this.hasSearched = true;
+      this.isLoading = false;
+    }, 300);
   }
 
-  toggleEquipment(id: number): void {
-    this.selectedIds.has(id)
-      ? this.selectedIds.delete(id)
-      : this.selectedIds.add(id);
+  resetSearch(): void {
+    this.searchQuery = '';
+    this.filters = {
+      availability: '',
+      function: '',
+      laboratory: '',
+      brand: '',
+    };
+    this.performSearch();
   }
 
-  isSelected(id: number): boolean {
-    return this.selectedIds.has(id);
+  toggleAdvancedSearch(): void {
+    this.showAdvancedSearch = !this.showAdvancedSearch;
   }
 
-  columns = [
-    { key: 'equipmentName', label: 'Equipo', type: 'text' },
-    { key: 'brand', label: 'Marca', type: 'text' },
-    { key: 'inventoryNumber', label: 'Inventario', type: 'text' },
-    { key: 'laboratory', label: 'Laboratorio', type: 'text' },
-    { key: 'availability', label: 'Disponibilidad', type: 'status' },
-    { key: 'functions', label: 'Funciones', type: 'text' },
-    { key: 'actions', label: 'Permiso', type: 'actions' },
-  ];
+  updateAuthorizedEquipments(equipments: EquipmentRecord[]): void {
+    this.authorizedEquipments = [...equipments];
+  }
 
-  actionButtons = [
-    {
-      label: (row: any) =>
-        this.isSelected(row.id) ? 'Quitar permiso' : 'Asignar permiso',
-      action: (row: any) => this.toggleEquipment(row.id),
-      color: (row: any) => (this.isSelected(row.id) ? 'danger' : 'success'),
-    },
-  ];
+  savePermissions(): void {
+    if (!this.selectedUser) return;
 
-  trackById(_: number, e: Equipment) {
-    return e.id;
+    const payload = {
+      user: this.selectedUser,
+      authorizedEquipments: this.authorizedEquipments.map((eq) => eq.id),
+    };
+
+    console.log('Permisos guardados:', payload);
+    // Aquí iría la llamada al backend
+  }
+
+  trackById(_: number, item: EquipmentRecord): number {
+    return item.id;
   }
 }

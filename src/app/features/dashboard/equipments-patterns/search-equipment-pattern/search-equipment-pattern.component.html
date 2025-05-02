@@ -1,129 +1,44 @@
 <div class="search-container">
-  <div class="search-bar">
-    <input
-      type="text"
-      [(ngModel)]="searchQuery"
-      (keyup)="onKeyUp($event)"
-      placeholder="Buscar por nombre, marca o inventario..."
-      class="search-input"
-      [disabled]="isLoading"
-    />
+  <h1>Búsqueda de Equipos o Patrones</h1>
 
-    <button
-      (click)="performSearch()"
-      class="search-button"
-      [disabled]="isLoading"
-    >
-      <span class="search-icon">🔍</span>
-      <span *ngIf="!isLoading">Buscar</span>
-      <span *ngIf="isLoading">Buscando...</span>
-    </button>
-
-    <button
-      (click)="toggleAdvancedSearch()"
-      class="advanced-search-btn"
-      [disabled]="isLoading"
-    >
-      {{ showAdvancedSearch ? "Ocultar filtros" : "Búsqueda avanzada" }}
-    </button>
-  </div>
-
-  <div *ngIf="showAdvancedSearch" class="advanced-search">
-    <!-- Filtro de Disponibilidad -->
-    <div class="filter-group">
-      <label for="availability">Disponibilidad:</label>
-      <select
-        id="availability"
-        [(ngModel)]="filters.availability"
-        (change)="performSearch()"
-        [disabled]="isLoading"
-      >
-        <option value="">Todas</option>
-        <option *ngFor="let status of availabilityOptions" [value]="status">
-          {{ status }}
-        </option>
-      </select>
-    </div>
-
-    <!-- Filtro: Función con buscador -->
-    <div class="filter-group">
-      <label>Función:</label>
-      <app-dropdown-filter
-        [options]="functionOptions"
-        [selected]="filters.function"
-        (selectedChange)="filters.function = $event; performSearch()"
-        placeholder="Seleccione función..."
-        allowEmpty="Todas"
-      />
-    </div>
-
-    <!-- Filtro: Laboratorio con buscador -->
-    <div class="filter-group">
-      <label>Laboratorio:</label>
-      <app-dropdown-filter
-        [options]="laboratoryOptions"
-        [selected]="filters.laboratory"
-        (selectedChange)="filters.laboratory = $event; performSearch()"
-        placeholder="Seleccione laboratorio..."
-        allowEmpty="Todos"
-      />
-    </div>
-
-    <button
-      (click)="clearFilters()"
-      class="clear-filters-btn"
-      [disabled]="isLoading"
-    >
-      Limpiar filtros
-    </button>
-  </div>
+  <app-search-advanced
+    *ngIf="true"
+    [searchQuery]="searchQuery"
+    [filters]="filters"
+    [isLoading]="isLoading"
+    [showAdvancedSearch]="showAdvancedSearch"
+    [fieldsConfig]="fieldsConfig"
+    [options]="options"
+    [availableFilterKeys]="availableFilterKeys"
+    [activeFilterKeys]="activeFilterKeys"
+    (searchQueryChange)="searchQuery = $event"
+    (filtersChange)="onFiltersChange($event)"
+    (activeFilterKeysChange)="activeFilterKeys = $event"
+    (triggerSearch)="performSearch()"
+    (clearFilters)="resetSearch()"
+    (toggleAdvanced)="toggleAdvancedSearch()"
+  ></app-search-advanced>
 
   <div *ngIf="isLoading" class="loading-state">
     <div class="spinner"></div>
     <p>Buscando equipos...</p>
   </div>
 
-  <div
+  <app-results-table
     *ngIf="!isLoading && equipmentResults.length > 0"
-    class="results-container"
-  >
-    <h3>Resultados ({{ equipmentResults.length }})</h3>
-    <div class="results-grid">
-      <div class="results-header">
-        <div>Nombre</div>
-        <div>Función</div>
-        <div>Laboratorio</div>
-        <div>Disponibilidad</div>
-        <div>Marca</div>
-        <div>N° Inventario</div>
-        <div>Acciones</div>
-      </div>
-
-      <div
-        class="result-item"
-        *ngFor="let item of equipmentResults; trackBy: trackById"
-      >
-        <div data-label="Nombre">{{ item.name }}</div>
-        <div data-label="Función">{{ item.function.name }}</div>
-        <div data-label="Laboratorio">{{ item.laboratory.name }}</div>
-        <div data-label="Disponibilidad">{{ item.availability }}</div>
-        <div data-label="Marca">{{ item.brand }}</div>
-        <div data-label="N° Inventario">{{ item.inventoryCode }}</div>
-        <div data-label="Acciones">
-          <button class="search-button" (click)="navigateToEdit(item.id)">
-            Editar
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+    [columns]="columns"
+    [data]="equipmentResults"
+    [actionButtons]="actionButtons"
+    [sortEnabled]="true"
+    [trackByFunction]="trackById"
+  ></app-results-table>
 
   <div
-    *ngIf="!isLoading && searchQuery && equipmentResults.length === 0"
+    *ngIf="hasSearched && !isLoading && equipmentResults.length === 0"
     class="no-results"
   >
-    <p>No se encontraron equipos para "{{ searchQuery }}"</p>
-    <button (click)="clearFilters()" class="try-again-btn">
+    <p>{{ buildNoResultsMessage() }}</p>
+    <button (click)="resetSearch()" class="try-again-btn">
       Limpiar búsqueda
     </button>
   </div>

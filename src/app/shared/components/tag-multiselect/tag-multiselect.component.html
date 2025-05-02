@@ -1,0 +1,38 @@
+<div class="tag-selector" appClickOutside (appClickOutside)="closeDropdown()">
+  <!-- Selector visible -->
+  <div class="selector-box" (click)="toggleDropdown()">
+    {{ placeholder }}
+  </div>
+
+  <!-- Dropdown con opciones -->
+  <div class="dropdown-list" *ngIf="showDropdown">
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      placeholder="Buscar..."
+      appUppercase
+    />
+
+    <!-- Opciones filtradas -->
+    <div
+      class="option"
+      *ngFor="let option of filteredOptions"
+      (click)="addOption(option)"
+    >
+      {{ option.functionName }}
+    </div>
+
+    <!-- Opción para agregar nueva -->
+    <div class="option add-new" *ngIf="canAddNew()" (click)="addNewOption()">
+      ➕ Agregar "{{ searchTerm.trim() }}"
+    </div>
+  </div>
+
+  <!-- Etiquetas seleccionadas -->
+  <div class="tags">
+    <span class="tag" *ngFor="let opt of selected">
+      {{ opt.functionName }}
+      <button type="button" (click)="removeOption(opt)">×</button>
+    </span>
+  </div>
+</div>

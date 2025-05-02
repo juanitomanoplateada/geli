@@ -1,0 +1,35 @@
+<div
+  class="dropdown"
+  [class.disabled]="disabled"
+  appClickOutside
+  (appClickOutside)="close()"
+>
+  <!-- Elemento seleccionado -->
+  <div class="selected" (click)="toggleDropdown()">
+    <ng-container *ngIf="getSelectedLabel(); else showPlaceholder">
+      {{ getSelectedLabel() }}
+    </ng-container>
+    <ng-template #showPlaceholder>{{ placeholder }}</ng-template>
+  </div>
+
+  <!-- Lista desplegable -->
+  <div class="dropdown-list" *ngIf="showDropdown()">
+    <input
+      type="text"
+      [ngModel]="searchTerm()"
+      (ngModelChange)="searchTerm.set($event)"
+      placeholder="Buscar..."
+      title="Buscar opción en lista"
+      aria-label="Buscar opción en lista"
+      appUppercase
+    />
+
+    <div
+      class="option"
+      *ngFor="let option of getFilteredOptions()"
+      (click)="onSelect(option)"
+    >
+      {{ option.label }}
+    </div>
+  </div>
+</div>

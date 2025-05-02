@@ -1,0 +1,34 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>✓</th>
+      <th *ngFor="let col of columns">{{ col.label }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let item of data; trackBy: trackById">
+      <td>
+        <label>
+          <input
+            type="checkbox"
+            [checked]="isChecked(item)"
+            (change)="onCheckboxToggle(item, $event)"
+            [attr.title]="'Seleccionar ' + item.name"
+          />
+          <span class="visually-hidden">Seleccionar {{ item.name }}</span>
+        </label>
+      </td>
+      <td *ngFor="let col of columns">
+        <span *ngIf="col.type === 'text'">{{ item[col.key] }}</span>
+        <span *ngIf="col.type === 'status'">
+          <span
+            [class.available]="item[col.key] === 'Disponible'"
+            [class.unavailable]="item[col.key] === 'No disponible'"
+          >
+            {{ item[col.key] }}
+          </span>
+        </span>
+      </td>
+    </tr>
+  </tbody>
+</table>

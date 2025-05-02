@@ -1,203 +1,160 @@
 <div class="register-container">
   <h1>Registro de Equipo / Patrón</h1>
+  <p class="subtitle">Ingrese los datos del nuevo equipo o patrón.</p>
 
-  <form [formGroup]="equipmentForm" (ngSubmit)="onSubmit()">
-    <!-- Código de Inventario -->
+  <form [formGroup]="equipmentForm" (ngSubmit)="submitForm()">
+    <!-- Código -->
     <div class="form-group">
-      <label for="inventoryCode">Código de Inventario</label>
+      <label for="inventoryCode"
+        >Código de Inventario <span class="required">*</span></label
+      >
       <input
         id="inventoryCode"
         type="text"
-        formControlName="inventoryCode"
-        placeholder="Ej: PAT-001"
         class="form-control"
+        formControlName="inventoryCode"
+        placeholder="Ej: EQP-001"
         appUppercaseNospace
       />
       <div
         *ngIf="
-          equipmentForm.get('inventoryCode')?.invalid &&
-          equipmentForm.get('inventoryCode')?.touched
+          equipmentForm.get('inventoryCode')?.touched &&
+          equipmentForm.get('inventoryCode')?.invalid
         "
         class="error-message"
       >
-        El código de inventario es obligatorio
+        Este campo es obligatorio
       </div>
       <div *ngIf="isInventoryCodeTaken" class="error-message">
-        El código de inventario ya existe en el sistema
+        Este código ya está registrado
       </div>
     </div>
 
     <!-- Nombre -->
     <div class="form-group">
-      <label for="name">Nombre del Equipo / Patrón</label>
+      <label for="name"
+        >Nombre del Equipo / Patrón <span class="required">*</span></label
+      >
       <input
         id="name"
         type="text"
-        formControlName="name"
-        placeholder="Ej: Osciloscopio HP"
         class="form-control"
+        formControlName="name"
+        placeholder="Ej: Osciloscopio Tektronix"
         appUppercase
       />
       <div
         *ngIf="
-          equipmentForm.get('name')?.invalid &&
-          equipmentForm.get('name')?.touched
+          equipmentForm.get('name')?.touched &&
+          equipmentForm.get('name')?.invalid
         "
         class="error-message"
       >
-        El nombre es obligatorio
+        Este campo es obligatorio
+      </div>
+      <div *ngIf="isNameTaken" class="error-message">
+        Este nombre ya está registrado
       </div>
     </div>
 
     <!-- Marca -->
     <div class="form-group">
-      <label for="brand">Marca</label>
-      <input
-        id="brand"
-        type="text"
-        formControlName="brand"
-        placeholder="Ej: HP, Dell"
-        class="form-control"
-        appUppercase
-      />
-      <div
-        *ngIf="
-          equipmentForm.get('brand')?.invalid &&
-          equipmentForm.get('brand')?.touched
-        "
-        class="error-message"
-      >
-        La marca es obligatoria
-      </div>
+      <label for="brand">Marca <span class="required">*</span></label>
+      <app-dropdown-search-entity
+        [options]="brandOptions"
+        [selectedValue]="selectedBrandOrProposed"
+        (select)="onSelectBrand($event)"
+        (addNew)="onProposeBrand($event)"
+        placeholder="Seleccione o agregue la marca"
+      ></app-dropdown-search-entity>
     </div>
 
-    <!-- Laboratorio (Dropdown personalizado) -->
+    <!-- Funciones utilizadas -->
     <div class="form-group">
-      <label for="labLocation">Laboratorio</label>
-      <div
-        class="custom-select"
-        (click)="toggleLabDropdown()"
-        [class.open]="labDropdownOpen"
-      >
-        <div class="select-box">
-          {{ selectedLabName || "Seleccione un laboratorio" }}
-        </div>
-
-        <div
-          class="dropdown"
-          *ngIf="labDropdownOpen"
-          (click)="$event.stopPropagation()"
-        >
-          <input
-            type="text"
-            [value]="labSearchTerm"
-            (input)="handleLabInput($event)"
-            placeholder="Buscar laboratorio..."
-            appUppercase
-          />
-          <div class="options">
-            <div
-              class="option"
-              *ngFor="let lab of filteredLabOptions"
-              (click)="onSelectLab(lab); $event.stopPropagation()"
-            >
-              {{ lab.name }}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        *ngIf="
-          equipmentForm.get('labLocation')?.invalid &&
-          equipmentForm.get('labLocation')?.touched
-        "
-        class="error-message"
-      >
-        Debe seleccionar un laboratorio
-      </div>
+      <label for="functionId">Funciones <span class="required">*</span></label>
+      <app-tag-multiselect
+        [availableOptions]="availableFunctions"
+        [selected]="selectedFunctions"
+        (selectedChange)="onFunctionChange($event)"
+        placeholder="Seleccione o agregue funciones"
+      ></app-tag-multiselect>
     </div>
 
-    <!-- Funciones múltiples -->
+    <!-- Laboratorio -->
     <div class="form-group">
-      <label for="functionId">Funciones Utilizadas</label>
-      <div
-        class="custom-select"
-        (click)="toggleFunctionDropdown()"
-        [class.open]="functionDropdownOpen"
-      >
-        <div class="select-box">Seleccione funciones</div>
-        <div
-          class="dropdown"
-          *ngIf="functionDropdownOpen"
-          (click)="$event.stopPropagation()"
-        >
-          <input
-            type="text"
-            [value]="functionSearchTerm"
-            (input)="handleFunctionSearch($event)"
-            placeholder="Buscar función..."
-            appUppercase
-          />
-          <div class="options">
-            <div
-              class="option"
-              *ngFor="let func of filteredFunctionOptions"
-              (click)="onSelectFunction(func); $event.stopPropagation()"
-            >
-              {{ func.name }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Etiquetas -->
-      <div class="tag-container" *ngIf="selectedFunctions.length > 0">
-        <span class="tag" *ngFor="let func of selectedFunctions">
-          {{ func.name }}
-          <button
-            type="button"
-            class="remove-tag"
-            (click)="removeFunction(func)"
-          >
-            ×
-          </button>
-        </span>
-      </div>
-
-      <!-- Validación -->
-      <div
-        *ngIf="
-          equipmentForm.get('functionId')?.invalid &&
-          equipmentForm.get('functionId')?.touched
-        "
-        class="error-message"
-      >
-        Debe seleccionar al menos una función
-      </div>
+      <label for="lab">Laboratorio <span class="required">*</span></label>
+      <app-dropdown-search-entity-obj
+        [options]="labOptions"
+        [selectedValue]="selectedLab"
+        (select)="onSelectLab($event)"
+        placeholder="Seleccione un laboratorio"
+      ></app-dropdown-search-entity-obj>
     </div>
 
-    <!-- Disponibilidad -->
+    <!-- Estado -->
     <div class="form-group">
-      <label for="availability">¿Disponible?</label>
+      <label for="availability">Estado <span class="required">*</span></label>
       <select
         id="availability"
-        formControlName="availability"
         class="form-control"
+        formControlName="availability"
+        (change)="onAvailabilityChange()"
       >
-        <option [value]="true">Sí</option>
-        <option [value]="false">No</option>
+        <option value="" disabled selected>Seleccione un estado</option>
+        <option value="ACTIVO">ACTIVO</option>
+        <option value="INACTIVO">INACTIVO</option>
       </select>
     </div>
 
-    <!-- Botones -->
+    <!-- Observaciones -->
+    <div
+      class="form-group"
+      *ngIf="equipmentForm.get('availability')?.value === 'INACTIVO'"
+    >
+      <label for="notes">Observaciones <span class="required">*</span></label>
+      <textarea
+        id="notes"
+        class="form-control auto-expand"
+        formControlName="notes"
+        rows="2"
+        placeholder="Explique por qué el equipo está inactivo"
+        appUppercase
+        (input)="autoResize($event)"
+      ></textarea>
+      <div
+        *ngIf="
+          notesRequired &&
+          equipmentForm.get('notes')?.touched &&
+          equipmentForm.get('notes')?.invalid
+        "
+        class="error-message"
+      >
+        Este campo es obligatorio cuando el equipo está inactivo
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
     <div class="button-group">
-      <button type="button" class="btn cancel-btn" (click)="onCancel()">
+      <button
+        type="button"
+        class="btn cancel-btn"
+        (click)="resetForm()"
+        [disabled]="isSubmitting"
+      >
         Cancelar
       </button>
+
       <button
         type="submit"
         class="btn submit-btn"
-        [disabled]="!equipmentForm.valid || isInventoryCodeTaken"
+        [disabled]="
+          !equipmentForm.valid ||
+          isInventoryCodeTaken ||
+          isNameTaken ||
+          selectedFunctions.length === 0 ||
+          (equipmentForm.get('availability')?.value === 'INACTIVO' &&
+            equipmentForm.get('notes')?.invalid)
+        "
       >
         Registrar Patrón
       </button>
@@ -209,21 +166,30 @@
       [show]="showConfirmationModal"
       [confirmLabel]="'Confirmar'"
       [cancelLabel]="'Cancelar'"
-      (confirm)="confirmSubmission()"
-      (cancel)="cancelSubmission()"
+      [isLoading]="isSubmitting"
+      (confirm)="confirmSubmit()"
+      (cancel)="cancelConfirmation()"
     >
-      <p>Por favor, revisa la información antes de confirmar:</p>
+      <p>Por favor confirme la información antes de registrar:</p>
       <ul class="summary-list">
-        <li><strong>Inventario:</strong> {{ formSummary.inventoryCode }}</li>
+        <li>
+          <strong>Código de Inventario:</strong> {{ formSummary.inventoryCode }}
+        </li>
         <li><strong>Nombre:</strong> {{ formSummary.name }}</li>
         <li><strong>Marca:</strong> {{ formSummary.brand }}</li>
-        <li><strong>Laboratorio:</strong> {{ formSummary.labName }}</li>
-        <li>
-          <strong>Disponibilidad:</strong>
-          {{ formSummary.availability ? "Sí" : "No" }}
-        </li>
         <li><strong>Funciones:</strong> {{ formSummary.functions }}</li>
+        <li><strong>Laboratorio:</strong> {{ formSummary.lab }}</li>
+        <li><strong>Estado:</strong> {{ formSummary.availability }}</li>
+        <li><strong>Observaciones:</strong> {{ formSummary.notes }}</li>
       </ul>
+
+      <div
+        *ngIf="showModalFeedback"
+        [ngClass]="modalFeedbackSuccess ? 'feedback success' : 'feedback error'"
+        class="feedback"
+      >
+        {{ modalFeedbackMessage }}
+      </div>
     </app-confirm-modal>
   </form>
 </div>
