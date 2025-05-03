@@ -6,23 +6,25 @@
     <label for="user">Seleccione un usuario</label>
     <app-dropdown-search
       [options]="userOptions"
-      [selectedValue]="selectedUser"
+      [selectedValue]="selectedUser ? getUserLabel(selectedUser) : null"
       (select)="onUserSelect($event)"
       placeholder="Buscar usuario..."
     ></app-dropdown-search>
   </div>
 
-  <!-- Resumen de equipos autorizados -->
-  <div
-    class="permissions-summary"
-    *ngIf="selectedUser && authorizedEquipments.length > 0"
-  >
-    <h3>Equipos autorizados para {{ selectedUser }}</h3>
-    <ul>
-      <li *ngFor="let eq of authorizedEquipments">
-        {{ eq.name }} ({{ eq.inventoryCode }})
-      </li>
-    </ul>
+  <!-- Panel de equipos autorizados (siempre visible cuando hay usuario) -->
+  <div *ngIf="selectedUser" class="permissions-summary">
+    <h3>Equipos autorizados para {{ getUserLabel(selectedUser) }}</h3>
+    <ng-container *ngIf="authorizedEquipments.length > 0; else noEquipos">
+      <ul>
+        <li *ngFor="let eq of authorizedEquipments">
+          {{ eq.equipmentName }} ({{ eq.inventoryNumber }})
+        </li>
+      </ul>
+    </ng-container>
+    <ng-template #noEquipos>
+      <p>No se ha seleccionado ningún equipo.</p>
+    </ng-template>
 
     <button (click)="savePermissions()" class="save-btn">
       Guardar cambios
@@ -67,4 +69,27 @@
       Limpiar búsqueda
     </button>
   </div>
+
+  <!-- Modal de confirmación -->
+  <app-confirm-modal
+    [show]="showConfirmModal"
+    [title]="'¿Confirmar cambios de permisos?'"
+    [confirmLabel]="'Confirmar'"
+    [cancelLabel]="'Cancelar'"
+    [isLoading]="isModalProcessing"
+    (confirm)="confirmSave()"
+    (cancel)="cancelSave()"
+  >
+    <p>
+      Se asignarán los siguientes
+      <strong>{{ authorizedEquipments.length }}</strong> equipos al usuario
+      <strong>{{ selectedUser?.firstName }} {{ selectedUser?.lastName }}</strong
+      >:
+    </p>
+    <ul>
+      <li *ngFor="let eq of authorizedEquipments">
+        {{ eq.equipmentName }} ({{ eq.inventoryNumber }})
+      </li>
+    </ul>
+  </app-confirm-modal>
 </div>

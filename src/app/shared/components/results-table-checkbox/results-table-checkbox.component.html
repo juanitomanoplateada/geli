@@ -13,19 +13,27 @@
             type="checkbox"
             [checked]="isChecked(item)"
             (change)="onCheckboxToggle(item, $event)"
-            [attr.title]="'Seleccionar ' + item.name"
+            [attr.title]="'Seleccionar ' + (item.equipmentName || item.name)"
           />
-          <span class="visually-hidden">Seleccionar {{ item.name }}</span>
+          <span class="visually-hidden"
+            >Seleccionar {{ item.equipmentName || item.name }}</span
+          >
         </label>
       </td>
       <td *ngFor="let col of columns">
-        <span *ngIf="col.type === 'text'">{{ item[col.key] }}</span>
+        <span *ngIf="col.type === 'text'">
+          {{ resolveNestedValue(item, col.key) }}
+        </span>
         <span *ngIf="col.type === 'status'">
           <span
-            [class.available]="item[col.key] === 'Disponible'"
-            [class.unavailable]="item[col.key] === 'No disponible'"
+            [class.available]="
+              resolveNestedValue(item, col.key) === 'Disponible'
+            "
+            [class.unavailable]="
+              resolveNestedValue(item, col.key) === 'No disponible'
+            "
           >
-            {{ item[col.key] }}
+            {{ resolveNestedValue(item, col.key) }}
           </span>
         </span>
       </td>

@@ -12,7 +12,12 @@ import { AssignEquipmentPermissionsComponent } from './assign-equipment-permissi
 export const dashboardRoutes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
-  { path: 'assign-equipment-permissions', component: AssignEquipmentPermissionsComponent },
+  {
+    path: 'assign-equipment-permissions',
+    canActivate: [RoleGuard],
+    data: { roles: ['QUALITY-ADMIN-USER'] },
+    component: AssignEquipmentPermissionsComponent,
+  },
   {
     path: 'users',
     canActivate: [RoleGuard],

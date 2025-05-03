@@ -2,18 +2,6 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ColumnConfig } from '../../model/column-config.model';
 
-
-interface EquipmentRecord {
-  id: number;
-  name: string;
-  function: string;
-  laboratory: string;
-  availability: string;
-  brand: string;
-  inventoryCode: string;
-  [key: string]: any; // ✅ esto habilita el acceso dinámico
-}
-
 @Component({
   selector: 'app-results-table-checkbox',
   standalone: true,
@@ -23,16 +11,16 @@ interface EquipmentRecord {
 })
 export class ResultsTableCheckboxComponent {
   @Input() columns: ColumnConfig[] = [];
-  @Input() data: EquipmentRecord[] = [];
-  @Input() checkedItems: EquipmentRecord[] = [];
+  @Input() data: any[] = []; // ahora acepta EquipmentDto[]
+  @Input() checkedItems: any[] = [];
 
-  @Output() checkedItemsChange = new EventEmitter<EquipmentRecord[]>();
+  @Output() checkedItemsChange = new EventEmitter<any[]>();
 
-  isChecked(item: EquipmentRecord): boolean {
+  isChecked(item: any): boolean {
     return this.checkedItems.some((eq) => eq.id === item.id);
   }
 
-  onCheckboxToggle(item: EquipmentRecord, event: Event): void {
+  onCheckboxToggle(item: any, event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
     if (checked) {
       this.checkedItemsChange.emit([...this.checkedItems, item]);
@@ -43,7 +31,16 @@ export class ResultsTableCheckboxComponent {
     }
   }
 
-  trackById(_: number, item: EquipmentRecord) {
+  trackById(_: number, item: any): number {
     return item.id;
+  }
+
+  resolveNestedValue(item: any, key: string): any {
+    const keys = key.split('.');
+    let value = item;
+    for (const k of keys) {
+      value = value?.[k];
+    }
+    return value;
   }
 }

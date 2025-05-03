@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { EquipmentDto } from '../../equipment/models/equipment-response.dto';
 
 export interface CreateUserRequest {
   email: string;
@@ -29,6 +30,7 @@ export interface UserRecordResponse {
   modificationStatusDate: string;
   creationDate: string;
   position?: PositionResponse;
+  authorizedUserEquipments?: EquipmentDto[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -138,6 +140,18 @@ export class UserService {
         creationDate: this.formatDate(user.creationDate),
         modificationStatusDate: this.formatDate(user.modificationStatusDate),
       }))
+    );
+  }
+
+  updateAuthorizedEquipments(
+    userId: number,
+    equipmentIds: number[]
+  ): Observable<void> {
+    return this.http.put<void>(
+      `${this.baseUrl}/${userId}/authorized-equipments`,
+      {
+        equipmentIds: equipmentIds,
+      }
     );
   }
 }

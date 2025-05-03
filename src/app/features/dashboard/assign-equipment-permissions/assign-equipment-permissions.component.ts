@@ -1,24 +1,29 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 
 import { DropdownSearchComponent } from '../../../shared/components/dropdown-search/dropdown-search.component';
 import { SearchAdvancedComponent } from '../../../shared/components/search-advanced/search-advanced.component';
 import { ResultsTableCheckboxComponent } from '../../../shared/components/results-table-checkbox/results-table-checkbox.component';
+import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
 import { FieldConfig } from '../../../shared/model/field-config.model';
 import { ColumnConfig } from '../../../shared/model/column-config.model';
 
-interface EquipmentRecord {
-  id: number;
-  name: string;
-  function: string;
-  laboratory: string;
-  availability: string;
-  brand: string;
-  inventoryCode: string;
-  [key: string]: any; // acceso dinámico para columnas
+import {
+  UserService,
+  UserRecordResponse,
+} from '../../../core/user/services/user.service';
+import { EquipmentService } from '../../../core/equipment/services/equipment.service';
+import { EquipmentDto } from '../../../core/equipment/models/equipment-response.dto';
+import { EquipmentFilterDto } from '../../../core/equipment/models/equipment-request.dto';
+import { BrandService } from '../../../core/brand/services/brand.service';
+import { FunctionService } from '../../../core/function/services/function.service';
+import { LaboratoryService } from '../../../core/laboratory/services/laboratory.service';
+
+interface EquipmentTableRecord extends EquipmentDto {
+  availabilityText: string;
+  functionsText: string;
 }
 
 @Component({
@@ -30,27 +35,31 @@ interface EquipmentRecord {
     DropdownSearchComponent,
     SearchAdvancedComponent,
     ResultsTableCheckboxComponent,
+    ConfirmModalComponent,
   ],
   templateUrl: './assign-equipment-permissions.component.html',
   styleUrls: ['./assign-equipment-permissions.component.scss'],
 })
 export class AssignEquipmentPermissionsComponent implements OnInit {
-  // Opciones de usuarios
-  userOptions = ['Ana Pérez', 'Luis Gómez', 'Carlos Rivera'];
-  selectedUser: string | null = null;
+  users: UserRecordResponse[] = [];
+  selectedUser: UserRecordResponse | null = null;
+  userOptions: string[] = [];
 
-  // Estado de búsqueda
   searchQuery = '';
   isLoading = false;
   showAdvancedSearch = false;
   hasSearched = false;
 
-  // Filtros
-  filters: any = {
+  filters: {
+    availability?: 'Activo' | 'Inactivo' | '';
+    function?: number;
+    laboratory?: number;
+    brand?: number;
+  } = {
     availability: '',
-    function: '',
-    laboratory: '',
-    brand: '',
+    function: undefined,
+    laboratory: undefined,
+    brand: undefined,
   };
 
   fieldsConfig: FieldConfig[] = [
@@ -70,129 +79,203 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
       key: 'laboratory',
       label: 'Laboratorio',
       type: 'dropdown',
-      allowEmptyOption: 'Todas',
+      allowEmptyOption: 'Todos',
     },
     {
       key: 'availability',
-      label: 'Disponibilidad',
+      label: 'Estado',
       type: 'select',
-      options: ['Disponible', 'No disponible'],
-      allowEmptyOption: 'Todas',
+      options: ['Activo', 'Inactivo'],
+      allowEmptyOption: 'Todos',
     },
   ];
 
   columns: ColumnConfig[] = [
-    { key: 'inventoryCode', label: 'N° Inventario', type: 'text' },
-    { key: 'name', label: 'Nombre', type: 'text' },
-    { key: 'brand', label: 'Marca', type: 'text' },
-    { key: 'function', label: 'Función', type: 'text' },
-    { key: 'laboratory', label: 'Laboratorio', type: 'text' },
-    { key: 'availability', label: 'Disponibilidad', type: 'status' },
+    { key: 'inventoryNumber', label: 'N° Inventario', type: 'text' },
+    { key: 'equipmentName', label: 'Nombre', type: 'text' },
+    { key: 'brand.brandName', label: 'Marca', type: 'text' },
+    { key: 'laboratory.laboratoryName', label: 'Laboratorio', type: 'text' },
+    { key: 'functionsText', label: 'Funciones', type: 'text' },
+    { key: 'availabilityText', label: 'Estado', type: 'status' },
   ];
 
   availableFilterKeys = [
     { key: 'brand', label: 'Marca' },
     { key: 'function', label: 'Función' },
     { key: 'laboratory', label: 'Laboratorio' },
-    { key: 'availability', label: 'Disponibilidad' },
+    { key: 'availability', label: 'Estado' },
   ];
   activeFilterKeys = this.availableFilterKeys.map((f) => f.key);
 
-  options: { [key: string]: any[] } = {
-    availability: ['Disponible', 'No disponible'],
-    function: ['Medición', 'Calibración', 'Análisis'],
-    laboratory: ['Lab Física', 'Lab Química', 'Lab Electrónica'],
-    brand: ['Fluke', 'Keysight', 'Agilent'],
+  options: { [key: string]: { label: string; value: any }[] } = {
+    availability: [
+      { label: 'Activo', value: true },
+      { label: 'Inactivo', value: false },
+    ],
+    function: [],
+    laboratory: [],
+    brand: [],
   };
 
-  // Resultados
-  equipmentResults: EquipmentRecord[] = [];
-  authorizedEquipments: EquipmentRecord[] = [];
+  equipmentResults: EquipmentTableRecord[] = [];
+  authorizedEquipments: EquipmentTableRecord[] = [];
 
-  constructor() {}
+  // Confirm modal
+  showConfirmModal = false;
+  isModalProcessing = false;
 
-  ngOnInit(): void {}
+  constructor(
+    private userService: UserService,
+    private equipmentService: EquipmentService,
+    private brandService: BrandService,
+    private functionService: FunctionService,
+    private laboratoryService: LaboratoryService
+  ) {}
 
-  onUserSelect(user: string): void {
-    this.selectedUser = user;
-    this.performSearch();
+  ngOnInit(): void {
+    this.userService.getUsers().subscribe((users) => {
+      this.users = users;
+      this.userOptions = users.map((u) => `${u.firstName} ${u.lastName}`);
+    });
+
+    this.brandService.getAll().subscribe((brands) => {
+      this.options['brand'] = brands.map((b) => ({
+        label: b.brandName,
+        value: b.id,
+      }));
+    });
+
+    this.functionService.getAll().subscribe((funcs) => {
+      this.options['function'] = funcs.map((f) => ({
+        label: f.functionName,
+        value: f.id,
+      }));
+    });
+
+    this.laboratoryService.getLaboratories().subscribe((labs) => {
+      this.options['laboratory'] = labs.map((l) => ({
+        label: l.laboratoryName,
+        value: l.id,
+      }));
+    });
   }
 
-  onFiltersChange(updatedFilters: any): void {
-    this.filters = { ...this.filters, ...updatedFilters };
-    this.performSearch();
+  onUserSelect(userFullName: string): void {
+    const selected = this.users.find(
+      (u) => `${u.firstName} ${u.lastName}` === userFullName
+    );
+    if (!selected) return;
+
+    this.userService.getUserById(selected.id).subscribe((user) => {
+      this.selectedUser = user;
+      this.authorizedEquipments = (user.authorizedUserEquipments ?? []).map(
+        (eq) => ({
+          ...eq,
+          availabilityText: eq.availability ? 'Activo' : 'Inactivo',
+          functionsText:
+            eq.functions?.map((f) => f.functionName).join(', ') || '—',
+        })
+      );
+      this.performSearch();
+    });
   }
 
   performSearch(): void {
+    if (!this.selectedUser) return;
+
     this.isLoading = true;
 
-    // Simulación de resultados
-    const mockResults: EquipmentRecord[] = [
-      {
-        id: 1,
-        name: 'Multímetro',
-        function: 'Medición',
-        laboratory: 'Lab Electrónica',
-        availability: 'Disponible',
-        brand: 'Fluke',
-        inventoryCode: 'EQ-001',
-      },
-      {
-        id: 2,
-        name: 'Osciloscopio',
-        function: 'Calibración',
-        laboratory: 'Lab Física',
-        availability: 'No disponible',
-        brand: 'Keysight',
-        inventoryCode: 'EQ-002',
-      },
-      {
-        id: 3,
-        name: 'Espectrofotómetro',
-        function: 'Análisis',
-        laboratory: 'Lab Química',
-        availability: 'Disponible',
-        brand: 'Agilent',
-        inventoryCode: 'EQ-003',
-      },
-    ];
+    const filterPayload: EquipmentFilterDto = {
+      equipmentName: this.searchQuery.trim() || undefined,
+      brandId: this.filters.brand,
+      functionId: this.filters.function,
+      laboratoryId: this.filters.laboratory,
+      availability:
+        this.filters.availability === 'Activo'
+          ? true
+          : this.filters.availability === 'Inactivo'
+          ? false
+          : undefined,
+    };
 
-    const query = this.searchQuery.trim().toLowerCase();
-    const { availability, function: func, laboratory, brand } = this.filters;
+    const authorizedMap = new Map(
+      this.authorizedEquipments.map((eq) => [eq.id, eq])
+    );
 
-    setTimeout(() => {
-      this.equipmentResults = mockResults.filter((eq) => {
-        const matchQuery =
-          !query ||
-          eq.name.toLowerCase().includes(query) ||
-          eq.inventoryCode.toLowerCase().includes(query);
-        const matchAvailability =
-          !availability || eq.availability === availability;
-        const matchFunction = !func || eq.function === func;
-        const matchLab = !laboratory || eq.laboratory === laboratory;
-        const matchBrand = !brand || eq.brand === brand;
+    this.equipmentService.filter(filterPayload).subscribe((equipments) => {
+      const mapped: EquipmentTableRecord[] = equipments.map((eq) => ({
+        ...eq,
+        availabilityText: eq.availability ? 'Activo' : 'Inactivo',
+        functionsText:
+          eq.functions?.map((f) => f.functionName).join(', ') || '—',
+      }));
 
-        return (
-          matchQuery &&
-          matchAvailability &&
-          matchFunction &&
-          matchLab &&
-          matchBrand
-        );
-      });
+      this.equipmentResults = mapped;
+
+      const visibleAuthorized = mapped.filter((eq) => authorizedMap.has(eq.id));
+      const hiddenAuthorized = this.authorizedEquipments.filter(
+        (eq) => !this.equipmentResults.some((res) => res.id === eq.id)
+      );
+
+      this.authorizedEquipments = [...hiddenAuthorized, ...visibleAuthorized];
 
       this.hasSearched = true;
       this.isLoading = false;
-    }, 300);
+    });
+  }
+
+  updateAuthorizedEquipments(checked: EquipmentTableRecord[]): void {
+    const checkedIds = new Set(checked.map((eq) => eq.id));
+    const preserved = this.authorizedEquipments.filter((eq) =>
+      checkedIds.has(eq.id)
+    );
+    const newOnes = checked.filter(
+      (eq) => !preserved.some((e) => e.id === eq.id)
+    );
+    this.authorizedEquipments = [...preserved, ...newOnes];
+  }
+
+  savePermissions(): void {
+    this.showConfirmModal = true;
+  }
+
+  confirmSave(): void {
+    if (!this.selectedUser) return;
+
+    this.isModalProcessing = true;
+
+    const payload = {
+      userId: this.selectedUser.id,
+      equipmentIds: this.authorizedEquipments.map((eq) => eq.id),
+    };
+
+    this.userService
+      .updateAuthorizedEquipments(payload.userId, payload.equipmentIds)
+      .subscribe({
+        next: () => {
+          setTimeout(() => {
+            this.isModalProcessing = false;
+            this.showConfirmModal = false;
+          }, 1500); // Espera visual
+        },
+        error: (err) => {
+          console.error('Error al guardar permisos:', err);
+          this.isModalProcessing = false;
+        },
+      });
+  }
+
+  cancelSave(): void {
+    this.showConfirmModal = false;
   }
 
   resetSearch(): void {
     this.searchQuery = '';
     this.filters = {
       availability: '',
-      function: '',
-      laboratory: '',
-      brand: '',
+      function: undefined,
+      laboratory: undefined,
+      brand: undefined,
     };
     this.performSearch();
   }
@@ -201,23 +284,16 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     this.showAdvancedSearch = !this.showAdvancedSearch;
   }
 
-  updateAuthorizedEquipments(equipments: EquipmentRecord[]): void {
-    this.authorizedEquipments = [...equipments];
+  onFiltersChange(updatedFilters: any): void {
+    this.filters = { ...this.filters, ...updatedFilters };
+    this.performSearch();
   }
 
-  savePermissions(): void {
-    if (!this.selectedUser) return;
-
-    const payload = {
-      user: this.selectedUser,
-      authorizedEquipments: this.authorizedEquipments.map((eq) => eq.id),
-    };
-
-    console.log('Permisos guardados:', payload);
-    // Aquí iría la llamada al backend
-  }
-
-  trackById(_: number, item: EquipmentRecord): number {
+  trackById(_: number, item: EquipmentDto): number {
     return item.id;
+  }
+
+  getUserLabel(user: UserRecordResponse): string {
+    return `${user.firstName} ${user.lastName}`;
   }
 }

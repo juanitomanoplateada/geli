@@ -130,6 +130,14 @@
 
     <a
       *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
+      routerLink="/dashboard/assign-equipment-permissions"
+      class="dashboard-link"
+      [class.active]="isExactActive('/dashboard/assign-equipment-permissions')"
+      >Permisos de Uso</a
+    >
+
+    <a
+      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
       routerLink="/dashboard/sessions/session-history"
       class="dashboard-link"
       [class.active]="isExactActive('/dashboard/sessions/session-history')"

@@ -31,18 +31,24 @@ export class TagMultiselectComponent {
   get filteredOptions(): FunctionDto[] {
     const term = this.searchTerm.trim().toUpperCase();
 
-    // Si N/A ya está seleccionado, no mostrar más opciones
-    if (this.selected.some(f => f.functionName.toUpperCase() === this.NA_LABEL)) {
+    // Si ya está seleccionada N/A, no mostrar ninguna opción
+    if (
+      this.selected.some((f) => f.functionName.toUpperCase() === this.NA_LABEL)
+    ) {
       return [];
     }
 
     return this.availableOptions.filter((opt) => {
-      const name = opt?.functionName ?? '';
+      const name = opt?.functionName?.toUpperCase() ?? '';
+      const isNA = name === this.NA_LABEL;
+
+      // Mostrar N/A siempre que no esté seleccionada
+      if (isNA) return true;
+
+      // Mostrar las otras si coinciden con el término y no están seleccionadas
       return (
-        name.toUpperCase().includes(term) &&
-        !this.selected.some(
-          (sel) => sel.functionName.toUpperCase() === name.toUpperCase()
-        )
+        name.includes(term) &&
+        !this.selected.some((sel) => sel.functionName.toUpperCase() === name)
       );
     });
   }
@@ -58,7 +64,12 @@ export class TagMultiselectComponent {
       this.selected = [option];
     } else {
       // Si ya está N/A, no se puede agregar
-      if (this.selected.some(f => f.functionName.toUpperCase() === this.NA_LABEL)) return;
+      if (
+        this.selected.some(
+          (f) => f.functionName.toUpperCase() === this.NA_LABEL
+        )
+      )
+        return;
 
       this.selected = [...this.selected, option];
     }
@@ -100,16 +111,17 @@ export class TagMultiselectComponent {
     const term = this.searchTerm.trim().toUpperCase();
 
     if (term === this.NA_LABEL) return false;
-    if (this.selected.some(f => f.functionName.toUpperCase() === this.NA_LABEL)) return false;
+    if (
+      this.selected.some((f) => f.functionName.toUpperCase() === this.NA_LABEL)
+    )
+      return false;
 
     return (
       term !== '' &&
       !this.availableOptions.some(
         (opt) => opt.functionName.toUpperCase() === term
       ) &&
-      !this.selected.some(
-        (sel) => sel.functionName.toUpperCase() === term
-      )
+      !this.selected.some((sel) => sel.functionName.toUpperCase() === term)
     );
   }
 }
