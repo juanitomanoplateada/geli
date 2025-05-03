@@ -91,5 +91,8 @@
         {{ eq.equipmentName }} ({{ eq.inventoryNumber }})
       </li>
     </ul>
+    <ng-container *ngIf="modalSuccessMessage">
+      <p class="modal-feedback">{{ modalSuccessMessage }}</p>
+    </ng-container>
   </app-confirm-modal>
 </div>

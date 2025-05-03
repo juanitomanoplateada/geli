@@ -50,6 +50,8 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
   showAdvancedSearch = false;
   hasSearched = false;
 
+  modalSuccessMessage = ''; // ✅ mensaje visible en el modal
+
   filters: {
     availability?: 'Activo' | 'Inactivo' | '';
     function?: number;
@@ -134,8 +136,8 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
 
   ngOnInit(): void {
     this.userService.getUsers().subscribe((users) => {
-      this.users = users;
-      this.userOptions = users.map((u) => `${u.firstName} ${u.lastName}`);
+      this.users = users.filter((u) => u.role === 'AUTHORIZED-USER'); // 👈 solo los del rol deseado
+      this.userOptions = this.users.map((u) => `${u.firstName} ${u.lastName}`);
     });
 
     this.brandService.getAll().subscribe((brands) => {
@@ -172,10 +174,12 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
         (eq) => ({
           ...eq,
           availabilityText: eq.availability ? 'Activo' : 'Inactivo',
-          functionsText:
-            eq.functions?.map((f) => f.functionName).join(', ') || '—',
+          functionsText: Array.isArray(eq.functions)
+            ? eq.functions.map((f) => f.functionName).join(', ')
+            : '—',
         })
       );
+
       this.performSearch();
     });
   }
@@ -184,6 +188,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     if (!this.selectedUser) return;
 
     this.isLoading = true;
+    this.hasSearched = false;
 
     const filterPayload: EquipmentFilterDto = {
       equipmentName: this.searchQuery.trim() || undefined,
@@ -198,29 +203,40 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
           : undefined,
     };
 
-    const authorizedMap = new Map(
-      this.authorizedEquipments.map((eq) => [eq.id, eq])
-    );
+    this.equipmentService.filter(filterPayload).subscribe({
+      next: (equipments) => {
+        const safeEquipments = equipments ?? []; // Evita null
+        const mapped: EquipmentTableRecord[] = safeEquipments.map((eq) => ({
+          ...eq,
+          availabilityText: eq.availability ? 'Activo' : 'Inactivo',
+          functionsText:
+            Array.isArray(eq.functions) && eq.functions.length > 0
+              ? eq.functions.map((f) => f.functionName).join(', ')
+              : '—',
+        }));
 
-    this.equipmentService.filter(filterPayload).subscribe((equipments) => {
-      const mapped: EquipmentTableRecord[] = equipments.map((eq) => ({
-        ...eq,
-        availabilityText: eq.availability ? 'Activo' : 'Inactivo',
-        functionsText:
-          eq.functions?.map((f) => f.functionName).join(', ') || '—',
-      }));
+        const authorizedMap = new Map(
+          (this.authorizedEquipments ?? []).map((eq) => [eq.id, eq])
+        );
 
-      this.equipmentResults = mapped;
+        const visibleAuthorized = mapped.filter((eq) =>
+          authorizedMap.has(eq.id)
+        );
+        const hiddenAuthorized = (this.authorizedEquipments ?? []).filter(
+          (eq) => !mapped.some((res) => res.id === eq.id)
+        );
 
-      const visibleAuthorized = mapped.filter((eq) => authorizedMap.has(eq.id));
-      const hiddenAuthorized = this.authorizedEquipments.filter(
-        (eq) => !this.equipmentResults.some((res) => res.id === eq.id)
-      );
-
-      this.authorizedEquipments = [...hiddenAuthorized, ...visibleAuthorized];
-
-      this.hasSearched = true;
-      this.isLoading = false;
+        this.equipmentResults = mapped;
+        this.authorizedEquipments = [...hiddenAuthorized, ...visibleAuthorized];
+        this.hasSearched = true;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error al buscar equipos:', err);
+        this.equipmentResults = [];
+        this.hasSearched = true;
+        this.isLoading = false;
+      },
     });
   }
 
@@ -243,6 +259,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     if (!this.selectedUser) return;
 
     this.isModalProcessing = true;
+    this.modalSuccessMessage = ''; // Limpiar antes de procesar
 
     const payload = {
       userId: this.selectedUser.id,
@@ -253,10 +270,13 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
       .updateAuthorizedEquipments(payload.userId, payload.equipmentIds)
       .subscribe({
         next: () => {
+          this.modalSuccessMessage = 'Permisos actualizados correctamente ✅';
+
           setTimeout(() => {
             this.isModalProcessing = false;
             this.showConfirmModal = false;
-          }, 1500); // Espera visual
+            this.modalSuccessMessage = '';
+          }, 4000); // ⏳ 4 segundos visibles
         },
         error: (err) => {
           console.error('Error al guardar permisos:', err);
@@ -277,6 +297,8 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
       laboratory: undefined,
       brand: undefined,
     };
+    this.equipmentResults = [];
+    this.hasSearched = false;
     this.performSearch();
   }
 

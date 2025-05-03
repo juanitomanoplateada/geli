@@ -104,3 +104,22 @@
     }
   }
 }
+
+.modal-feedback {
+  color: #28a745;
+  margin-top: 1rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.no-results {
+  text-align: center;
+  color: #b22222;
+  font-weight: bold;
+  margin-top: 1rem;
+
+  .try-again-btn {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+  }
+}
