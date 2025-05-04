@@ -58,6 +58,7 @@ export interface EquipmentDto {
         laboratoryObservations: string;
       };
       availability: boolean;
+      remarks: string;
       functions: {
         id: number;
         functionName: string;

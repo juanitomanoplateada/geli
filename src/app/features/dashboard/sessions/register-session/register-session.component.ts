@@ -1,61 +1,59 @@
 import { Component, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DropdownSearchComponent } from '../../../../shared/components/dropdown-search/dropdown-search.component';
+
+import { DropdownSearchEntityObjComponent } from '../../../../shared/components/dropdown-search-entity-obj/dropdown-search-entity-obj.component';
 import { TagSelectorComponent } from '../../../../shared/components/tag-selector/tag-selector.component';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
 
+import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
+import { EquipmentService } from '../../../../core/equipment/services/equipment.service';
+import { UserService } from '../../../../core/user/services/user.service';
+import {
+  EquipmentUseRequest,
+  EquipmentUseService,
+} from '../../../../core/session/services/equipment-use.service';
+
+import { Laboratory } from '../../../../core/laboratory/models/laboratory.model';
+import { EquipmentDto } from '../../../../core/equipment/models/equipment-response.dto';
+import { LabeledOption } from '../../../../shared/components/dropdown-search-entity-obj/dropdown-search-entity-obj.component';
+
 @Component({
   selector: 'app-register-session',
   standalone: true,
+  templateUrl: './register-session.component.html',
+  styleUrls: ['./register-session.component.scss'],
   imports: [
     CommonModule,
     FormsModule,
-    ConfirmModalComponent,
-    DropdownSearchComponent,
+    DropdownSearchEntityObjComponent,
     TagSelectorComponent,
+    ConfirmModalComponent,
     IntegerOnlyDirective,
   ],
-  templateUrl: './register-session.component.html',
-  styleUrls: ['./register-session.component.scss'],
 })
 export class RegisterSessionComponent implements AfterViewInit {
   private isBrowser = false;
 
-  sessionActive = false;
-  selectedLab: string | null = null;
+  labs: Laboratory[] = [];
+  labOptions: LabeledOption[] = [];
+  equipmentOptions: LabeledOption[] = [];
+
+  selectedLabId: string | null = null;
   selectedEquipment: string | null = null;
+
+  selectedLabStatus: { active: boolean; remarks: string } | null = null;
+  selectedEquipmentStatus: { active: boolean; remarks: string } | null = null;
+
+  activeSessions: any[] = [];
+  selectedSessionId: number | null = null;
 
   showConfirmationModal = false;
   showSummaryModal = false;
-
-  laboratories = [
-    {
-      name: 'Laboratorio DRX',
-      equipments: ['Difractómetro PANalytical', 'Detector Si(Li)'],
-    },
-    {
-      name: 'Laboratorio Electrónica',
-      equipments: ['Osciloscopio Tektronix', 'Fuente DC BK Precision'],
-    },
-  ];
-
-  get labNames(): string[] {
-    return this.laboratories.map((lab) => lab.name);
-  }
-
-  get equipmentOptions(): string[] {
-    const selected = this.laboratories.find((l) => l.name === this.selectedLab);
-    return selected ? selected.equipments : [];
-  }
-
-  checkIn = { date: '', time: '', user: 'RAAA' };
-  checkOut = { sampleCount: null, functions: '', remarks: '' };
-
-  availabilityStatus = '';
-  checkInTime: Date | null = null;
-  usageDuration = '';
+  isStartingSession = false;
+  startSessionSuccess = false;
+  startSessionError = false;
 
   availableFunctions: string[] = [
     'Calibración',
@@ -66,10 +64,16 @@ export class RegisterSessionComponent implements AfterViewInit {
     'Ajuste de Parámetros',
   ];
 
-  selectedFunctions: string[] = [];
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private labService: LaboratoryService,
+    private equipmentService: EquipmentService,
+    private userService: UserService,
+    private equipmentUseService: EquipmentUseService
+  ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
+    this.loadLabs();
+    this.loadActiveSessions();
   }
 
   ngAfterViewInit(): void {
@@ -78,56 +82,220 @@ export class RegisterSessionComponent implements AfterViewInit {
     }
   }
 
+  loadLabs() {
+    this.labService.getLaboratories().subscribe((labs) => {
+      this.labs = labs;
+      this.labOptions = labs.map((lab) => ({
+        label: `${lab.laboratoryName} - ${lab.location.locationName}`,
+        value: String(lab.id),
+      }));
+    });
+  }
+
+  loadActiveSessions() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    const username = JSON.parse(atob(token.split('.')[1]))[
+      'preferred_username'
+    ];
+
+    this.userService
+      .getUserByEmail(`${username}@uptc.edu.co`)
+      .subscribe((user) => {
+        this.equipmentUseService.getAllEquipmentUses().subscribe((uses) => {
+          const userUses = uses.filter(
+            (use: any) => use.user.id === user.id && use.isInUse === true
+          );
+
+          this.activeSessions = userUses.map((use: any) => ({
+            id: use.id,
+            lab: use.equipment.laboratory.laboratoryName,
+            labLocation: use.equipment.laboratory.location.locationName,
+            labLabel: `${use.equipment.laboratory.laboratoryName} - ${use.equipment.laboratory.location.locationName}`,
+
+            equipment: use.equipment.equipmentName,
+            equipmentInventoryNumber: use.equipment.inventoryNumber,
+            equipmentLabel: `${use.equipment.equipmentName} - ${use.equipment.inventoryNumber}`,
+
+            useDate: use.useDate,
+            startUseTime: use.startUseTime,
+
+            checkIn: {
+              date: use.useDate,
+              time: use.startUseTime,
+              user: `${use.user.firstName} ${use.user.lastName}`,
+            },
+
+            checkOut: {
+              verifiedStatus: '',
+              usageStatus: '',
+              usageDuration: '',
+              sampleCount: use.samplesNumber ?? null,
+              selectedFunctions: use.usedFunctions ?? [],
+              remarks: use.observations ?? '',
+            },
+
+            availableFunctions: use.equipment.functions.map(
+              (f: any) => f.functionName
+            ),
+          }));
+        });
+      });
+  }
+
+  onSelectLab(labId: string) {
+    this.selectedLabId = labId;
+    this.selectedEquipment = null;
+    this.selectedEquipmentStatus = null;
+
+    const selectedLab = this.labs.find((lab) => String(lab.id) === labId);
+    this.selectedLabStatus = {
+      active: selectedLab?.laboratoryAvailability ?? true,
+      remarks:
+        selectedLab?.laboratoryObservations || 'Sin observaciones registradas.',
+    };
+
+    if (!this.selectedLabStatus.active) {
+      this.equipmentOptions = [];
+      return;
+    }
+
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+    const username = JSON.parse(atob(token.split('.')[1]))[
+      'preferred_username'
+    ];
+
+    this.userService
+      .getUserByEmail(`${username}@uptc.edu.co`)
+      .subscribe((user) => {
+        const authorizedEquipments = user.authorizedUserEquipments || [];
+        const filtered = authorizedEquipments.filter(
+          (eq: EquipmentDto) => String(eq.laboratory.id) === labId
+        );
+        this.equipmentOptions = filtered.map((eq) => ({
+          label: `${eq.equipmentName} - ${eq.inventoryNumber}`,
+          value: String(eq.id),
+        }));
+      });
+  }
+
+  onSelectEquipment(equipmentId: string) {
+    this.selectedEquipment = equipmentId;
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+    const username = JSON.parse(atob(token.split('.')[1]))[
+      'preferred_username'
+    ];
+
+    this.userService
+      .getUserByEmail(`${username}@uptc.edu.co`)
+      .subscribe((user) => {
+        const authorizedEquipments = user.authorizedUserEquipments || [];
+        const selected = authorizedEquipments.find(
+          (eq: EquipmentDto) => String(eq.id) === equipmentId
+        );
+
+        this.selectedEquipmentStatus = {
+          active: selected?.availability ?? true,
+          remarks:
+            selected?.equipmentObservations || 'Sin observaciones registradas.',
+        };
+      });
+  }
+
   onStartSessionClick() {
     this.showConfirmationModal = true;
   }
 
   confirmStartSession() {
-    const now = new Date();
-    this.checkIn.date = now.toLocaleDateString();
-    this.checkIn.time = now.toLocaleTimeString();
-    this.checkInTime = now;
-    this.sessionActive = true;
-    this.showConfirmationModal = false;
+    if (!this.selectedLabId || !this.selectedEquipment) return;
+
+    this.isStartingSession = true;
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+    const username = JSON.parse(atob(token.split('.')[1]))[
+      'preferred_username'
+    ];
+
+    this.userService
+      .getUserByEmail(`${username}@uptc.edu.co`)
+      .subscribe((user) => {
+        const payload: EquipmentUseRequest = {
+          isInUse: true,
+          isVerified: true,
+          isAvailable: true,
+          equipmentId: Number(this.selectedEquipment),
+          userId: user.id,
+          samplesNumber: 0,
+          usedFunctions: [],
+          observations: '',
+        };
+
+        this.equipmentUseService.startEquipmentUse(payload).subscribe({
+          next: () => {
+            this.startSessionSuccess = true;
+            this.startSessionError = false;
+            this.isStartingSession = false;
+            this.loadActiveSessions();
+
+            setTimeout(() => {
+              this.showConfirmationModal = false;
+              this.startSessionSuccess = false;
+            }, 4000);
+          },
+          error: () => {
+            this.startSessionSuccess = false;
+            this.startSessionError = true;
+            this.isStartingSession = false;
+          },
+        });
+      });
   }
 
   cancelStartSession() {
     this.showConfirmationModal = false;
   }
 
-  selectLab(lab: { name: string }) {
-    this.selectedLab = lab.name;
-    this.selectedEquipment = null;
+  selectSession(sessionId: number) {
+    this.selectedSessionId = sessionId;
   }
 
-  selectEquipment(equipment: string) {
-    this.selectedEquipment = equipment;
+  get selectedSession() {
+    return this.activeSessions.find((s) => s.id === this.selectedSessionId);
   }
 
   updateUsageTime() {
-    if (this.sessionActive && this.checkInTime) {
+    const session = this.selectedSession;
+    if (session && session.checkIn.time) {
       const now = new Date();
-      const delta = new Date(now.getTime() - this.checkInTime.getTime());
+      const sessionStart = new Date(
+        `${session.checkIn.date}T${session.checkIn.time}`
+      );
+      const delta = new Date(now.getTime() - sessionStart.getTime());
       const h = delta.getUTCHours().toString().padStart(2, '0');
       const m = delta.getUTCMinutes().toString().padStart(2, '0');
       const s = delta.getUTCSeconds().toString().padStart(2, '0');
-      this.usageDuration = `${h}:${m}:${s}`;
+      session.checkOut.usageDuration = `${h}:${m}:${s}`;
     }
   }
 
-  onAvailabilityChange() {
-    this.updateUsageTime();
+  getLabLabel(id: string | null): string {
+    return (
+      this.labOptions.find((opt) => opt.value === id)?.label ||
+      'Laboratorio desconocido'
+    );
   }
 
-  get isFormValid(): boolean {
-    if (!this.availabilityStatus) return false;
-    const hasSamples = this.checkOut.sampleCount !== null;
-    const hasFunctions = this.selectedFunctions.length > 0;
-    const hasRemarks = this.checkOut.remarks.trim().length > 0;
-
-    if (this.availabilityStatus === 'Yes') return hasSamples && hasFunctions;
-    return hasSamples && hasFunctions && hasRemarks;
+  getEquipmentLabel(id: string | null): string {
+    return (
+      this.equipmentOptions.find((opt) => opt.value === id)?.label ||
+      'Equipo desconocido'
+    );
   }
+
+  onUsageStatusChange(): void {}
 
   autoResizeTextarea(event: Event): void {
     const textarea = event.target as HTMLTextAreaElement;
@@ -135,33 +303,39 @@ export class RegisterSessionComponent implements AfterViewInit {
     textarea.style.height = `${textarea.scrollHeight}px`;
   }
 
+  get isFormValid(): boolean {
+    const session = this.selectedSession;
+    if (!session) return false;
+    const hasVerified = !!session.checkOut.verifiedStatus;
+    const hasUsage = !!session.checkOut.usageStatus;
+    const hasSamples = session.checkOut.sampleCount !== null;
+    const hasFunctions = session.checkOut.selectedFunctions.length > 0;
+    const hasRemarks = session.checkOut.remarks.trim().length > 0;
+    return (
+      hasVerified &&
+      hasUsage &&
+      hasSamples &&
+      hasFunctions &&
+      (session.checkOut.usageStatus !== 'NO' || hasRemarks)
+    );
+  }
+
   finishSession() {
     this.updateUsageTime();
     this.showSummaryModal = true;
   }
 
-  cancelFinishSession() {
+  confirmFinishSession() {
+    const session = this.selectedSession;
+    if (!session) return;
+    this.activeSessions = this.activeSessions.filter(
+      (s) => s.id !== session.id
+    );
+    this.selectedSessionId = null;
     this.showSummaryModal = false;
   }
 
-  confirmFinishSession() {
+  cancelFinishSession() {
     this.showSummaryModal = false;
-    alert('Sesión finalizada exitosamente.');
-    console.log('Entrada:', this.checkIn);
-    console.log('Salida:', {
-      uso: this.usageDuration,
-      muestras: this.checkOut.sampleCount,
-      funciones: this.selectedFunctions,
-      observaciones: this.checkOut.remarks,
-    });
-
-    this.sessionActive = false;
-    this.selectedLab = null;
-    this.selectedEquipment = null;
-    this.availabilityStatus = '';
-    this.checkInTime = null;
-    this.usageDuration = '';
-    this.checkOut = { sampleCount: null, functions: '', remarks: '' };
-    this.selectedFunctions = [];
   }
 }
