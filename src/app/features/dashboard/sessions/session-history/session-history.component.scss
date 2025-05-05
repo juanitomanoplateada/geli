@@ -1,163 +1,47 @@
-.history-container {
+.session-history-container {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   padding: 1rem;
-  max-width: 100%;
+  max-width: 1600px;
+  width: 100%;
   box-sizing: border-box;
   font-family: Arial, sans-serif;
+  margin: 0 auto;
   -webkit-user-select: none;
   user-select: none;
 }
 
-// 🔍 Barra de búsqueda principal
-.search-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: center;
-
-  .search-input {
-    flex: 1;
-    min-width: 250px;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-
-    &:focus {
-      border-color: #1976d2;
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
-    }
-
-    &:disabled {
-      background-color: #f0f0f0;
-      cursor: not-allowed;
-    }
-  }
-
-  .search-button,
-  .advanced-search-btn {
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
-    border-radius: 4px;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-
-  .search-button {
-    background-color: #1976d2;
-    color: white;
-    border: none;
-
-    &:hover:not(:disabled) {
-      background-color: #115293;
-    }
-
-    &:disabled {
-      background-color: #90a4ae;
-    }
-  }
-
-  .advanced-search-btn {
-    background-color: #f4f4f4;
-    border: 1px solid #ccc;
-
-    &:hover:not(:disabled) {
-      background-color: #e0e0e0;
-    }
-
-    &:disabled {
-      opacity: 0.6;
-    }
-  }
+// 🔍 Componente de búsqueda avanzada
+app-search-advanced {
+  margin-bottom: 1rem;
 }
 
-// 🎯 Búsqueda avanzada
-.advanced-search {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
-  background-color: #fafafa;
-  padding: 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-
-  .filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-
-    label {
-      font-weight: 600;
-      font-size: 0.875rem;
-    }
-
-    input,
-    select {
-      height: 45px;
-      padding: 0.5rem 0.75rem;
-      font-size: 0.95rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    input[type="number"] {
-      &::-webkit-inner-spin-button,
-      &::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-
-      appearance: textfield;
-    }
-  }
-
-  .clear-filters-btn {
-    padding: 0.5rem 1rem;
-    width: 100%;
-    align-self: start;
-    background-color: #eeeeee;
-    border: 1px solid #bbb;
-    border-radius: 4px;
-    cursor: pointer;
-
-    &:hover {
-      background-color: #dddddd;
-    }
-  }
-}
-
-// ⬇️ Orden por fecha
-.sort-bar {
+// ⏳ Estado de carga
+.loading-state {
   display: flex;
   align-items: center;
   gap: 1rem;
-  font-size: 0.95rem;
+  font-style: italic;
+  color: #666;
 
-  label {
-    font-weight: 600;
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #ccc;
+    border-top: 3px solid #1976d2;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
   }
 
-  button {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.9rem;
-    border-radius: 4px;
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: #e0e0e0;
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
     }
   }
 }
 
-// 🧾 Contenedor principal
+// 🧾 Contenido principal (lista lateral + detalle)
 .history-content {
   display: flex;
   gap: 1.5rem;
@@ -167,18 +51,19 @@
   }
 }
 
-// 📋 Lista lateral
+// 📋 Lista lateral de sesiones
 .history-sidebar {
   width: 30%;
+  max-height: 600px;
+  overflow-y: auto;
   padding-right: 1rem;
   border-right: 1px solid #ccc;
-  overflow-y: auto;
 
   @media (max-width: 768px) {
     width: 100%;
-    padding-right: 0;
     border-right: none;
     border-bottom: 1px solid #ccc;
+    padding-right: 0;
   }
 
   .session-preview {
@@ -186,6 +71,7 @@
     border-bottom: 1px solid #eee;
     border-radius: 6px;
     cursor: pointer;
+    transition: background-color 0.2s ease;
 
     &:hover {
       background-color: #f0f8ff;
@@ -193,11 +79,12 @@
 
     &.active {
       background-color: #e6f7ff;
-      border-left: 4px solid #007bff;
+      border-left: 4px solid #1976d2;
     }
 
     h4 {
       margin: 0 0 0.5rem 0;
+      font-size: 1rem;
     }
 
     p {
@@ -215,26 +102,26 @@
 
 // 📝 Detalle de la sesión seleccionada
 .history-detail {
-  flex-grow: 1;
-  padding: 1rem;
-  background-color: #fefefe;
+  background: #fff;
   border-radius: 8px;
-  border: 1px solid #ddd;
+  padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
   h2 {
-    margin-bottom: 1rem;
     font-size: 1.4rem;
+    margin-bottom: 1.2rem;
   }
 
-  p {
-    margin: 0.5rem 0;
-    font-size: 1rem;
-    word-wrap: break-word;
-  }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    row-gap: 0.8rem;
+    column-gap: 1.5rem;
 
-  @media (max-width: 768px) {
-    width: 100%;
+    div {
+      font-size: 1rem;
+      word-wrap: break-word;
+    }
   }
 }
 
@@ -246,20 +133,68 @@
   color: #888;
 }
 
-// 📱 Responsive extra para móviles
+// 📱 Responsive adicional
 @media (max-width: 480px) {
-  .search-bar,
-  .advanced-search {
-    flex-direction: column;
-    align-items: stretch;
+  .history-container {
+    padding: 0.5rem;
   }
 
-  .search-button,
-  .advanced-search-btn {
-    width: 100%;
+  .history-sidebar {
+    max-height: 300px;
   }
 
-  .search-input {
-    width: 100%;
+  .history-detail {
+    padding: 1rem;
   }
+
+  p {
+    font-size: 0.95rem;
+  }
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.preview-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.5rem;
+  text-transform: uppercase;
+}
+
+.in-progress {
+  background-color: #fff4cc;
+  color: #b36b00;
+}
+
+.completed {
+  background-color: #e0f8e0;
+  color: #006400;
+}
+
+.detail-status-badge {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  font-weight: bold;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  text-transform: uppercase;
+}
+
+.detail-status-badge.in-progress {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.detail-status-badge.completed {
+  background-color: #d4edda;
+  color: #155724;
 }

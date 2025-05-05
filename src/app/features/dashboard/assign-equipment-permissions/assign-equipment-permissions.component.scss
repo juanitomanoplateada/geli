@@ -123,3 +123,50 @@
     padding: 0.5rem 1rem;
   }
 }
+
+.modal-body-content {
+  text-align: left;
+  p {
+    margin-bottom: 1rem;
+  }
+
+  .modal-equipment-list {
+    list-style: none;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+
+    li {
+      position: relative;
+      padding-left: 1rem;
+      margin-bottom: 0.3rem;
+
+      &::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: #1976d2;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .modal-feedback {
+    font-weight: bold;
+    text-align: center;
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+
+    &.success {
+      background-color: #e0f7e9;
+      color: #1b5e20;
+      border: 1px solid #66bb6a;
+    }
+
+    &.error {
+      background-color: #fdecea;
+      color: #b71c1c;
+      border: 1px solid #ef9a9a;
+    }
+  }
+}

@@ -135,25 +135,33 @@
 
     <!-- Modal de Confirmación -->
     <app-confirm-modal
-      [title]="'Confirmar Actualización'"
+      [title]="'Confirmar Actualización de Laboratorio'"
       [show]="showConfirmationModal"
-      [confirmLabel]="'Actualizar'"
+      [confirmLabel]="'Actualizar Laboratorio'"
       [cancelLabel]="'Cancelar'"
       [isLoading]="isSubmitting"
       (confirm)="confirmUpdate()"
       (cancel)="cancelConfirmation()"
     >
-      <p>Por favor confirme los cambios antes de guardar:</p>
+      <p>
+        Está a punto de actualizar la información de un laboratorio en el
+        sistema. Por favor, revise los datos antes de confirmar:
+      </p>
       <ul class="summary-list">
-        <li><strong>Nombre:</strong> {{ labForm.get("labName")?.value }}</li>
+        <li>
+          <strong>Nombre del Laboratorio:</strong>
+          {{ labForm.get("labName")?.value }}
+        </li>
         <li>
           <strong>Descripción:</strong> {{ labForm.get("description")?.value }}
         </li>
         <li>
-          <strong>Lugar:</strong> {{ labForm.get("locationName")?.value }}
+          <strong>Ubicación:</strong> {{ labForm.get("locationName")?.value }}
         </li>
-        <li><strong>Estado:</strong> {{ labForm.get("status")?.value }}</li>
         <li>
+          <strong>Estado Actual:</strong> {{ labForm.get("status")?.value }}
+        </li>
+        <li *ngIf="labForm.get('status')?.value === 'INACTIVO'">
           <strong>Observaciones:</strong> {{ labForm.get("notes")?.value }}
         </li>
       </ul>

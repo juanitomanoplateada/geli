@@ -22,17 +22,17 @@
         "
         class="error-message"
       >
-        El nombre es obligatorio
+        El nombre del laboratorio es obligatorio.
       </div>
       <div *ngIf="labNameAlreadyExists" class="error-message">
-        Ya existe un laboratorio con este nombre.
+        Este nombre del laboratorio ya está registrado en el sistema.
       </div>
     </div>
 
     <!-- Descripción -->
     <div class="form-group">
       <label for="description"
-        >Descripción <span class="required">*</span></label
+        >Descripción del Laboratorio<span class="required">*</span></label
       >
       <textarea
         id="description"
@@ -50,19 +50,25 @@
         "
         class="error-message"
       >
-        La descripción es obligatoria
+        Debe ingresar la descripción del laboratorio.
       </div>
     </div>
 
     <!-- Lugar -->
     <div class="form-group">
-      <label for="locationName">Lugar <span class="required">*</span></label>
+      <label for="locationName"
+        >Ubicación del Laboratorio<span class="required">*</span></label
+      >
+      <p class="field-hint">
+        Busque primero la ubicación. Si no la encuentra, escriba una nueva para
+        agregarla.
+      </p>
       <app-dropdown-search-entity
         [options]="availableLocations"
         [selectedValue]="selectedLocationOrProposed"
         (select)="onSelectLocation($event)"
         (addNew)="onProposedLocation($event)"
-        placeholder="Busque o cree la ubicación a seleccionar"
+        placeholder="Seleccione o cree una ubicación"
       ></app-dropdown-search-entity>
 
       <div
@@ -72,13 +78,15 @@
         "
         class="error-message"
       >
-        Debe seleccionar o agregar un lugar
+        Debe seleccionar o crear la ubicación del laboratorio.
       </div>
     </div>
 
     <!-- Estado Actual -->
     <div class="form-group">
-      <label for="status">Estado Actual <span class="required">*</span></label>
+      <label for="status"
+        >Estado Actual del Laboratorio <span class="required">*</span></label
+      >
       <select
         id="status"
         class="form-control"
@@ -142,21 +150,28 @@
 
     <!-- Modal de Confirmación -->
     <app-confirm-modal
-      [title]="'Confirmar Registro'"
+      [title]="'Confirmar Registro de Laboratorio'"
       [show]="showConfirmationModal"
-      [confirmLabel]="'Confirmar'"
+      [confirmLabel]="'Registrar Laboratorio'"
       [cancelLabel]="'Cancelar'"
       [isLoading]="isSubmitting"
       (confirm)="confirmSubmit()"
       (cancel)="cancelConfirmation()"
     >
-      <p>Por favor confirme la información antes de registrar:</p>
+      <p>
+        Está a punto de registrar un nuevo laboratorio en el sistema. Por favor,
+        revise la información antes de confirmar:
+      </p>
       <ul class="summary-list">
-        <li><strong>Nombre:</strong> {{ labForm.value.labName }}</li>
+        <li>
+          <strong>Nombre del Laboratorio:</strong> {{ labForm.value.labName }}
+        </li>
         <li><strong>Descripción:</strong> {{ labForm.value.description }}</li>
-        <li><strong>Lugar:</strong> {{ labForm.value.locationName }}</li>
-        <li><strong>Estado:</strong> {{ labForm.value.status }}</li>
-        <li><strong>Observaciones:</strong> {{ labForm.value.notes }}</li>
+        <li><strong>Ubicación:</strong> {{ labForm.value.locationName }}</li>
+        <li><strong>Estado Actual:</strong> {{ labForm.value.status }}</li>
+        <li *ngIf="labForm.value.status === 'INACTIVO'">
+          <strong>Observaciones:</strong> {{ labForm.value.notes }}
+        </li>
       </ul>
 
       <!-- Feedback en el modal -->

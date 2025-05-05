@@ -50,7 +50,9 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
   showAdvancedSearch = false;
   hasSearched = false;
 
-  modalSuccessMessage = ''; // ✅ mensaje visible en el modal
+  modalSuccessMessage = '';
+
+  modalSuccessType: 'success' | 'error' | '' = '';
 
   filters: {
     availability?: 'Activo' | 'Inactivo' | '';
@@ -136,29 +138,33 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
 
   ngOnInit(): void {
     this.userService.getUsers().subscribe((users) => {
-      this.users = users.filter((u) => u.role === 'AUTHORIZED-USER'); // 👈 solo los del rol deseado
+      if (!Array.isArray(users)) {
+        console.warn('⚠️ Usuarios recibidos es null o inválido:', users);
+        this.users = [];
+        this.userOptions = [];
+        return;
+      }
+
+      this.users = users.filter((u) => u.role === 'AUTHORIZED-USER');
       this.userOptions = this.users.map((u) => `${u.firstName} ${u.lastName}`);
     });
 
     this.brandService.getAll().subscribe((brands) => {
-      this.options['brand'] = brands.map((b) => ({
-        label: b.brandName,
-        value: b.id,
-      }));
+      this.options['brand'] = Array.isArray(brands)
+        ? brands.map((b) => ({ label: b.brandName, value: b.id }))
+        : [];
     });
 
     this.functionService.getAll().subscribe((funcs) => {
-      this.options['function'] = funcs.map((f) => ({
-        label: f.functionName,
-        value: f.id,
-      }));
+      this.options['function'] = Array.isArray(funcs)
+        ? funcs.map((f) => ({ label: f.functionName, value: f.id }))
+        : [];
     });
 
     this.laboratoryService.getLaboratories().subscribe((labs) => {
-      this.options['laboratory'] = labs.map((l) => ({
-        label: l.laboratoryName,
-        value: l.id,
-      }));
+      this.options['laboratory'] = Array.isArray(labs)
+        ? labs.map((l) => ({ label: l.laboratoryName, value: l.id }))
+        : [];
     });
   }
 
@@ -259,7 +265,8 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     if (!this.selectedUser) return;
 
     this.isModalProcessing = true;
-    this.modalSuccessMessage = ''; // Limpiar antes de procesar
+    this.modalSuccessMessage = '';
+    this.modalSuccessType = ''; // limpiar antes
 
     const payload = {
       userId: this.selectedUser.id,
@@ -271,15 +278,20 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
       .subscribe({
         next: () => {
           this.modalSuccessMessage = 'Permisos actualizados correctamente ✅';
+          this.modalSuccessType = 'success';
 
           setTimeout(() => {
             this.isModalProcessing = false;
             this.showConfirmModal = false;
             this.modalSuccessMessage = '';
-          }, 4000); // ⏳ 4 segundos visibles
+            this.modalSuccessType = '';
+          }, 4000);
         },
         error: (err) => {
           console.error('Error al guardar permisos:', err);
+          this.modalSuccessMessage =
+            'Ocurrió un error al guardar los permisos ❌';
+          this.modalSuccessType = 'error';
           this.isModalProcessing = false;
         },
       });
@@ -287,6 +299,8 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
 
   cancelSave(): void {
     this.showConfirmModal = false;
+    this.modalSuccessMessage = '';
+    this.modalSuccessType = '';
   }
 
   resetSearch(): void {

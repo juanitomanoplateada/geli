@@ -80,25 +80,37 @@ export class RegisterEquipmentPatternComponent implements OnInit {
 
   ngOnInit(): void {
     this.brandService.getAll().subscribe((brands) => {
-      this.brandOptions = brands.map((b) => ({
-        label: b.brandName,
-        value: b.id.toString(),
-      }));
+      if (brands) {
+        this.brandOptions = brands.map((b) => ({
+          label: b.brandName,
+          value: b.id.toString(),
+        }));
+      } else {
+        this.brandOptions = [];
+      }
     });
 
     this.laboratoryService.getLaboratories().subscribe((labs) => {
-      this.labOptions = labs
-        .filter((l) => l.id != null)
-        .map((l) => ({ label: l.laboratoryName, value: l.id!.toString() }));
+      if (labs) {
+        this.labOptions = labs
+          .filter((l) => l.id != null)
+          .map((l) => ({ label: l.laboratoryName, value: l.id!.toString() }));
+      } else {
+        this.labOptions = [];
+      }
     });
 
     this.functionService.getAll().subscribe((functions) => {
-      const hasNA = functions.some(
-        (f) => f.functionName.toUpperCase() === 'N/A'
-      );
-      this.availableFunctions = hasNA
-        ? functions
-        : [...functions, { id: 0, functionName: 'N/A' }];
+      if (functions) {
+        const hasNA = functions.some(
+          (f) => f.functionName.toUpperCase() === 'N/A'
+        );
+        this.availableFunctions = hasNA
+          ? functions
+          : [...functions, { id: 0, functionName: 'N/A' }];
+      } else {
+        this.availableFunctions = [{ id: 0, functionName: 'N/A' }];
+      }
     });
 
     this.equipmentForm.get('name')?.valueChanges.subscribe((value) => {
@@ -282,7 +294,7 @@ export class RegisterEquipmentPatternComponent implements OnInit {
 
       // 5. Mostrar éxito
       this.modalFeedbackSuccess = true;
-      this.modalFeedbackMessage = '✅ Registro exitoso';
+      this.modalFeedbackMessage = '✅ Equipo registrado exitosamente.';
       this.showModalFeedback = true;
 
       setTimeout(() => {

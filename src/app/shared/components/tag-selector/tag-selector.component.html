@@ -15,13 +15,13 @@
       *ngFor="let option of filteredOptions"
       (click)="addOption(option)"
     >
-      {{ option }}
+      {{ option[labelField] }}
     </div>
   </div>
 
   <div class="tags">
     <span class="tag" *ngFor="let opt of selected">
-      {{ opt }}
+      {{ opt[labelField] }}
       <button (click)="removeOption(opt)">×</button>
     </span>
   </div>

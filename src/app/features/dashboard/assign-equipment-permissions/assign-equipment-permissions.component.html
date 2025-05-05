@@ -80,19 +80,32 @@
     (confirm)="confirmSave()"
     (cancel)="cancelSave()"
   >
-    <p>
-      Se asignarán los siguientes
-      <strong>{{ authorizedEquipments.length }}</strong> equipos al usuario
-      <strong>{{ selectedUser?.firstName }} {{ selectedUser?.lastName }}</strong
-      >:
-    </p>
-    <ul>
-      <li *ngFor="let eq of authorizedEquipments">
-        {{ eq.equipmentName }} ({{ eq.inventoryNumber }})
-      </li>
-    </ul>
-    <ng-container *ngIf="modalSuccessMessage">
-      <p class="modal-feedback">{{ modalSuccessMessage }}</p>
-    </ng-container>
+    <div class="modal-body-content">
+      <p>
+        Se asignarán los siguientes
+        <strong>{{ authorizedEquipments.length }}</strong> equipos al usuario
+        <strong
+          >{{ selectedUser?.firstName }} {{ selectedUser?.lastName }}</strong
+        >:
+      </p>
+
+      <ul class="modal-equipment-list">
+        <li *ngFor="let eq of authorizedEquipments">
+          {{ eq.equipmentName }} ({{ eq.inventoryNumber }})
+        </li>
+      </ul>
+
+      <ng-container *ngIf="modalSuccessMessage">
+        <p
+          class="modal-feedback"
+          [ngClass]="{
+            success: modalSuccessType === 'success',
+            error: modalSuccessType === 'error'
+          }"
+        >
+          {{ modalSuccessMessage }}
+        </p>
+      </ng-container>
+    </div>
   </app-confirm-modal>
 </div>

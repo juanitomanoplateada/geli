@@ -15,7 +15,7 @@
           id="email"
           type="text"
           formControlName="email"
-          placeholder="Usuario Institucional"
+          placeholder="Ej: juan.perez123"
           class="form-control email-input"
           appUppercaseNospace
           (input)="checkEmailExists()"
@@ -27,10 +27,10 @@
         *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched"
         class="error-message"
       >
-        Ingrese un usuario institucional válido
+        El usuario institucional es obligatorio.
       </div>
       <div *ngIf="emailAlreadyExists" class="error-message">
-        El correo institucional ya está registrado en el sistema
+        Este correo institucional ya está registrado en el sistema.
       </div>
     </div>
 
@@ -41,14 +41,14 @@
         <input
           type="text"
           formControlName="firstName"
-          placeholder="Nombres"
+          placeholder="Ej: Juan Sebastián"
           class="form-control"
           appUppercase
         />
         <input
           type="text"
           formControlName="lastName"
-          placeholder="Apellidos"
+          placeholder="Ej: Pérez Gómez"
           class="form-control"
           appUppercase
         />
@@ -61,7 +61,7 @@
         "
         class="error-message"
       >
-        Nombres requeridos
+        Debe ingresar los nombres del usuario.
       </div>
       <div
         *ngIf="
@@ -69,7 +69,7 @@
         "
         class="error-message"
       >
-        Apellidos requeridos
+        Debe ingresar los apellidos del usuario.
       </div>
     </div>
 
@@ -82,7 +82,7 @@
         id="identification"
         type="text"
         formControlName="identification"
-        placeholder="Número de identificación"
+        placeholder="Ej: 1234567890"
         class="form-control"
         appUppercaseNospace
         appIntegerOnly
@@ -94,7 +94,7 @@
         "
         class="error-message"
       >
-        Este campo es requerido
+        Debe ingresar una identificación.
       </div>
     </div>
 
@@ -102,7 +102,9 @@
     <div class="form-group">
       <label for="role">Rol <span class="required">*</span></label>
       <select id="role" class="form-control" formControlName="role">
-        <option value="" disabled selected>Seleccione un rol</option>
+        <option value="" disabled selected>
+          Seleccione el rol del usuario
+        </option>
         <option *ngFor="let role of availableRoles" [value]="role">
           {{ role }}
         </option>
@@ -112,25 +114,29 @@
         *ngIf="userForm.get('role')?.invalid && userForm.get('role')?.touched"
         class="error-message"
       >
-        Debe seleccionar un rol
+        Debe seleccionar un rol.
       </div>
     </div>
 
     <!-- Grupo: Cargo -->
     <div class="form-group">
       <label for="cargo">Cargo <span class="required">*</span></label>
+      <p class="field-hint">
+        Busque primero el cargo. Si no lo encuentra, escriba uno nuevo para
+        agregarlo.
+      </p>
       <app-dropdown-search-addable
         [options]="availableCargos"
         [selectedValue]="cargoValue"
         (select)="userForm.get('cargo')?.setValue($event)"
-        placeholder="Busque o cree el cargo a asignar"
+        placeholder="Seleccione o cree un cargo del usuario"
       ></app-dropdown-search-addable>
 
       <div
         *ngIf="userForm.get('cargo')?.invalid && userForm.get('cargo')?.touched"
         class="error-message"
       >
-        Debe seleccionar o agregar un cargo
+        Debe seleccionar o agregar un cargo.
       </div>
     </div>
 
@@ -166,25 +172,30 @@
     <!-- Modal de Confirmación -->
     <div class="modal-backdrop" *ngIf="showConfirmationModal">
       <app-confirm-modal
-        [title]="'Confirmar Registro'"
+        [title]="'Confirmar Registro de Usuario'"
         [show]="showConfirmationModal"
-        [confirmLabel]="'Confirmar'"
+        [confirmLabel]="'Registrar Usuario'"
         [cancelLabel]="'Cancelar'"
         [isLoading]="isSubmitting"
         (confirm)="confirmRegistration()"
         (cancel)="cancelConfirmation()"
       >
-        <p>Por favor confirme la información antes de registrar:</p>
+        <p>
+          Está a punto de registrar un nuevo usuario en el sistema. Por favor,
+          revise la información antes de confirmar:
+        </p>
         <ul class="summary-list">
-          <li><strong>Correo:</strong> {{ institutionalEmail }}</li>
           <li>
-            <strong>Nombre completo:</strong> {{ userForm.value.firstName }}
-            {{ userForm.value.lastName }}
+            <strong>Correo Institucional:</strong> {{ institutionalEmail }}
+          </li>
+          <li>
+            <strong>Nombre Completo:</strong>
+            {{ userForm.value.firstName }} {{ userForm.value.lastName }}
           </li>
           <li>
             <strong>Identificación:</strong> {{ userForm.value.identification }}
           </li>
-          <li><strong>Rol:</strong> {{ userForm.value.role }}</li>
+          <li><strong>Rol Asignado:</strong> {{ userForm.value.role }}</li>
           <li><strong>Cargo:</strong> {{ userForm.value.cargo }}</li>
         </ul>
 

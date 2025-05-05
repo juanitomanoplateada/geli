@@ -32,12 +32,23 @@
           (select)="onSelectEquipment($event)"
         />
         <div
-          *ngIf="selectedEquipmentStatus?.active === false"
+          *ngIf="
+            selectedEquipmentStatus?.active === false &&
+            !hasActiveSessionWithEquipment
+          "
           class="inactive-warning"
         >
           ⚠️ Este equipo está inactivo.
           <br />
           <strong>Motivo:</strong> {{ selectedEquipmentStatus?.remarks }}
+        </div>
+
+        <div
+          *ngIf="hasActiveSessionWithEquipment"
+          class="duplicate-session-warning"
+        >
+          ⚠️ Ya tienes una sesión activa con este equipo. Finalízala antes de
+          iniciar una nueva.
         </div>
       </div>
     </div>
@@ -49,7 +60,8 @@
         !selectedLabId ||
         !selectedEquipment ||
         selectedLabStatus?.active === false ||
-        selectedEquipmentStatus?.active === false
+        selectedEquipmentStatus?.active === false ||
+        hasActiveSessionWithEquipment
       "
       (click)="onStartSessionClick()"
     >
@@ -173,19 +185,20 @@
 
         <label>Funciones utilizadas:</label>
         <app-tag-selector
-          [availableOptions]="selectedSession.availableFunctions || []"
+          [availableOptions]="selectedSession.availableFunctions"
           [selected]="selectedSession.checkOut.selectedFunctions"
           (selectedChange)="selectedSession.checkOut.selectedFunctions = $event"
+          [labelField]="'functionName'"
+          [valueField]="'id'"
         ></app-tag-selector>
-
+        <label>
+          Observaciones:
+          <textarea
+            [(ngModel)]="selectedSession.checkOut.remarks"
+            (input)="autoResizeTextarea($event)"
+          ></textarea>
+        </label>
         <ng-container *ngIf="selectedSession.checkOut.usageStatus === 'NO'">
-          <label>
-            Observaciones:
-            <textarea
-              [(ngModel)]="selectedSession.checkOut.remarks"
-              (input)="autoResizeTextarea($event)"
-            ></textarea>
-          </label>
           <div class="alert">
             Por favor incluya en las observaciones los motivos por los cuales el
             equipo no está disponible para uso.

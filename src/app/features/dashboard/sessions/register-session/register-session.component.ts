@@ -11,7 +11,8 @@ import { LaboratoryService } from '../../../../core/laboratory/services/laborato
 import { EquipmentService } from '../../../../core/equipment/services/equipment.service';
 import { UserService } from '../../../../core/user/services/user.service';
 import {
-  EquipmentUseRequest,
+  EquipmentEndUseRequest,
+  EquipmentStartUseRequest,
   EquipmentUseService,
 } from '../../../../core/session/services/equipment-use.service';
 
@@ -55,14 +56,7 @@ export class RegisterSessionComponent implements AfterViewInit {
   startSessionSuccess = false;
   startSessionError = false;
 
-  availableFunctions: string[] = [
-    'Calibración',
-    'Medición de Muestra',
-    'Revisión de Espectro',
-    'Configuración de Equipo',
-    'Análisis de Datos',
-    'Ajuste de Parámetros',
-  ];
+  hasActiveSessionWithEquipment: boolean = false;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -108,38 +102,43 @@ export class RegisterSessionComponent implements AfterViewInit {
             (use: any) => use.user.id === user.id && use.isInUse === true
           );
 
-          this.activeSessions = userUses.map((use: any) => ({
-            id: use.id,
-            lab: use.equipment.laboratory.laboratoryName,
-            labLocation: use.equipment.laboratory.location.locationName,
-            labLabel: `${use.equipment.laboratory.laboratoryName} - ${use.equipment.laboratory.location.locationName}`,
+          this.activeSessions = userUses.map((use: any) => {
+            const [date, time] = use.startUseTime.split('T');
 
-            equipment: use.equipment.equipmentName,
-            equipmentInventoryNumber: use.equipment.inventoryNumber,
-            equipmentLabel: `${use.equipment.equipmentName} - ${use.equipment.inventoryNumber}`,
+            return {
+              id: use.id,
+              equipmentId: use.equipment.id, // ✅ CORREGIDO
+              lab: use.equipment.laboratory.laboratoryName,
+              labLocation: use.equipment.laboratory.location.locationName,
+              labLabel: `${use.equipment.laboratory.laboratoryName} - ${use.equipment.laboratory.location.locationName}`,
 
-            useDate: use.useDate,
-            startUseTime: use.startUseTime,
+              equipment: use.equipment.equipmentName,
+              equipmentInventoryNumber: use.equipment.inventoryNumber,
+              equipmentLabel: `${use.equipment.equipmentName} - ${use.equipment.inventoryNumber}`,
 
-            checkIn: {
-              date: use.useDate,
-              time: use.startUseTime,
-              user: `${use.user.firstName} ${use.user.lastName}`,
-            },
+              useDate: date,
+              startUseTime: time,
 
-            checkOut: {
-              verifiedStatus: '',
-              usageStatus: '',
-              usageDuration: '',
-              sampleCount: use.samplesNumber ?? null,
-              selectedFunctions: use.usedFunctions ?? [],
-              remarks: use.observations ?? '',
-            },
+              checkIn: {
+                date: date,
+                time: time,
+                user: `${use.user.firstName} ${use.user.lastName}`,
+              },
 
-            availableFunctions: use.equipment.functions.map(
-              (f: any) => f.functionName
-            ),
-          }));
+              checkOut: {
+                verifiedStatus: '',
+                usageStatus: '',
+                usageDuration: '',
+                sampleCount: use.samplesNumber ?? null,
+                selectedFunctions: use.usedFunctions.map(
+                  (f: any) => f.functionName
+                ), // ✅ solo nombres visibles
+                remarks: use.observations ?? '',
+              },
+
+              availableFunctions: use.equipment.functions, // ✅ objetos completos: { id, functionName }
+            };
+          });
         });
       });
   }
@@ -183,8 +182,20 @@ export class RegisterSessionComponent implements AfterViewInit {
 
   onSelectEquipment(equipmentId: string) {
     this.selectedEquipment = equipmentId;
+
+    // Verifica si el usuario ya tiene una sesión activa con este equipo
+    this.hasActiveSessionWithEquipment = this.activeSessions.some(
+      (s) => String(s.equipmentId) === equipmentId
+    );
+
+    // Si ya hay sesión activa, salimos sin marcar como inactivo
+    if (this.hasActiveSessionWithEquipment) {
+      return;
+    }
+
     const token = localStorage.getItem('auth_token');
     if (!token) return;
+
     const username = JSON.parse(atob(token.split('.')[1]))[
       'preferred_username'
     ];
@@ -193,14 +204,14 @@ export class RegisterSessionComponent implements AfterViewInit {
       .getUserByEmail(`${username}@uptc.edu.co`)
       .subscribe((user) => {
         const authorizedEquipments = user.authorizedUserEquipments || [];
+
         const selected = authorizedEquipments.find(
           (eq: EquipmentDto) => String(eq.id) === equipmentId
         );
 
         this.selectedEquipmentStatus = {
           active: selected?.availability ?? true,
-          remarks:
-            selected?.equipmentObservations || 'Sin observaciones registradas.',
+          remarks: selected?.observations || 'Sin observaciones registradas.',
         };
       });
   }
@@ -222,15 +233,9 @@ export class RegisterSessionComponent implements AfterViewInit {
     this.userService
       .getUserByEmail(`${username}@uptc.edu.co`)
       .subscribe((user) => {
-        const payload: EquipmentUseRequest = {
-          isInUse: true,
-          isVerified: true,
-          isAvailable: true,
+        const payload: EquipmentStartUseRequest = {
           equipmentId: Number(this.selectedEquipment),
           userId: user.id,
-          samplesNumber: 0,
-          usedFunctions: [],
-          observations: '',
         };
 
         this.equipmentUseService.startEquipmentUse(payload).subscribe({
@@ -260,6 +265,15 @@ export class RegisterSessionComponent implements AfterViewInit {
 
   selectSession(sessionId: number) {
     this.selectedSessionId = sessionId;
+  }
+
+  resolveFunctionIds(session: any): number[] {
+    // Suponiendo que session.availableFunctions se cargó como { id, functionName }
+    return session.availableFunctions
+      .filter((f: any) =>
+        session.checkOut.selectedFunctions.includes(f.functionName)
+      )
+      .map((f: any) => f.id);
   }
 
   get selectedSession() {
@@ -328,11 +342,31 @@ export class RegisterSessionComponent implements AfterViewInit {
   confirmFinishSession() {
     const session = this.selectedSession;
     if (!session) return;
-    this.activeSessions = this.activeSessions.filter(
-      (s) => s.id !== session.id
+
+    const usedFunctionIds: number[] = session.checkOut.selectedFunctions.map(
+      (f: any) => f.id
     );
-    this.selectedSessionId = null;
-    this.showSummaryModal = false;
+
+    const payload: EquipmentEndUseRequest = {
+      isVerified: session.checkOut.verifiedStatus === 'YES',
+      isAvailable: session.checkOut.usageStatus === 'YES',
+      samplesNumber: session.checkOut.sampleCount || 0,
+      usedFunctions: usedFunctionIds,
+      observations: session.checkOut.remarks.trim(),
+    };
+
+    this.equipmentUseService.endEquipmentUse(session.id, payload).subscribe({
+      next: () => {
+        this.activeSessions = this.activeSessions.filter(
+          (s) => s.id !== session.id
+        );
+        this.selectedSessionId = null;
+        this.showSummaryModal = false;
+      },
+      error: () => {
+        alert('❌ Error al finalizar la sesión.');
+      },
+    });
   }
 
   cancelFinishSession() {

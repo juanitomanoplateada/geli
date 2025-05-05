@@ -133,15 +133,18 @@
 
     <!-- Modal de confirmación -->
     <app-confirm-modal
-      [title]="'Confirmar Actualización'"
+      [title]="'Confirmar Actualización de Equipo o Patrón'"
       [show]="showConfirmationModal"
-      [confirmLabel]="'Confirmar'"
+      [confirmLabel]="'Actualizar Equipo'"
       [cancelLabel]="'Cancelar'"
       [isLoading]="isSubmitting"
       (confirm)="confirmSubmit()"
       (cancel)="cancelConfirmation()"
     >
-      <p>Por favor confirme los cambios antes de actualizar:</p>
+      <p>
+        Está a punto de actualizar la información de un equipo o patrón en el
+        sistema. Por favor, revise los datos antes de confirmar:
+      </p>
       <ul class="summary-list">
         <li>
           <strong>Código de Inventario:</strong> {{ formSummary.inventoryCode }}
@@ -150,8 +153,10 @@
         <li><strong>Marca:</strong> {{ formSummary.brand }}</li>
         <li><strong>Funciones:</strong> {{ formSummary.functions }}</li>
         <li><strong>Laboratorio:</strong> {{ formSummary.lab }}</li>
-        <li><strong>Estado:</strong> {{ formSummary.availability }}</li>
-        <li><strong>Observaciones:</strong> {{ formSummary.notes }}</li>
+        <li><strong>Estado Actual:</strong> {{ formSummary.availability }}</li>
+        <li *ngIf="formSummary.availability === 'INACTIVO'">
+          <strong>Observaciones:</strong> {{ formSummary.notes }}
+        </li>
       </ul>
 
       <div

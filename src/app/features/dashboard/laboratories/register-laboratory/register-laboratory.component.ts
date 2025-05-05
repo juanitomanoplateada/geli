@@ -174,7 +174,7 @@ export class RegisterLaboratoryComponent implements OnInit {
 
       this.laboratoryService.createLaboratory(payload).subscribe({
         next: () => {
-          this.modalFeedback('✅ Laboratorio registrado correctamente.', true);
+          this.modalFeedback('✅ Laboratorio registrado exitosamente.', true);
           setTimeout(() => {
             this.resetForm();
             this.showConfirmationModal = false;

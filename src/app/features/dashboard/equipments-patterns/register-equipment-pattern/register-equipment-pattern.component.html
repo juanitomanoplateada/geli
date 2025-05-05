@@ -23,10 +23,10 @@
         "
         class="error-message"
       >
-        Este campo es obligatorio
+        El código del inventario del equipo es obligatorio.
       </div>
       <div *ngIf="isInventoryCodeTaken" class="error-message">
-        Este código ya está registrado
+        Este código del inventario ya esta registrado en el sistema.
       </div>
     </div>
 
@@ -50,33 +50,41 @@
         "
         class="error-message"
       >
-        Este campo es obligatorio
+        Debe ingresar el nombre del equipo / patrón.
       </div>
       <div *ngIf="isNameTaken" class="error-message">
-        Este nombre ya está registrado
+        Este nombre del equipo / patrón ya esta registrado en el sistema.
       </div>
     </div>
 
     <!-- Marca -->
     <div class="form-group">
       <label for="brand">Marca <span class="required">*</span></label>
+      <p class="field-hint">
+        Busque primero la marca a seleccionar. Si no la encuentra, escriba una nueva para
+        agregarla.
+      </p>
       <app-dropdown-search-entity
         [options]="brandOptions"
         [selectedValue]="selectedBrandOrProposed"
         (select)="onSelectBrand($event)"
         (addNew)="onProposeBrand($event)"
-        placeholder="Seleccione o agregue la marca"
+        placeholder="Seleccione o cree la marca del equipo"
       ></app-dropdown-search-entity>
     </div>
 
     <!-- Funciones utilizadas -->
     <div class="form-group">
       <label for="functionId">Funciones <span class="required">*</span></label>
+      <p class="field-hint">
+        Busque primero la función a seleccionar. Si no la encuentra, escriba una nueva para
+        agregarla.
+      </p>
       <app-tag-multiselect
         [availableOptions]="availableFunctions"
         [selected]="selectedFunctions"
         (selectedChange)="onFunctionChange($event)"
-        placeholder="Seleccione o agregue funciones"
+        placeholder="Seleccione o cree las funciones del equipo / patrón"
       ></app-tag-multiselect>
     </div>
 
@@ -87,7 +95,7 @@
         [options]="labOptions"
         [selectedValue]="selectedLab"
         (select)="onSelectLab($event)"
-        placeholder="Seleccione un laboratorio"
+        placeholder="Seleccione el laboratorio para el equipo / patrón"
       ></app-dropdown-search-entity-obj>
     </div>
 
@@ -100,7 +108,9 @@
         formControlName="availability"
         (change)="onAvailabilityChange()"
       >
-        <option value="" disabled selected>Seleccione un estado</option>
+        <option value="" disabled selected>
+          Seleccione el estado actual del equipo / patrón
+        </option>
         <option value="ACTIVO">ACTIVO</option>
         <option value="INACTIVO">INACTIVO</option>
       </select>
@@ -117,7 +127,7 @@
         class="form-control auto-expand"
         formControlName="notes"
         rows="2"
-        placeholder="Explique por qué el equipo está inactivo"
+        placeholder="Explique las razones del por qué el equipo está inactivo"
         appUppercase
         (input)="autoResize($event)"
       ></textarea>
@@ -162,15 +172,18 @@
 
     <!-- Modal de confirmación -->
     <app-confirm-modal
-      [title]="'Confirmar Registro'"
+      [title]="'Confirmar Registro de Equipo o Patrón'"
       [show]="showConfirmationModal"
-      [confirmLabel]="'Confirmar'"
+      [confirmLabel]="'Registrar Equipo'"
       [cancelLabel]="'Cancelar'"
       [isLoading]="isSubmitting"
       (confirm)="confirmSubmit()"
       (cancel)="cancelConfirmation()"
     >
-      <p>Por favor confirme la información antes de registrar:</p>
+      <p>
+        Está a punto de registrar un nuevo equipo o patrón en el sistema. Por
+        favor, revise la información antes de confirmar:
+      </p>
       <ul class="summary-list">
         <li>
           <strong>Código de Inventario:</strong> {{ formSummary.inventoryCode }}
@@ -179,8 +192,10 @@
         <li><strong>Marca:</strong> {{ formSummary.brand }}</li>
         <li><strong>Funciones:</strong> {{ formSummary.functions }}</li>
         <li><strong>Laboratorio:</strong> {{ formSummary.lab }}</li>
-        <li><strong>Estado:</strong> {{ formSummary.availability }}</li>
-        <li><strong>Observaciones:</strong> {{ formSummary.notes }}</li>
+        <li><strong>Estado Actual:</strong> {{ formSummary.availability }}</li>
+        <li *ngIf="formSummary.availability === 'INACTIVO'">
+          <strong>Observaciones:</strong> {{ formSummary.notes }}
+        </li>
       </ul>
 
       <div

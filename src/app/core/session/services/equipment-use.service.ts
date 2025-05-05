@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export interface EquipmentUseRequest {
-  isInUse: boolean;
-  isVerified: boolean;
-  isAvailable: boolean;
+export interface EquipmentStartUseRequest {
   equipmentId: number;
   userId: number;
+}
+
+export interface EquipmentEndUseRequest {
+  isVerified: boolean;
+  isAvailable: boolean;
   samplesNumber: number;
   usedFunctions: number[];
   observations: string;
@@ -36,6 +38,17 @@ export interface EquipmentUseResponse {
     inventoryNumber: string;
     availability: boolean;
     equipmentObservations: string | null;
+    laboratory: {
+      id: number;
+      laboratoryName: string;
+      laboratoryDescription: string;
+      location: {
+        id: number;
+        locationName: string;
+      };
+      laboratoryAvailability: boolean;
+      laboratoryObservations: string;
+    };
   };
   usedFunctions: {
     id: number;
@@ -50,7 +63,7 @@ export class EquipmentUseService {
   constructor(private http: HttpClient) {}
 
   startEquipmentUse(
-    payload: EquipmentUseRequest
+    payload: EquipmentStartUseRequest
   ): Observable<EquipmentUseResponse> {
     return this.http.post<EquipmentUseResponse>(
       `${this.baseUrl}/start`,
@@ -58,8 +71,14 @@ export class EquipmentUseService {
     );
   }
 
-  endEquipmentUse(id: number): Observable<EquipmentUseResponse> {
-    return this.http.put<EquipmentUseResponse>(`${this.baseUrl}/${id}/end`, {});
+  endEquipmentUse(
+    id: number,
+    payload: EquipmentEndUseRequest
+  ): Observable<EquipmentUseResponse> {
+    return this.http.put<EquipmentUseResponse>(
+      `${this.baseUrl}/${id}/end`,
+      payload
+    );
   }
 
   getAllEquipmentUses(): Observable<EquipmentUseResponse[]> {

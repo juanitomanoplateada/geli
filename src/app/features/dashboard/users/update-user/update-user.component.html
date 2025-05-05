@@ -22,7 +22,7 @@
           type="text"
           formControlName="email"
           placeholder="Usuario Institucional"
-          class="form-control email-input"
+          class="form-control readonly-field"
           appUppercaseNospace
         />
         <span class="domain-display">&#64;uptc.edu.co</span>
@@ -37,14 +37,14 @@
           type="text"
           formControlName="firstName"
           placeholder="Nombres"
-          class="form-control"
+          class="form-control readonly-field"
           appUppercase
         />
         <input
           type="text"
           formControlName="lastName"
           placeholder="Apellidos"
-          class="form-control"
+          class="form-control readonly-field"
           appUppercase
         />
       </div>
@@ -60,7 +60,7 @@
         type="text"
         formControlName="identification"
         placeholder="Número de identificación"
-        class="form-control"
+        class="form-control readonly-field"
         appUppercaseNospace
         appIntegerOnly
       />
@@ -71,7 +71,7 @@
       <label for="role">Rol <span class="required">*</span></label>
       <select
         id="role"
-        class="form-control"
+        class="form-control readonly-field"
         formControlName="role"
       >
         <option *ngFor="let r of availableRoles" [value]="r">{{ r }}</option>
@@ -81,8 +81,8 @@
     <!-- Cargo -->
     <div class="form-group">
       <label for="cargo">Cargo <span class="required">*</span></label>
-      <p class="helper-text">
-        🔎 Busque primero el cargo. Si no lo encuentra, escriba uno nuevo para
+      <p class="field-hint">
+        Busque primero el cargo. Si no lo encuentra, escriba uno nuevo para
         agregarlo.
       </p>
       <app-dropdown-search-addable
@@ -132,23 +132,30 @@
   <!-- Modal de Confirmación -->
   <div class="modal-backdrop" *ngIf="showConfirmationModal">
     <app-confirm-modal
-      [title]="'Confirmar Actualización'"
+      [title]="'Confirmar Actualización de Usuario'"
       [show]="showConfirmationModal"
-      [confirmLabel]="'Actualizar'"
+      [confirmLabel]="'Actualizar Usuario'"
       [cancelLabel]="'Cancelar'"
       [isLoading]="isSubmitting"
       (confirm)="confirmUpdate()"
       (cancel)="cancelConfirmation()"
     >
-      <p>Por favor confirme los cambios antes de guardar:</p>
+      <p>
+        Está a punto de actualizar la información de un usuario en el sistema.
+        Por favor, revise los cambios antes de confirmar:
+      </p>
       <ul class="summary-list">
-        <li><strong>Correo:</strong> {{ institutionalEmail }}</li>
-        <li><strong>Nombre:</strong> {{ raw.firstName }} {{ raw.lastName }}</li>
+        <li><strong>Correo Institucional:</strong> {{ institutionalEmail }}</li>
+        <li>
+          <strong>Nombre Completo:</strong> {{ raw.firstName }}
+          {{ raw.lastName }}
+        </li>
         <li><strong>Identificación:</strong> {{ raw.identification }}</li>
-        <li><strong>Rol:</strong> {{ raw.role }}</li>
+        <li><strong>Rol Asignado:</strong> {{ raw.role }}</li>
         <li><strong>Cargo:</strong> {{ raw.cargo }}</li>
-        <li><strong>Estado:</strong> {{ raw.status }}</li>
+        <li><strong>Estado Actual:</strong> {{ raw.status }}</li>
       </ul>
+
       <div
         *ngIf="feedbackMessage"
         [ngClass]="feedbackSuccess ? 'feedback success' : 'feedback error'"

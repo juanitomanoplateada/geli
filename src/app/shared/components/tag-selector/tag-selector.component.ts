@@ -18,20 +18,27 @@ import { ClickOutsideDirective } from '../../directives/click-outside/click-outs
 })
 export class TagSelectorComponent {
   @Input() placeholder: string = 'Seleccionar funciones';
-  @Input() availableOptions: string[] = [];
-  @Input() selected: string[] = [];
+  @Input() availableOptions: any[] = [];
+  @Input() selected: any[] = [];
+  @Input() labelField: string = 'functionName'; // para mostrar
+  @Input() valueField: string = 'id'; // para comparación
 
-  @Output() selectedChange = new EventEmitter<string[]>();
+  @Output() selectedChange = new EventEmitter<any[]>();
 
   searchTerm = '';
   showDropdown = false;
 
-  get filteredOptions(): string[] {
-    return this.availableOptions.filter(
-      (opt) =>
-        opt.toLowerCase().includes(this.searchTerm.toLowerCase()) &&
-        !this.selected.includes(opt)
-    );
+  get filteredOptions(): any[] {
+    return this.availableOptions.filter((opt) => {
+      const label = opt?.[this.labelField];
+      return (
+        typeof label === 'string' &&
+        label.toLowerCase().includes(this.searchTerm.toLowerCase()) &&
+        !this.selected.some(
+          (s) => s?.[this.valueField] === opt?.[this.valueField]
+        )
+      );
+    });
   }
 
   toggleDropdown() {
@@ -39,15 +46,17 @@ export class TagSelectorComponent {
     this.searchTerm = '';
   }
 
-  addOption(option: string) {
+  addOption(option: any) {
     this.selected.push(option);
     this.selectedChange.emit(this.selected);
     this.searchTerm = '';
     this.showDropdown = false;
   }
 
-  removeOption(option: string) {
-    this.selected = this.selected.filter((opt) => opt !== option);
+  removeOption(option: any) {
+    this.selected = this.selected.filter(
+      (s) => s?.[this.valueField] !== option?.[this.valueField]
+    );
     this.selectedChange.emit(this.selected);
   }
 

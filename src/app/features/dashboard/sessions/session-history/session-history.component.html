@@ -1,230 +1,32 @@
-<div class="history-container">
-  <!-- 🔍 Barra de búsqueda principal -->
-  <div class="search-bar">
-    <input
-      type="text"
-      appUppercase
-      [(ngModel)]="searchQuery"
-      (keyup)="onKeyUp($event)"
-      [disabled]="isLoading"
-      class="search-input"
-      placeholder="Buscar por laboratorio o equipo..."
-    />
+<div class="session-history-container">
+  <h1>Historial de Sesiones</h1>
 
-    <button class="search-button" (click)="onSearch()" [disabled]="isLoading">
-      🔍 <span *ngIf="!isLoading">Buscar</span>
-      <span *ngIf="isLoading">Buscando...</span>
-    </button>
+  <!-- 🔍 Búsqueda avanzada -->
+  <app-search-advanced
+    [searchQuery]="searchQuery"
+    [filters]="filters"
+    [isLoading]="isLoading"
+    [showAdvancedSearch]="showAdvancedSearch"
+    [fieldsConfig]="fieldsConfig"
+    [options]="options"
+    [availableFilterKeys]="availableFilterKeys"
+    [activeFilterKeys]="activeFilterKeys"
+    (searchQueryChange)="searchQuery = $event"
+    (filtersChange)="onFiltersChange($event)"
+    (activeFilterKeysChange)="activeFilterKeys = $event"
+    (triggerSearch)="onSearch()"
+    (clearFilters)="clearFilters()"
+    (toggleAdvanced)="toggleAdvancedSearch()"
+  ></app-search-advanced>
 
-    <button
-      class="advanced-search-btn"
-      (click)="toggleAdvancedSearch()"
-      [disabled]="isLoading"
-    >
-      {{ showAdvancedSearch ? "Ocultar filtros" : "Búsqueda avanzada" }}
-    </button>
+  <!-- ⏳ Estado de carga -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando sesiones...</p>
   </div>
 
-  <!-- 🎯 Filtros avanzados -->
-  <div *ngIf="showAdvancedSearch" class="advanced-search">
-    <!-- Fechas y horas -->
-    <div class="filter-group">
-      <label for="dateFrom">Fecha desde:</label>
-      <input
-        id="dateFrom"
-        type="date"
-        [(ngModel)]="filters.dateFrom"
-        (change)="onSearch()"
-        title="Seleccione la fecha inicial"
-      />
-    </div>
-
-    <div class="filter-group">
-      <label for="dateTo">Fecha hasta:</label>
-      <input
-        id="dateTo"
-        type="date"
-        [(ngModel)]="filters.dateTo"
-        (change)="onSearch()"
-        title="Seleccione la fecha final"
-      />
-    </div>
-
-    <div class="filter-group">
-      <label for="timeFrom">Hora desde:</label>
-      <input
-        id="timeFrom"
-        type="time"
-        [(ngModel)]="filters.timeFrom"
-        (change)="onSearch()"
-        title="Seleccione la hora inicial"
-      />
-    </div>
-
-    <div class="filter-group">
-      <label for="timeTo">Hora hasta:</label>
-      <input
-        id="timeTo"
-        type="time"
-        [(ngModel)]="filters.timeTo"
-        (change)="onSearch()"
-        title="Seleccione la hora final"
-      />
-    </div>
-
-    <!-- Dropdowns personalizados -->
-    <div class="filter-group">
-      <label>Laboratorio:</label>
-      <app-dropdown-filter
-        [options]="availableLabs"
-        [selected]="filters.lab"
-        (selectedChange)="filters.lab = $event; onSearch()"
-        [placeholder]="'Laboratorio'"
-        [allowEmpty]="'Todos'"
-      ></app-dropdown-filter>
-    </div>
-
-    <div class="filter-group">
-      <label>Equipo / Patrón:</label>
-      <app-dropdown-filter
-        [options]="availableEquipments"
-        [selected]="filters.equipment"
-        (selectedChange)="filters.equipment = $event; onSearch()"
-        [placeholder]="'Equipo / Patrón'"
-        [allowEmpty]="'Todos'"
-      ></app-dropdown-filter>
-    </div>
-
-    <!-- Estados -->
-    <div class="filter-group">
-      <label for="verifiedFilter">Estado - Verificado:</label>
-      <select
-        id="verifiedFilter"
-        [(ngModel)]="filters.verifiedStatus"
-        (change)="onSearch()"
-        title="Seleccione el estado de verificación"
-      >
-        <option value="">Todos</option>
-        <option value="SI">Sí</option>
-        <option value="NO">No</option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label for="usageFilter">Estado - Para uso:</label>
-      <select
-        id="usageFilter"
-        [(ngModel)]="filters.usageStatus"
-        (change)="onSearch()"
-        title="Seleccione disponibilidad de uso"
-      >
-        <option value="">Todos</option>
-        <option value="Disponible">Disponible</option>
-        <option value="No disponible">No disponible</option>
-      </select>
-    </div>
-
-    <!-- Rango de tiempo de uso -->
-    <div class="filter-group">
-      <label for="durationMin">Tiempo de uso desde (min):</label>
-      <input
-        id="durationMin"
-        type="number"
-        appIntegerOnly
-        [(ngModel)]="filters.usageDurationMin"
-        (change)="onSearch()"
-        placeholder="Mínimo"
-        title="Tiempo mínimo en minutos"
-        min="0"
-      />
-    </div>
-
-    <div class="filter-group">
-      <label for="durationMax">Tiempo de uso hasta (min):</label>
-      <input
-        id="durationMax"
-        type="number"
-        appIntegerOnly
-        [(ngModel)]="filters.usageDurationMax"
-        (change)="onSearch()"
-        placeholder="Máximo"
-        title="Tiempo máximo en minutos"
-        min="0"
-      />
-    </div>
-
-    <!-- Rango de muestras -->
-    <div class="filter-group">
-      <label for="sampleCountMin">Muestras desde:</label>
-      <input
-        id="sampleCountMin"
-        type="number"
-        appIntegerOnly
-        [(ngModel)]="filters.sampleCountMin"
-        (change)="onSearch()"
-        placeholder="Mínimo"
-        title="Cantidad mínima de muestras"
-        min="0"
-      />
-    </div>
-
-    <div class="filter-group">
-      <label for="sampleCountMax">Muestras hasta:</label>
-      <input
-        id="sampleCountMax"
-        type="number"
-        appIntegerOnly
-        [(ngModel)]="filters.sampleCountMax"
-        (change)="onSearch()"
-        placeholder="Máximo"
-        title="Cantidad máxima de muestras"
-        min="0"
-      />
-    </div>
-
-    <!-- Función -->
-    <div class="filter-group">
-      <label>Función utilizada:</label>
-      <app-dropdown-filter
-        [options]="availableFunctions"
-        [selected]="filters.function"
-        (selectedChange)="filters.function = $event; onSearch()"
-        [placeholder]="'Función'"
-        [allowEmpty]="'Todas'"
-      ></app-dropdown-filter>
-    </div>
-
-    <!-- Responsable -->
-    <div class="filter-group">
-      <label>Responsable:</label>
-      <app-dropdown-filter
-        [options]="availableUsers"
-        [selected]="filters.user"
-        (selectedChange)="filters.user = $event; onSearch()"
-        [placeholder]="'Responsable'"
-        [allowEmpty]="'Todos'"
-      ></app-dropdown-filter>
-    </div>
-
-    <!-- Botón limpiar -->
-    <div class="filter-group">
-      <label>&nbsp;</label>
-      <button class="clear-filters-btn" (click)="clearFilters()">
-        Limpiar filtros
-      </button>
-    </div>
-  </div>
-
-  <!-- 🗂 Orden por fecha -->
-  <div class="sort-bar">
-    <label>Ordenar por fecha:</label>
-    <button (click)="sortAscending = !sortAscending">
-      {{ sortAscending ? "⬇️ Más antiguo" : "⬇️ Más reciente" }}
-    </button>
-  </div>
-
-  <!-- 📄 Resultados -->
-  <div class="history-content">
+  <!-- 📂 Contenido -->
+  <div class="history-content" *ngIf="!isLoading">
     <aside class="history-sidebar">
       <div
         class="session-preview"
@@ -232,87 +34,127 @@
         (click)="selectSession(session)"
         [class.active]="session === selectedSession"
       >
-        <h4>{{ session.lab }}</h4>
+        <div class="preview-header">
+          <h4>{{ session.lab }}</h4>
+          <span
+            class="preview-status"
+            [ngClass]="{
+              'in-progress': session.inProgress,
+              completed: !session.inProgress
+            }"
+          >
+            {{ session.inProgress ? "🟡 En curso" : "🟢 Finalizada" }}
+          </span>
+        </div>
         <p>{{ session.equipment }}</p>
         <span>{{ session.date }} - {{ session.time }}</span>
       </div>
 
-      <div
-        class="no-results"
-        *ngIf="filteredSessions.length === 0 && !isLoading"
-      >
-        No se encontraron sesiones para mostrar.
+      <div *ngIf="filteredSessions.length === 0" class="no-results">
+        No se encontraron sesiones.
       </div>
     </aside>
 
-    <!-- 📋 Detalle de la sesión -->
+    <!-- 📋 Detalles apilados -->
     <section class="history-detail" *ngIf="selectedSession">
+      <div
+        class="detail-status-badge"
+        [ngClass]="{
+          'in-progress': selectedSession.inProgress,
+          completed: !selectedSession.inProgress
+        }"
+      >
+        {{
+          selectedSession.inProgress
+            ? "🟡 SESIÓN EN CURSO"
+            : "🟢 SESIÓN FINALIZADA"
+        }}
+      </div>
+
       <h2>Detalles de la Sesión</h2>
-      <p>
-        <strong>Marca Temporal:</strong> {{ selectedSession.date | uppercase }}
-        {{ selectedSession.time }}
-      </p>
-      <p><strong>Laboratorio:</strong> {{ selectedSession.lab | uppercase }}</p>
-      <p>
-        <strong>Equipo / Patrón:</strong>
-        {{ selectedSession.equipment | uppercase }}
-      </p>
-      <p>
-        <strong>Estado - Verificado:</strong>
-        {{ selectedSession.verifiedStatus | uppercase }}
-      </p>
-      <p>
-        <strong>Responsable:</strong>
-        {{ selectedSession.responsible | uppercase }}
-      </p>
-      <p>
-        <strong>Correo Electrónico:</strong>
-        {{ selectedSession.email | uppercase }}
-      </p>
-      <p>
-        <strong>Estado - Para uso:</strong>
-        {{ selectedSession.usageStatus | uppercase }}
-      </p>
+      <div class="detail-grid">
+        <div><strong>Nombre del equipo/patrón:</strong></div>
+        <div>{{ selectedSession.equipment | uppercase }}</div>
 
-      <p>
-        <strong>Tiempo de uso:</strong>
-        <span
-          *ngIf="selectedSession.usageDuration !== undefined; else noDuration"
-        >
-          {{ selectedSession.usageDuration }} MINUTOS
-        </span>
-        <ng-template #noDuration>N/A</ng-template>
-      </p>
+        <div><strong>Ubicación:</strong></div>
+        <div>{{ selectedSession.lab | uppercase }}</div>
 
-      <p>
-        <strong>Cantidad de muestras:</strong>
-        <span *ngIf="selectedSession.sampleCount !== undefined; else noSamples">
-          {{ selectedSession.sampleCount }}
-        </span>
-        <ng-template #noSamples>N/A</ng-template>
-      </p>
+        <div><strong>Código inventario:</strong></div>
+        <div>{{ selectedSession.inventoryCode }}</div>
 
-      <p>
-        <strong>Funciones utilizadas:</strong>
-        <ng-container
-          *ngIf="
-            selectedSession.functionsUsed &&
-              selectedSession.functionsUsed.length > 0;
-            else noFunctions
-          "
-        >
-          {{ selectedSession.functionsUsed.join(", ") | uppercase }}
-        </ng-container>
-        <ng-template #noFunctions>NO APLICA</ng-template>
-      </p>
+        <div><strong>Fecha:</strong></div>
+        <div>{{ selectedSession.date }}</div>
 
-      <p>
-        <strong>Observaciones:</strong>
-        <ng-container *ngIf="selectedSession.observations; else noObs">
-          {{ selectedSession.observations | uppercase }}
-        </ng-container>
-        <ng-template #noObs>N/A</ng-template>
-      </p>
+        <div><strong>Hora:</strong></div>
+        <div>{{ selectedSession.time }}</div>
+
+        <div><strong>Estado - Verificado:</strong></div>
+        <div>
+          {{
+            selectedSession.inProgress
+              ? "⏳ En curso"
+              : selectedSession.verifiedStatus
+          }}
+        </div>
+
+        <div><strong>Estado - Para uso:</strong></div>
+        <div>
+          {{
+            selectedSession.inProgress
+              ? "⏳ En curso"
+              : selectedSession.usageStatus
+          }}
+        </div>
+
+        <div><strong>Tiempo de uso:</strong></div>
+        <div>
+          {{
+            selectedSession.inProgress
+              ? "⏳ En curso"
+              : selectedSession.usageDuration
+          }}
+        </div>
+
+        <div><strong>Cantidad de muestras analizadas:</strong></div>
+        <div>
+          {{
+            selectedSession.inProgress
+              ? "⏳ En curso"
+              : selectedSession.sampleCount ?? "N/A"
+          }}
+        </div>
+
+        <div><strong>Funciones utilizadas:</strong></div>
+        <div>
+          <ng-container *ngIf="!selectedSession.inProgress">
+            <ng-container
+              *ngIf="selectedSession.functionsUsed?.length; else noFunctions"
+            >
+              {{ selectedSession.functionsUsed!.join(", ") | uppercase }}
+            </ng-container>
+          </ng-container>
+          <ng-container *ngIf="selectedSession.inProgress"
+            >⏳ En curso</ng-container
+          >
+          <ng-template #noFunctions>NO APLICA</ng-template>
+        </div>
+
+        <div><strong>Observaciones:</strong></div>
+        <div>
+          <ng-container *ngIf="!selectedSession.inProgress">
+            <ng-container *ngIf="selectedSession.observations; else noObs">
+              {{ selectedSession.observations | uppercase }}
+            </ng-container>
+          </ng-container>
+          <ng-container *ngIf="selectedSession.inProgress"
+            >⏳ En curso</ng-container
+          >
+          <ng-template #noObs>N/A</ng-template>
+        </div>
+
+        <div><strong>Nombre de quien usa el equipo/patrón:</strong></div>
+        <div>{{ selectedSession.responsible | uppercase }}</div>
+      </div>
     </section>
   </div>
 </div>

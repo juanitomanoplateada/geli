@@ -176,7 +176,7 @@ export class UpdateLaboratoryComponent implements OnInit {
       this.laboratoryService.updateLaboratory(this.labId, payload).subscribe({
         next: () => {
           this.modalFeedbackMessage =
-            '✅ Laboratorio actualizado correctamente.';
+            '✅ Laboratorio actualizado exitosamente.';
           this.modalFeedbackSuccess = true;
           this.loadLaboratoryData();
 

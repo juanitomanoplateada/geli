@@ -19,6 +19,7 @@ export interface EquipmentDto {
   };
   availability: boolean;
   equipmentObservations: string;
+  observations: string;
   functions: {
     id: number;
     functionName: string;

@@ -83,12 +83,12 @@ export class SearchUserComponent implements OnInit {
   lastFilters: Filters = { ...this.filters };
 
   columns: ColumnConfig[] = [
-    { key: 'fullName', label: 'Nombre completo', type: 'text' },
     { key: 'identification', label: 'Identificación', type: 'text' },
+    { key: 'fullName', label: 'Nombre completo', type: 'text' },
     { key: 'email', label: 'Correo institucional', type: 'text' },
     { key: 'role', label: 'Rol', type: 'text' },
-    { key: 'status', label: 'Estado', type: 'status' },
     { key: 'position', label: 'Cargo', type: 'text' },
+    { key: 'status', label: 'Estado', type: 'status' },
     { key: 'updatedAt', label: 'Fecha de modificación', type: 'text' },
     { key: 'actions', label: 'Acciones', type: 'actions' },
   ];
@@ -97,8 +97,8 @@ export class SearchUserComponent implements OnInit {
 
   availableFilterKeys = [
     { key: 'role', label: 'Rol' },
-    { key: 'status', label: 'Estado' },
     { key: 'positionId', label: 'Cargo' },
+    { key: 'status', label: 'Estado' },
     { key: 'modificationDateFrom', label: 'Fecha de modificación desde' },
     { key: 'modificationDateTo', label: 'Fecha de modificación hasta' },
   ];
@@ -138,16 +138,16 @@ export class SearchUserComponent implements OnInit {
             allowEmptyOption: 'Todos',
           },
           {
+            key: 'positionId',
+            label: 'Cargo',
+            type: 'dropdown',
+            allowEmptyOption: 'Todos',
+          },
+          {
             key: 'status',
             label: 'Estado',
             type: 'select',
             options: ['Activo', 'Inactivo'],
-            allowEmptyOption: 'Todos',
-          },
-          {
-            key: 'positionId',
-            label: 'Cargo',
-            type: 'dropdown',
             allowEmptyOption: 'Todos',
           },
           {

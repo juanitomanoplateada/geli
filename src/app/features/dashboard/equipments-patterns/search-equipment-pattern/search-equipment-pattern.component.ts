@@ -139,30 +139,36 @@ export class SearchEquipmentPatternComponent implements OnInit {
   private loadDropdownOptions(): void {
     this.brandService.getAll().subscribe({
       next: (res) => {
-        this.options['brand'] = res.map((b: BrandDto) => ({
-          label: b.brandName,
-          value: b.id,
-        }));
+        this.options['brand'] = Array.isArray(res)
+          ? res.map((b: BrandDto) => ({
+              label: b.brandName,
+              value: b.id,
+            }))
+          : [];
       },
       error: () => (this.options['brand'] = []),
     });
 
     this.functionService.getAll().subscribe({
       next: (res) => {
-        this.options['function'] = res.map((f: FunctionDto) => ({
-          label: f.functionName,
-          value: f.id,
-        }));
+        this.options['function'] = Array.isArray(res)
+          ? res.map((f: FunctionDto) => ({
+              label: f.functionName,
+              value: f.id,
+            }))
+          : [];
       },
       error: () => (this.options['function'] = []),
     });
 
     this.laboratoryService.getLaboratories().subscribe({
       next: (res) => {
-        this.options['laboratory'] = res.map((l) => ({
-          label: l.laboratoryName,
-          value: l.id,
-        }));
+        this.options['laboratory'] = Array.isArray(res)
+          ? res.map((l) => ({
+              label: l.laboratoryName,
+              value: l.id,
+            }))
+          : [];
       },
       error: () => (this.options['laboratory'] = []),
     });
@@ -268,7 +274,10 @@ export class SearchEquipmentPatternComponent implements OnInit {
   }
 
   navigateToEdit(id: number): void {
-    this.router.navigate(['/dashboard/equipments-patterns/update-equipment-pattern', id]);
+    this.router.navigate([
+      '/dashboard/equipments-patterns/update-equipment-pattern',
+      id,
+    ]);
   }
 
   trackById(_: number, eq: EquipmentRecord) {

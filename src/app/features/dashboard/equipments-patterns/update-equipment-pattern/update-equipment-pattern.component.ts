@@ -204,7 +204,7 @@ export class UpdateEquipmentPatternComponent implements OnInit {
       await this.equipmentService.update(this.id, payload).toPromise();
 
       this.modalFeedbackSuccess = true;
-      this.modalFeedbackMessage = '✅ Actualización exitosa';
+      this.modalFeedbackMessage = '✅ Equipo actualizado exitosamente.';
       this.showModalFeedback = true;
 
       setTimeout(() => {

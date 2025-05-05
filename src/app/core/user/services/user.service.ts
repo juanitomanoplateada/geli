@@ -46,11 +46,12 @@ export class UserService {
   getUsers(): Observable<UserRecordResponse[]> {
     return this.http.get<UserRecordResponse[]>(this.baseUrl).pipe(
       map((users) => {
-        // Imprimir todos los usuarios que llegan para ver qué contiene 'modificationStatusDate' y 'creationDate'
-        console.log('Usuarios recibidos:', users); // Imprime todos los usuarios
+        if (!Array.isArray(users)) {
+          console.warn('⚠️ Usuarios recibidos no son un arreglo:', users);
+          return [];
+        }
 
         return users.map((user) => {
-          // Imprimir las fechas antes de formatearlas
           console.log(
             `User ${user.id} - creationDate: ${user.creationDate}, modificationStatusDate: ${user.modificationStatusDate}`
           );
