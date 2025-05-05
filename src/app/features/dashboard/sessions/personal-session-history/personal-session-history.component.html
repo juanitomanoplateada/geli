@@ -1,0 +1,163 @@
+<div class="session-history-container">
+  <h1>Historial Personal de Sesiones</h1>
+
+  <!-- 🔍 Búsqueda avanzada -->
+  <app-search-advanced
+    [searchQuery]="searchQuery"
+    [filters]="filters"
+    [isLoading]="isLoading"
+    [showAdvancedSearch]="showAdvancedSearch"
+    [fieldsConfig]="fieldsConfig"
+    [options]="options"
+    [availableFilterKeys]="availableFilterKeys"
+    [activeFilterKeys]="activeFilterKeys"
+    (searchQueryChange)="searchQuery = $event"
+    (filtersChange)="onFiltersChange($event)"
+    (activeFilterKeysChange)="activeFilterKeys = $event"
+    (toggleAdvanced)="toggleAdvancedSearch()"
+    (clearFilters)="clearFilters()"
+  ></app-search-advanced>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando sesiones...</p>
+  </div>
+
+  <div class="history-content" *ngIf="!isLoading">
+    <!-- Lista de sesiones -->
+    <aside class="history-sidebar">
+      <div class="sidebar-header">
+        <h3>Mis sesiones</h3>
+        <button (click)="sortAscending = !sortAscending" class="sort-button">
+          Ordenar por fecha:
+          {{ sortAscending ? "Más antiguas primero" : "Más recientes primero" }}
+        </button>
+      </div>
+
+      <div
+        class="session-preview"
+        *ngFor="let session of filteredSessions"
+        (click)="selectSession(session)"
+        [class.active]="session === selectedSession"
+      >
+        <div class="preview-header">
+          <h4>{{ session.lab }}</h4>
+          <span
+            class="preview-status"
+            [ngClass]="{
+              'in-progress': session.inProgress,
+              completed: !session.inProgress
+            }"
+          >
+            {{ session.inProgress ? "🟡 En curso" : "🟢 Finalizada" }}
+          </span>
+        </div>
+        <p>{{ session.equipment }}</p>
+        <span>{{ session.date }} - {{ session.time }}</span>
+      </div>
+
+      <div *ngIf="filteredSessions.length === 0" class="no-results">
+        No se encontraron sesiones.
+      </div>
+    </aside>
+
+    <!-- Detalles -->
+    <section class="history-detail" *ngIf="selectedSession">
+      <div
+        class="detail-status-badge"
+        [ngClass]="{
+          'in-progress': selectedSession.inProgress,
+          completed: !selectedSession.inProgress
+        }"
+      >
+        {{
+          selectedSession.inProgress
+            ? "🟡 SESIÓN EN CURSO"
+            : "🟢 SESIÓN FINALIZADA"
+        }}
+      </div>
+
+      <h2>Detalles de la Sesión</h2>
+      <div class="detail-grid">
+        <div><strong>Nombre del equipo/patrón:</strong></div>
+        <div>{{ selectedSession.equipment | uppercase }}</div>
+
+        <div><strong>Ubicación:</strong></div>
+        <div>{{ selectedSession.lab | uppercase }}</div>
+
+        <div><strong>Código inventario:</strong></div>
+        <div>{{ selectedSession.inventoryCode }}</div>
+
+        <div><strong>Fecha:</strong></div>
+        <div>{{ selectedSession.date }}</div>
+
+        <div><strong>Hora:</strong></div>
+        <div>{{ selectedSession.time }}</div>
+
+        <div><strong>Estado - Verificado:</strong></div>
+        <div>
+          {{
+            selectedSession.inProgress
+              ? "⏳ En curso"
+              : selectedSession.verifiedStatus
+          }}
+        </div>
+
+        <div><strong>Estado - Para uso:</strong></div>
+        <div>
+          {{
+            selectedSession.inProgress
+              ? "⏳ En curso"
+              : selectedSession.usageStatus
+          }}
+        </div>
+
+        <div><strong>Tiempo de uso:</strong></div>
+        <div>
+          {{
+            selectedSession.inProgress
+              ? "⏳ En curso"
+              : selectedSession.usageDuration
+          }}
+        </div>
+
+        <div><strong>Cantidad de muestras analizadas:</strong></div>
+        <div>
+          {{
+            selectedSession.inProgress
+              ? "⏳ En curso"
+              : selectedSession.sampleCount ?? "N/A"
+          }}
+        </div>
+
+        <div><strong>Funciones utilizadas:</strong></div>
+        <div>
+          <ng-container *ngIf="!selectedSession.inProgress">
+            <ng-container
+              *ngIf="selectedSession.functionsUsed?.length; else noFunctions"
+            >
+              {{ selectedSession.functionsUsed!.join(", ") | uppercase }}
+            </ng-container>
+          </ng-container>
+          <ng-container *ngIf="selectedSession.inProgress">
+            ⏳ En curso
+          </ng-container>
+          <ng-template #noFunctions>NO APLICA</ng-template>
+        </div>
+
+        <div><strong>Observaciones:</strong></div>
+        <div>
+          <ng-container *ngIf="!selectedSession.inProgress">
+            <ng-container *ngIf="selectedSession.observations; else noObs">
+              {{ selectedSession.observations | uppercase }}
+            </ng-container>
+          </ng-container>
+          <ng-container *ngIf="selectedSession.inProgress">
+            ⏳ En curso
+          </ng-container>
+          <ng-template #noObs>N/A</ng-template>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

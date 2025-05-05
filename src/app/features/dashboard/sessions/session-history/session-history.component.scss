@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 1.5rem;
   padding: 1rem;
-  max-width: 1600px;
+  max-width: 1750px;
   width: 100%;
   box-sizing: border-box;
   font-family: Arial, sans-serif;
@@ -197,4 +197,33 @@ app-search-advanced {
 .detail-status-badge.completed {
   background-color: #d4edda;
   color: #155724;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #2c3e50;
+  }
+
+  .sort-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: #2980b9;
+    }
+  }
 }

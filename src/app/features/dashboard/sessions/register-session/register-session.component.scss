@@ -324,3 +324,104 @@
   border-radius: 4px;
 }
 
+.required {
+  color: red;
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+.sort-btn {
+  background-color: #f4f4f4;
+  border: 1px solid #ccc;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.95rem;
+  color: #333;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  align-self: center;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #eaeaea;
+  }
+
+  .sort-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 500;
+  }
+
+  .sort-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .sort-btn {
+    width: 100%;
+    font-size: 0.9rem;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .session-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .session-list-vertical {
+    max-height: none;
+  }
+
+  .session-card {
+    text-align: left;
+  }
+
+  .session-detail {
+    padding: 0 0.5rem;
+  }
+
+  .summary-section ul {
+    padding-left: 1rem;
+  }
+
+  .modal-box {
+    max-width: 95%;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-section {
+    font-size: 0.95rem;
+  }
+
+  .summary-section h4 {
+    font-size: 1rem;
+  }
+
+  .feedback {
+    font-size: 0.9rem;
+  }
+
+  .alert {
+    font-size: 0.9rem;
+  }
+
+  .duplicate-session-warning {
+    font-size: 0.9rem;
+  }
+
+  .session-card strong {
+    font-size: 1rem;
+  }
+
+  .session-card p,
+  .session-card small {
+    font-size: 0.85rem;
+  }
+}

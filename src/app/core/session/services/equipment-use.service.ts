@@ -56,6 +56,22 @@ export interface EquipmentUseResponse {
   }[];
 }
 
+export interface EquipmentUseFilterRequest {
+  isInUse?: boolean | null;
+  isVerified?: boolean | null;
+  isAvailable?: boolean | null;
+  equipmentId?: number;
+  userId?: number;
+  laboratoryId?: number;
+  samplesNumberFrom?: number;
+  samplesNumberTo?: number;
+  usedFunctionsIds?: number[];
+  useDateFrom?: string;
+  useDateTo?: string;
+  startUseTimeFrom?: string;
+  endUseTimeTo?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class EquipmentUseService {
   private readonly baseUrl = 'http://localhost:8080/api/v1/equipment-use';
@@ -87,5 +103,14 @@ export class EquipmentUseService {
 
   getEquipmentUseById(id: number): Observable<EquipmentUseResponse> {
     return this.http.get<EquipmentUseResponse>(`${this.baseUrl}/${id}`);
+  }
+
+  filter(
+    filters: EquipmentUseFilterRequest
+  ): Observable<EquipmentUseResponse[]> {
+    return this.http.post<EquipmentUseResponse[]>(
+      `${this.baseUrl}/filter`,
+      filters
+    );
   }
 }

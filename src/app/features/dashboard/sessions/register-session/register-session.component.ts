@@ -58,6 +58,14 @@ export class RegisterSessionComponent implements AfterViewInit {
 
   hasActiveSessionWithEquipment: boolean = false;
 
+  currentUserName: string = '';
+
+  isFinishingSession = false;
+  finishSessionSuccess = false;
+  finishSessionError = false;
+
+  sessionSortDescending: boolean = true;
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private labService: LaboratoryService,
@@ -74,6 +82,11 @@ export class RegisterSessionComponent implements AfterViewInit {
     if (this.isBrowser) {
       setInterval(() => this.updateUsageTime(), 1000);
     }
+  }
+
+  toggleSortOrder() {
+    this.sessionSortDescending = !this.sessionSortDescending;
+    this.loadActiveSessions();
   }
 
   loadLabs() {
@@ -98,16 +111,28 @@ export class RegisterSessionComponent implements AfterViewInit {
       .getUserByEmail(`${username}@uptc.edu.co`)
       .subscribe((user) => {
         this.equipmentUseService.getAllEquipmentUses().subscribe((uses) => {
+          this.currentUserName = `${user.firstName} ${user.lastName}`;
           const userUses = uses.filter(
             (use: any) => use.user.id === user.id && use.isInUse === true
           );
 
-          this.activeSessions = userUses.map((use: any) => {
-            const [date, time] = use.startUseTime.split('T');
+          const sorted = userUses.sort(
+            (a: any, b: any) =>
+              new Date(b.startUseTime).getTime() -
+              new Date(a.startUseTime).getTime()
+          );
+
+          const ordered = this.sessionSortDescending
+            ? sorted
+            : sorted.reverse();
+
+          this.activeSessions = ordered.map((use: any) => {
+            const [date, timeWithMs] = use.startUseTime.split('T');
+            const time = timeWithMs.split('.')[0]; // Recorta milisegundos
 
             return {
               id: use.id,
-              equipmentId: use.equipment.id, // ✅ CORREGIDO
+              equipmentId: use.equipment.id,
               lab: use.equipment.laboratory.laboratoryName,
               labLocation: use.equipment.laboratory.location.locationName,
               labLabel: `${use.equipment.laboratory.laboratoryName} - ${use.equipment.laboratory.location.locationName}`,
@@ -132,11 +157,11 @@ export class RegisterSessionComponent implements AfterViewInit {
                 sampleCount: use.samplesNumber ?? null,
                 selectedFunctions: use.usedFunctions.map(
                   (f: any) => f.functionName
-                ), // ✅ solo nombres visibles
+                ),
                 remarks: use.observations ?? '',
               },
 
-              availableFunctions: use.equipment.functions, // ✅ objetos completos: { id, functionName }
+              availableFunctions: use.equipment.functions,
             };
           });
         });
@@ -224,8 +249,10 @@ export class RegisterSessionComponent implements AfterViewInit {
     if (!this.selectedLabId || !this.selectedEquipment) return;
 
     this.isStartingSession = true;
+
     const token = localStorage.getItem('auth_token');
     if (!token) return;
+
     const username = JSON.parse(atob(token.split('.')[1]))[
       'preferred_username'
     ];
@@ -242,18 +269,28 @@ export class RegisterSessionComponent implements AfterViewInit {
           next: () => {
             this.startSessionSuccess = true;
             this.startSessionError = false;
-            this.isStartingSession = false;
+
             this.loadActiveSessions();
 
             setTimeout(() => {
+              // Solo después de 4 segundos se permite volver a usar el botón
+              this.isStartingSession = false;
               this.showConfirmationModal = false;
               this.startSessionSuccess = false;
+
+              // Reset fields
+              this.selectedLabId = null;
+              this.selectedEquipment = null;
+              this.selectedLabStatus = null;
+              this.selectedEquipmentStatus = null;
+              this.hasActiveSessionWithEquipment = false;
+              this.equipmentOptions = [];
             }, 4000);
           },
           error: () => {
             this.startSessionSuccess = false;
             this.startSessionError = true;
-            this.isStartingSession = false;
+            this.isStartingSession = false; // ❗ Solo se reactiva si falló
           },
         });
       });
@@ -343,6 +380,10 @@ export class RegisterSessionComponent implements AfterViewInit {
     const session = this.selectedSession;
     if (!session) return;
 
+    this.isFinishingSession = true;
+    this.finishSessionSuccess = false;
+    this.finishSessionError = false;
+
     const usedFunctionIds: number[] = session.checkOut.selectedFunctions.map(
       (f: any) => f.id
     );
@@ -357,14 +398,23 @@ export class RegisterSessionComponent implements AfterViewInit {
 
     this.equipmentUseService.endEquipmentUse(session.id, payload).subscribe({
       next: () => {
-        this.activeSessions = this.activeSessions.filter(
-          (s) => s.id !== session.id
-        );
-        this.selectedSessionId = null;
-        this.showSummaryModal = false;
+        this.finishSessionSuccess = true;
+        this.finishSessionError = false;
+
+        setTimeout(() => {
+          this.activeSessions = this.activeSessions.filter(
+            (s) => s.id !== session.id
+          );
+          this.selectedSessionId = null;
+          this.showSummaryModal = false;
+          this.isFinishingSession = false;
+          this.finishSessionSuccess = false;
+        }, 4000);
       },
       error: () => {
-        alert('❌ Error al finalizar la sesión.');
+        this.finishSessionSuccess = false;
+        this.finishSessionError = true;
+        this.isFinishingSession = false;
       },
     });
   }

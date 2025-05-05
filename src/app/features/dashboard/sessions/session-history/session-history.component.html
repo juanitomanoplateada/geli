@@ -8,7 +8,12 @@
     [isLoading]="isLoading"
     [showAdvancedSearch]="showAdvancedSearch"
     [fieldsConfig]="fieldsConfig"
-    [options]="options"
+    [options]="{
+      lab: availableLabs,
+      equipment: availableEquipments,
+      function: availableFunctions,
+      user: availableUsers
+    }"
     [availableFilterKeys]="availableFilterKeys"
     [activeFilterKeys]="activeFilterKeys"
     (searchQueryChange)="searchQuery = $event"
@@ -27,7 +32,16 @@
 
   <!-- 📂 Contenido -->
   <div class="history-content" *ngIf="!isLoading">
+    <!-- Vista previa de sesiones -->
     <aside class="history-sidebar">
+      <div class="sidebar-header">
+        <h3>Lista de sesiones</h3>
+        <button (click)="sortAscending = !sortAscending" class="sort-button">
+          Ordenar por fecha:
+          {{ sortAscending ? "Más antiguas primero" : "Más recientes primero" }}
+        </button>
+      </div>
+
       <div
         class="session-preview"
         *ngFor="let session of filteredSessions"
@@ -47,6 +61,7 @@
           </span>
         </div>
         <p>{{ session.equipment }}</p>
+        <p>{{ session.responsible }}</p>
         <span>{{ session.date }} - {{ session.time }}</span>
       </div>
 
@@ -55,7 +70,7 @@
       </div>
     </aside>
 
-    <!-- 📋 Detalles apilados -->
+    <!-- 📋 Detalle de la sesión -->
     <section class="history-detail" *ngIf="selectedSession">
       <div
         class="detail-status-badge"

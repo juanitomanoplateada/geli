@@ -82,6 +82,7 @@
         <p>
           <strong>Equipo:</strong> {{ getEquipmentLabel(selectedEquipment) }}
         </p>
+        <p><strong>Responsable:</strong> {{ currentUserName }}</p>
       </div>
 
       <!-- Feedback visual -->
@@ -98,6 +99,20 @@
   <div class="session-section" *ngIf="activeSessions.length">
     <div class="session-list-vertical">
       <h2>Sesiones Activas</h2>
+      <button
+        class="sort-btn"
+        (click)="toggleSortOrder()"
+        aria-label="Cambiar orden de sesiones"
+      >
+        <span class="sort-label">
+          Ordenado por:
+          {{ sessionSortDescending ? "Más recientes" : "Más antiguas" }}
+          <span class="sort-icon">
+            {{ sessionSortDescending ? "⬇️" : "⬆️" }}
+          </span>
+        </span>
+      </button>
+
       <div
         class="session-card"
         *ngFor="let s of activeSessions"
@@ -145,7 +160,7 @@
         <h2>Salida</h2>
 
         <label>
-          Estado - Verificado:
+          Estado - Verificado: <span class="required">*</span>
           <select [(ngModel)]="selectedSession.checkOut.verifiedStatus">
             <option value="">Seleccione una opción</option>
             <option value="YES">SI</option>
@@ -154,7 +169,7 @@
         </label>
 
         <label>
-          Estado - Para uso:
+          Estado - Para uso: <span class="required">*</span>
           <select
             [(ngModel)]="selectedSession.checkOut.usageStatus"
             (change)="onUsageStatusChange()"
@@ -166,16 +181,7 @@
         </label>
 
         <label>
-          Tiempo de uso:
-          <input
-            type="text"
-            [value]="selectedSession.checkOut.usageDuration"
-            readonly
-          />
-        </label>
-
-        <label>
-          Cantidad de muestras:
+          Cantidad de muestras: <span class="required">*</span>
           <input
             type="number"
             [(ngModel)]="selectedSession.checkOut.sampleCount"
@@ -183,7 +189,7 @@
           />
         </label>
 
-        <label>Funciones utilizadas:</label>
+        <label> Funciones utilizadas: <span class="required">*</span> </label>
         <app-tag-selector
           [availableOptions]="selectedSession.availableFunctions"
           [selected]="selectedSession.checkOut.selectedFunctions"
@@ -191,13 +197,20 @@
           [labelField]="'functionName'"
           [valueField]="'id'"
         ></app-tag-selector>
+
         <label>
           Observaciones:
+          <span
+            *ngIf="selectedSession.checkOut.usageStatus === 'NO'"
+            class="required"
+            >*</span
+          >
           <textarea
             [(ngModel)]="selectedSession.checkOut.remarks"
             (input)="autoResizeTextarea($event)"
           ></textarea>
         </label>
+
         <ng-container *ngIf="selectedSession.checkOut.usageStatus === 'NO'">
           <div class="alert">
             Por favor incluya en las observaciones los motivos por los cuales el
@@ -218,6 +231,7 @@
           [title]="'¿Finalizar sesión?'"
           [show]="showSummaryModal"
           [confirmLabel]="'Finalizar'"
+          [isLoading]="isFinishingSession"
           (confirm)="confirmFinishSession()"
           (cancel)="cancelFinishSession()"
         >
@@ -260,13 +274,20 @@
             <p><strong>Funciones utilizadas:</strong></p>
             <ul>
               <li *ngFor="let f of selectedSession.checkOut.selectedFunctions">
-                ✔️ {{ f }}
+                {{ f.functionName }}
               </li>
             </ul>
             <p>
               <strong>Observaciones:</strong>
               {{ selectedSession.checkOut.remarks || "Ninguna" }}
             </p>
+          </div>
+          <!-- Feedback visual -->
+          <div *ngIf="finishSessionSuccess" class="feedback success">
+            ✅ Sesión finalizada exitosamente.
+          </div>
+          <div *ngIf="finishSessionError" class="feedback error">
+            ❌ Error al finalizar la sesión. Intenta nuevamente.
           </div>
         </app-confirm-modal>
       </div>
