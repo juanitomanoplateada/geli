@@ -237,14 +237,14 @@
         >
           <div class="summary-section">
             <h4>⏱ Detalles de uso</h4>
-            <p>
-              <strong>Duración:</strong>
-              {{ selectedSession.checkOut.usageDuration }}
-            </p>
             <p><strong>Fecha:</strong> {{ selectedSession.useDate }}</p>
             <p>
               <strong>Hora de inicio:</strong>
               {{ selectedSession.startUseTime }}
+            </p>
+            <p>
+              <strong>Duración:</strong>
+              {{ selectedSession.checkOut.usageDuration }}
             </p>
           </div>
 
@@ -261,11 +261,13 @@
             <h4>📊 Datos de salida</h4>
             <p>
               <strong>Estado - Verificado:</strong>
-              {{ selectedSession.checkOut.verifiedStatus }}
+              {{
+                selectedSession.checkOut.verifiedStatus === "YES" ? "SI" : "NO"
+              }}
             </p>
             <p>
               <strong>Estado - Para uso:</strong>
-              {{ selectedSession.checkOut.usageStatus }}
+              {{ selectedSession.checkOut.usageStatus === "YES" ? "SI" : "NO" }}
             </p>
             <p>
               <strong>Cantidad de muestras:</strong>

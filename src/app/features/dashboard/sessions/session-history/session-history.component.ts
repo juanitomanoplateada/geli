@@ -1,4 +1,5 @@
 import {
+  EquipmentUseFilterRequest,
   EquipmentUseResponse,
   EquipmentUseService,
 } from './../../../../core/session/services/equipment-use.service';
@@ -9,8 +10,16 @@ import { SearchAdvancedComponent } from '../../../../shared/components/search-ad
 import { FieldConfig } from '../../../../shared/model/field-config.model';
 import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
 import { EquipmentService } from '../../../../core/equipment/services/equipment.service';
-import { FunctionService } from '../../../../core/function/services/function.service';
-import { UserService } from '../../../../core/user/services/user.service';
+import {
+  FunctionDto,
+  FunctionService,
+} from '../../../../core/function/services/function.service';
+import {
+  UserRecordResponse,
+  UserService,
+} from '../../../../core/user/services/user.service';
+import { Laboratory } from '../../../../core/laboratory/models/laboratory.model';
+import { EquipmentDto } from '../../../../core/equipment/models/equipment-response.dto';
 
 interface SessionRecord {
   id: number;
@@ -60,19 +69,29 @@ export class SessionHistoryComponent implements OnInit {
     sampleCountMax: null as number | null,
     function: '',
     user: '',
+    sessionStatus: '',
   };
 
   sessionRecords: SessionRecord[] = [];
-  allSessions: EquipmentUseResponse[] = [];
 
   availableLabs: string[] = [];
   availableEquipments: string[] = [];
   availableFunctions: string[] = [];
   availableUsers: string[] = [];
 
+  labsFull: Laboratory[] = [];
+  equipmentsFull: EquipmentDto[] = [];
+  functionsFull: FunctionDto[] = [];
+  usersFull: UserRecordResponse[] = [];
+
   availableFilterKeys = [
+    { key: 'sessionStatus', label: 'Estado de la sesión' },
     { key: 'equipment', label: 'Equipo / Patrón' },
     { key: 'lab', label: 'Laboratorio' },
+    { key: 'dateFrom', label: 'Fecha desde' },
+    { key: 'dateTo', label: 'Fecha hasta' },
+    { key: 'timeFrom', label: 'Hora desde' },
+    { key: 'timeTo', label: 'Hora hasta' },
     { key: 'verifiedStatus', label: 'Verificado' },
     { key: 'usageStatus', label: 'Para uso' },
     { key: 'sampleCountMin', label: 'Muestras desde' },
@@ -83,6 +102,13 @@ export class SessionHistoryComponent implements OnInit {
   activeFilterKeys = this.availableFilterKeys.map((f) => f.key);
 
   fieldsConfig: FieldConfig[] = [
+    {
+      key: 'sessionStatus',
+      label: 'Estado de la sesión',
+      type: 'select',
+      options: ['En curso', 'Finalizada'],
+      allowEmptyOption: 'Todas',
+    },
     {
       key: 'equipment',
       label: 'Equipo / Patrón',
@@ -95,7 +121,30 @@ export class SessionHistoryComponent implements OnInit {
       type: 'dropdown',
       allowEmptyOption: 'Todos',
     },
-
+    {
+      key: 'dateFrom',
+      label: 'Fecha desde',
+      type: 'date',
+      placeholder: 'YYYY-MM-DD',
+    },
+    {
+      key: 'dateTo',
+      label: 'Fecha hasta',
+      type: 'date',
+      placeholder: 'YYYY-MM-DD',
+    },
+    {
+      key: 'timeFrom',
+      label: 'Hora desde',
+      type: 'time',
+      placeholder: 'HH:mm:ss',
+    },
+    {
+      key: 'timeTo',
+      label: 'Hora hasta',
+      type: 'time',
+      placeholder: 'HH:mm:ss',
+    },
     {
       key: 'verifiedStatus',
       label: 'Estado - Verificado',
@@ -146,46 +195,19 @@ export class SessionHistoryComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadFilterOptions();
-    this.loadSessions();
+    this.onSearch(); // carga inicial
   }
 
   get filteredSessions(): SessionRecord[] {
+    const query = this.searchQuery.toLowerCase();
+
     return this.sessionRecords
       .filter((session) => {
-        const match = (val: string, filter: string) =>
-          !filter || val.toLowerCase() === filter.toLowerCase();
-        const includes = (val: string, query: string) =>
-          val.toLowerCase().includes(query.toLowerCase());
-        const rangeMatch = (
-          value: number | undefined,
-          min: number | null,
-          max: number | null
-        ) =>
-          (min === null || (value ?? 0) >= min) &&
-          (max === null || (value ?? 0) <= max);
-
         return (
-          (includes(session.lab, this.searchQuery) ||
-            includes(session.equipment, this.searchQuery)) &&
-          match(session.labName, this.filters.lab) &&
-          match(session.equipment, this.filters.equipment) &&
-          (!this.filters.dateFrom || session.date >= this.filters.dateFrom) &&
-          (!this.filters.dateTo || session.date <= this.filters.dateTo) &&
-          (!this.filters.timeFrom || session.time >= this.filters.timeFrom) &&
-          (!this.filters.timeTo || session.time <= this.filters.timeTo) &&
-          match(session.verifiedStatus, this.filters.verifiedStatus) &&
-          match(session.usageStatus, this.filters.usageStatus) &&
-          rangeMatch(
-            session.sampleCount,
-            this.filters.sampleCountMin,
-            this.filters.sampleCountMax
-          ) &&
-          (!this.filters.function ||
-            session.functionsUsed?.some(
-              (func) =>
-                func.toLowerCase() === this.filters.function.toLowerCase()
-            )) &&
-          match(session.responsible, this.filters.user)
+          session.inventoryCode.toLowerCase().includes(query) ||
+          session.equipment.toLowerCase().includes(query) ||
+          session.lab.toLowerCase().includes(query) ||
+          session.responsible.toLowerCase().includes(query)
         );
       })
       .sort((a, b) => {
@@ -198,84 +220,100 @@ export class SessionHistoryComponent implements OnInit {
   loadFilterOptions(): void {
     this.labService.getLaboratories().subscribe({
       next: (labs) => {
+        this.labsFull = labs;
         this.availableLabs = labs.map((lab) => lab.laboratoryName);
       },
     });
 
     this.equipmentService.getAll().subscribe({
       next: (equipments) => {
-        this.availableEquipments = equipments.map((e) => e.equipmentName);
+        this.equipmentsFull = equipments;
+        this.availableEquipments = equipments.map(
+          (e) => `${e.equipmentName} - ${e.inventoryNumber}`
+        );
       },
     });
 
     this.functionService.getAll().subscribe({
       next: (functions) => {
+        this.functionsFull = functions;
         this.availableFunctions = functions.map((f) => f.functionName);
       },
     });
 
     this.userService.getUsers().subscribe({
       next: (users) => {
+        this.usersFull = users;
         this.availableUsers = users.map((u) => `${u.firstName} ${u.lastName}`);
       },
     });
   }
 
-  loadSessions(): void {
-    this.isLoading = true;
-    this.equipmentUseService.getAllEquipmentUses().subscribe({
-      next: (response) => {
-        this.sessionRecords = response.map((session) => {
-          const inProgress = session.isInUse;
-          const usageDuration = this.calculateDuration(
-            session.startUseTime,
-            session.endUseTime
-          );
+  onSearch(): void {
+    const request: EquipmentUseFilterRequest = {
+      isInUse:
+        this.filters.sessionStatus === 'En curso'
+          ? true
+          : this.filters.sessionStatus === 'Finalizada'
+          ? false
+          : null,
+      isVerified:
+        this.filters.verifiedStatus === ''
+          ? null
+          : this.filters.verifiedStatus === 'SI'
+          ? true
+          : false,
 
-          return {
-            id: session.id,
-            equipment: session.equipment.equipmentName,
-            lab: `${session.equipment.laboratory.laboratoryName} - ${session.equipment.laboratory.location.locationName}`,
-            labName: session.equipment.laboratory.laboratoryName,
-            inventoryCode: session.equipment.inventoryNumber,
-            date: this.formatDate(session.startUseTime),
-            time: this.formatTime(session.startUseTime),
-            verifiedStatus: session.isVerified ? 'SI' : 'NO',
-            usageStatus: session.isAvailable ? 'SI' : 'NO',
-            usageDuration: inProgress ? 'En curso' : usageDuration,
-            sampleCount: inProgress ? undefined : session.samplesNumber,
-            functionsUsed: inProgress
-              ? undefined
-              : session.usedFunctions?.map((f) => f.functionName),
-            observations: inProgress
-              ? undefined
-              : session.observations || 'N/A',
-            responsible: `${session.user.firstName} ${session.user.lastName}`,
-            inProgress,
-            startDateTime: session.startUseTime, // ← ADD THIS
-          };
-        });
+      isAvailable:
+        this.filters.usageStatus === ''
+          ? null
+          : this.filters.usageStatus === 'SI'
+          ? true
+          : false,
+      samplesNumberFrom: this.filters.sampleCountMin ?? undefined,
+      samplesNumberTo: this.filters.sampleCountMax ?? undefined,
+      useDateFrom:
+        this.combineDateTime(this.filters.dateFrom, this.filters.timeFrom) ??
+        undefined,
+      useDateTo:
+        this.combineDateTime(this.filters.dateTo, this.filters.timeTo) ??
+        undefined,
+      startUseTimeFrom:
+        this.combineDateTime(this.filters.dateFrom, this.filters.timeFrom) ??
+        undefined,
+      endUseTimeTo:
+        this.combineDateTime(this.filters.dateTo, this.filters.timeTo) ??
+        undefined,
+      usedFunctionsIds: this.filters.function
+        ? this.getFunctionIdByName(this.filters.function)
+        : undefined,
+      equipmentId: this.getEquipmentIdByInventoryCode(this.filters.equipment),
+      userId: this.getUserIdByFullName(this.filters.user),
+      laboratoryId: this.getLabIdByName(this.filters.lab),
+    };
+
+    console.log(request);
+
+    this.isLoading = true;
+    this.equipmentUseService.filter(request).subscribe({
+      next: (response) => {
+        const safeResponse = response ?? [];
+        this.sessionRecords = this.mapSessions(safeResponse);
+        this.selectedSession =
+          this.sessionRecords.length > 0 ? this.sessionRecords[0] : null;
         this.isLoading = false;
       },
       error: () => {
         this.sessionRecords = [];
+        this.selectedSession = null;
         this.isLoading = false;
       },
     });
   }
 
-  onSearch(): void {
-    const dto = {}; // Puedes ajustar si aplicas filtros al backend
-    this.loadSessions(); // Por ahora, recarga todo
-  }
-
   onFiltersChange(updated: Partial<typeof this.filters>): void {
     this.filters = { ...this.filters, ...updated };
     this.onSearch();
-  }
-
-  toggleAdvancedSearch(): void {
-    this.showAdvancedSearch = !this.showAdvancedSearch;
   }
 
   clearFilters(): void {
@@ -294,9 +332,55 @@ export class SessionHistoryComponent implements OnInit {
       sampleCountMax: null,
       function: '',
       user: '',
+      sessionStatus: '',
     };
     this.searchQuery = '';
     this.onSearch();
+  }
+
+  combineDateTime(date: string, time: string): string | null {
+    if (!date) return null;
+    const timePart = time || '00:00:00';
+    return `${date}T${timePart}`;
+  }
+
+  mapSessions(response: EquipmentUseResponse[]): SessionRecord[] {
+    if (!response) return [];
+    return response.map((session) => {
+      const inProgress = session.isInUse;
+      const usageDuration = this.calculateDuration(
+        session.startUseTime,
+        session.endUseTime
+      );
+
+      return {
+        id: session.id,
+        equipment: session.equipment.equipmentName,
+        lab: `${session.equipment.laboratory.laboratoryName} - ${session.equipment.laboratory.location.locationName}`,
+        labName: session.equipment.laboratory.laboratoryName,
+        inventoryCode: session.equipment.inventoryNumber,
+        date: this.formatDate(session.startUseTime),
+        time: this.formatTime(session.startUseTime),
+        verifiedStatus: session.isVerified ? 'SI' : 'NO',
+        usageStatus: session.isAvailable ? 'SI' : 'NO',
+        usageDuration: inProgress ? 'En curso' : usageDuration,
+        sampleCount: inProgress ? undefined : session.samplesNumber,
+        functionsUsed: inProgress
+          ? undefined
+          : session.usedFunctions?.map((f) => f.functionName),
+        observations: inProgress ? undefined : session.observations || 'N/A',
+        responsible: `${session.user.firstName} ${session.user.lastName}`,
+        inProgress,
+        startDateTime: session.startUseTime,
+      };
+    });
+  }
+
+  getEquipmentIdByInventoryCode(displayText: string): number | undefined {
+    // El displayText es: "Microscopio - INV00123"
+    const inventoryCode = displayText.split(' - ').at(-1)?.trim();
+    return this.equipmentsFull.find((e) => e.inventoryNumber === inventoryCode)
+      ?.id;
   }
 
   formatDate(isoDate: string): string {
@@ -333,7 +417,39 @@ export class SessionHistoryComponent implements OnInit {
     return `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   }
 
+  getLabIdByName(name: string): number | undefined {
+    return this.labsFull.find(
+      (l) => l.laboratoryName.toLowerCase() === name.toLowerCase()
+    )?.id;
+  }
+
+  getEquipmentIdByName(name: string): number | undefined {
+    return this.equipmentsFull.find(
+      (e) => e.equipmentName.toLowerCase() === name.toLowerCase()
+    )?.id;
+  }
+
+  getUserIdByFullName(fullName: string): number | undefined {
+    const [firstName, lastName] = fullName.trim().split(' ');
+    return this.usersFull.find(
+      (u) =>
+        u.firstName.toLowerCase() === firstName?.toLowerCase() &&
+        u.lastName.toLowerCase() === lastName?.toLowerCase()
+    )?.id;
+  }
+
+  getFunctionIdByName(name: string): number[] | undefined {
+    const fn = this.functionsFull.find(
+      (f) => f.functionName.toLowerCase() === name.toLowerCase()
+    );
+    return fn ? [fn.id] : undefined;
+  }
+
   selectSession(session: SessionRecord): void {
     this.selectedSession = session;
+  }
+
+  toggleAdvancedSearch(): void {
+    this.showAdvancedSearch = !this.showAdvancedSearch;
   }
 }
