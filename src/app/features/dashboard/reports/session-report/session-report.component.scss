@@ -1,299 +1,189 @@
-.session-report-wrapper {
-  padding: 2rem;
-  background-color: #f9fbfc;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+.session-report-container {
+  padding: 0 1.5rem;
+  max-width: 1750px;
+  margin: 0 auto;
   font-family: Arial, sans-serif;
-}
 
-/* Título y exportar */
-.header-panel {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-
-  .report-title {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #2c3e50;
-    margin-bottom: 1rem;
+  // 🎯 Filtros
+  app-search-filter-only {
+    margin-bottom: 2rem;
   }
 
-  .export-buttons {
+  // ⏳ Estado de carga
+  .loading-state {
     display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-
-    button {
-      padding: 0.5rem 1rem;
-      font-weight: 500;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      color: white;
-
-      &.btn-excel {
-        background-color: #28a745;
-        &:hover {
-          background-color: #218838;
-        }
-      }
-
-      &.btn-csv {
-        background-color: #f39c12;
-        &:hover {
-          background-color: #e67e22;
-        }
-      }
-
-      &.btn-pdf {
-        background-color: #c0392b;
-        &:hover {
-          background-color: #a93226;
-        }
-      }
-    }
-  }
-}
-
-/* Sección títulos */
-.section-title {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #2c3e50;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 0.3rem;
-  margin-bottom: 1rem;
-}
-
-/* Filtros */
-.filter-panel {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
-
-  label {
-    display: flex;
-    flex-direction: column;
-    font-size: 0.9rem;
-    min-width: 180px;
-    flex: 1;
-
-    input,
-    select {
-      margin-top: 0.25rem;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-  }
-
-  button {
-    padding: 0.5rem 1rem;
-    background-color: #2980b9;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    align-self: flex-end;
-    height: 45px;
-
-    &:hover {
-      background-color: #2471a3;
-    }
-  }
-}
-
-/* Estadísticas generales */
-.statistics-panel {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
-
-  .stats-row {
-    display: flex;
+    align-items: center;
     gap: 1rem;
+    font-style: italic;
+    color: #666;
+    justify-content: center;
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid #ccc;
+      border-top: 3px solid #1976d2;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  }
+
+  // 📊 Estadísticas
+  .stats-boxes {
+    display: flex;
     flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 
     .stat-box {
       flex: 1;
-      min-width: 180px;
-      background: #f8f9fa;
-      padding: 1rem;
+      min-width: 220px;
+      padding: 1.2rem;
       border-radius: 8px;
       text-align: center;
+      background: #f5f5f5;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+
+      &.success {
+        border-left: 6px solid #28a745;
+      }
+
+      &.warning {
+        border-left: 6px solid #ffc107;
+      }
+
+      &.info {
+        border-left: 6px solid #007bff;
+      }
 
       h4 {
-        font-size: 1rem;
-        color: #2c3e50;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.5rem;
       }
 
       p {
-        font-size: 1.3rem;
+        font-size: 1rem;
         font-weight: bold;
-        color: #34495e;
-      }
-
-      &.neutral h4 {
-        color: #9b59b6;
+        margin: 0;
       }
     }
   }
-}
 
-/* Tabla */
-.table-panel {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  // 🗂 Pestañas
+  .tab-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
 
-  .table-section {
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
+    button {
+      padding: 0.6rem 1.2rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      background-color: #e0e0e0;
+      cursor: pointer;
+      transition: background-color 0.3s;
 
-      th,
-      td {
-        padding: 0.5rem;
-        border: 1px solid #ccc;
-        text-align: left;
-        vertical-align: top;
+      &.active {
+        background-color: #007bff;
+        color: #fff;
       }
 
-      th {
-        background-color: #ecf0f1;
-      }
-
-      @media (max-width: 768px) {
-        display: block;
-
-        thead {
-          display: none;
-        }
-
-        tbody {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-
-          tr {
-            display: flex;
-            flex-direction: column;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1rem;
-          }
-
-          td {
-            display: flex;
-            flex-direction: column;
-            padding: 0.25rem 0;
-
-            &::before {
-              content: attr(data-label);
-              font-weight: bold;
-              margin-bottom: 0.25rem;
-              color: #333;
-            }
-          }
-        }
+      &:hover:not(.active) {
+        background-color: #d5d5d5;
       }
     }
   }
-}
 
-/* Gráficas */
-.chart-panel {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  // 📈 Gráficas
+  .chart-box {
+    width: 100%;
+    max-width: 1500px;
+    height: 50vh;
+    min-height: 400px;
+    margin: 0 auto 3rem auto;
+    padding: 1.5rem;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-bottom: 3rem;
 
-  .chart-tabs {
+    canvas {
+      flex-grow: 1;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain;
+    }
+  }
+
+  // ❌ Sin resultados
+  .no-results {
+    text-align: center;
+    color: #777;
+    font-size: 1.2rem;
+    padding: 3rem;
+  }
+
+  // 📱 Responsive adicional
+  @media (max-width: 1024px) {
+    .chart-box {
+      height: auto;
+      min-height: 300px;
+      padding: 1rem;
+    }
+
+    .stats-boxes {
+      flex-direction: column;
+    }
+
     .tab-buttons {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
+      flex-direction: column;
+      align-items: center;
 
       button {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.5rem;
+
+    .chart-box {
+      padding: 1rem;
+    }
+
+    .stats-boxes .stat-box {
+      font-size: 0.9rem;
+
+      p {
+        font-size: 1rem;
+      }
+    }
+
+    .tab-buttons {
+      gap: 0.5rem;
+
+      button {
+        font-size: 0.9rem;
         padding: 0.5rem 1rem;
-        background: #e0e0e0;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        cursor: pointer;
-
-        &.active {
-          background-color: #3498db;
-          color: white;
-        }
-
-        &:hover:not(.active) {
-          background-color: #ddd;
-        }
       }
     }
 
-    .tab-content {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-
-      canvas.chart {
-        display: flex;
-        width: 100% !important;
-        max-width: 100%;
-        height: 100% !important;
-        max-height: 650px;
-      }
+    .no-results {
+      font-size: 1rem;
     }
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .header-panel {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-
-    .report-title {
-      text-align: center;
-      width: 100%;
-    }
-
-    .export-buttons {
-      justify-content: center;
-      width: 100%;
-    }
-  }
-
-  .filter-panel {
-    flex-direction: column;
-
-    label,
-    button {
-      width: 100%;
-    }
-  }
-
-  .statistics-panel .stats-row {
-    flex-direction: column;
-  }
-
-  .chart-tabs .tab-content {
-    align-items: center;
   }
 }

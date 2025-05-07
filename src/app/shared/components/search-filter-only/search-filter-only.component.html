@@ -1,0 +1,22 @@
+<!-- Filtros visibles -->
+<app-advanced-search-filters
+  [availableFilters]="availableFilterKeys"
+  [activeFilters]="activeFilterKeys"
+  (activeFiltersChange)="onActiveFiltersChange($event)"
+></app-advanced-search-filters>
+
+<!-- Campos dinámicos de filtros -->
+<app-search-advanced-fields
+  [filters]="filters"
+  [options]="options"
+  [fieldsConfig]="activeFieldsConfig"
+  [isLoading]="isLoading"
+  (filtersChange)="filtersChange.emit($event)"
+></app-search-advanced-fields>
+
+<!-- Botón limpiar -->
+<div class="filter-actions">
+  <button class="clear-filters-btn" (click)="onClear()" [disabled]="isLoading">
+    Limpiar filtros
+  </button>
+</div>

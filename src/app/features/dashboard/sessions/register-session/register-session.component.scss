@@ -425,3 +425,17 @@
     font-size: 0.85rem;
   }
 }
+
+.header-with-timer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  .live-duration {
+    font-weight: bold;
+    color: #2c7be5;
+    font-size: 1rem;
+  }
+}

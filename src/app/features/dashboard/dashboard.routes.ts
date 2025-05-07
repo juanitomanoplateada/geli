@@ -8,6 +8,7 @@ import { reportsRoutes } from './reports/reports.routes';
 import { UserProfileComponent } from './user-profile/user-profile.component';
 import { RoleGuard } from '../../core/auth/guards/role.guard';
 import { AssignEquipmentPermissionsComponent } from './assign-equipment-permissions/assign-equipment-permissions.component';
+import { SessionReportComponent } from './reports/session-report/session-report.component';
 
 export const dashboardRoutes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -51,5 +52,11 @@ export const dashboardRoutes: Routes = [
     canActivate: [RoleGuard],
     data: { roles: ['AUTHORIZED-USER', 'QUALITY-ADMIN-USER'] },
     component: UserProfileComponent,
+  },
+  {
+    path: 'session-report',
+    canActivate: [RoleGuard],
+    data: { roles: ['QUALITY-ADMIN-USER'] },
+    component: SessionReportComponent,
   },
 ];

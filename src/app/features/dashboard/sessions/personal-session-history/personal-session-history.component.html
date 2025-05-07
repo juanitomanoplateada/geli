@@ -38,9 +38,7 @@
           <h3>Lista de sesiones</h3>
           <button (click)="sortAscending = !sortAscending" class="sort-button">
             Ordenar por Sesiones:
-            {{
-              sortAscending ? "Más antiguas" : "Más recientes"
-            }}
+            {{ sortAscending ? "Más antiguas" : "Más recientes" }}
           </button>
         </div>
 
@@ -63,7 +61,6 @@
             </span>
           </div>
           <p>{{ session.equipment }}</p>
-          <p>{{ session.responsible }}</p>
           <span>{{ session.date }} - {{ session.time }}</span>
         </div>
       </aside>

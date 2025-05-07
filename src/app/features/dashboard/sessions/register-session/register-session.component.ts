@@ -66,6 +66,9 @@ export class RegisterSessionComponent implements AfterViewInit {
 
   sessionSortDescending: boolean = true;
 
+  equipmentIdsInUse: Set<string> = new Set();
+  isEquipmentInUseByAnotherUser: boolean = false;
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private labService: LaboratoryService,
@@ -111,6 +114,7 @@ export class RegisterSessionComponent implements AfterViewInit {
       .getUserByEmail(`${username}@uptc.edu.co`)
       .subscribe((user) => {
         this.equipmentUseService.getAllEquipmentUses().subscribe((uses) => {
+          this.equipmentIdsInUse.clear();
           this.currentUserName = `${user.firstName} ${user.lastName}`;
           const userUses = uses.filter(
             (use: any) => use.user.id === user.id && use.isInUse === true
@@ -125,6 +129,12 @@ export class RegisterSessionComponent implements AfterViewInit {
           const ordered = this.sessionSortDescending
             ? sorted
             : sorted.reverse();
+
+          uses
+            .filter((use: any) => use.isInUse === true)
+            .forEach((use: any) =>
+              this.equipmentIdsInUse.add(String(use.equipment.id))
+            );
 
           this.activeSessions = ordered.map((use: any) => {
             const [date, timeWithMs] = use.startUseTime.split('T');
@@ -239,6 +249,9 @@ export class RegisterSessionComponent implements AfterViewInit {
           remarks: selected?.observations || 'Sin observaciones registradas.',
         };
       });
+    this.isEquipmentInUseByAnotherUser =
+      this.equipmentIdsInUse.has(equipmentId) &&
+      !this.hasActiveSessionWithEquipment;
   }
 
   onStartSessionClick() {

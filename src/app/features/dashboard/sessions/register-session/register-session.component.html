@@ -50,6 +50,13 @@
           ⚠️ Ya tienes una sesión activa con este equipo. Finalízala antes de
           iniciar una nueva.
         </div>
+        <div
+          *ngIf="isEquipmentInUseByAnotherUser"
+          class="duplicate-session-warning"
+        >
+          ⚠️ Este equipo ya está en uso por otro usuario. Espera a que liberen
+          la sesión.
+        </div>
       </div>
     </div>
 
@@ -61,7 +68,8 @@
         !selectedEquipment ||
         selectedLabStatus?.active === false ||
         selectedEquipmentStatus?.active === false ||
-        hasActiveSessionWithEquipment
+        hasActiveSessionWithEquipment ||
+        isEquipmentInUseByAnotherUser
       "
       (click)="onStartSessionClick()"
     >
@@ -157,7 +165,15 @@
 
       <!-- Salida -->
       <div class="panel salida">
-        <h2>Salida</h2>
+        <h2>
+          Salida
+          <span
+            *ngIf="selectedSession?.checkOut?.usageDuration"
+            class="live-duration"
+          >
+            🕒 {{ selectedSession.checkOut.usageDuration }}
+          </span>
+        </h2>
 
         <label>
           Estado - Verificado: <span class="required">*</span>

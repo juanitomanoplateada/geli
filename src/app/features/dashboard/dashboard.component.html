@@ -144,7 +144,15 @@
       >Historial de Sesiones</a
     >
 
-    <div
+    <a
+      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
+      routerLink="/dashboard/reports/session-report"
+      class="dashboard-link"
+      [class.active]="isExactActive('/dashboard/reports/session-report')"
+      >Reporte de Sesiones</a
+    >
+
+    <!--<div
       *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
       class="dashboard-group"
       [class.active]="isActive('/dashboard/reports')"
@@ -182,7 +190,7 @@
           >Reporte de Sesiones</a
         >
       </div>
-    </div>
+    </div>-->
 
     <a
       routerLink="/dashboard/user-profile"

@@ -1,370 +1,209 @@
-<div class="session-report-wrapper">
-  <!-- Título -->
-  <div class="header-panel">
-    <h1 class="report-title">📋 Reporte de Sesiones de Uso de Equipos</h1>
-    <div class="export-buttons">
-      <button class="btn-excel" (click)="exportToExcel()">📊 Excel</button>
-      <button class="btn-csv" (click)="exportToCSV()">📄 CSV</button>
-      <button class="btn-pdf" (click)="exportToPDF()">🧾 PDF</button>
+<div class="session-report-container">
+  <h1>Reporte de Sesiones</h1>
+
+  <!-- 🎯 Filtros avanzados dinámicos -->
+  <app-search-filter-only
+    [isLoading]="isLoading"
+    [fieldsConfig]="fieldsConfig"
+    [filters]="filters"
+    [options]="{
+      lab: availableLabs,
+      equipment: availableEquipments,
+      function: availableFunctions,
+      user: availableUsers
+    }"
+    [availableFilterKeys]="availableFilterKeys"
+    [activeFilterKeys]="activeFilterKeys"
+    (filtersChange)="onFiltersChange($event)"
+    (activeFilterKeysChange)="activeFilterKeys = $event"
+    (clearFilters)="clearFilters()"
+  ></app-search-filter-only>
+
+  <!-- ⏳ Estado de carga -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando sesiones...</p>
+  </div>
+
+  <h1>Estadísticas Generales</h1>
+
+  <!-- 📊 Estadísticas -->
+  <div *ngIf="!isLoading" class="stats-boxes">
+    <div class="stat-box info">
+      <h4>Total de Sesiones</h4>
+      <p>{{ sessionRecords.length }}</p>
+    </div>
+    <div class="stat-box success">
+      <h4>Sesiones Activas</h4>
+      <p>{{ usageData[1] }}</p>
+    </div>
+    <div class="stat-box warning">
+      <h4>Sesiones Finalizadas</h4>
+      <p>{{ usageData[0] }}</p>
     </div>
   </div>
 
-  <!-- Filtros -->
-  <div class="summary-panel filter-panel">
-    <!-- Fila 2 - Dropdown laboratorio -->
-    <label>
-      Laboratorio:
-      <app-dropdown-filter
-        [options]="labOptions"
-        [selected]="filters.lab"
-        (selectedChange)="onLabChange($event)"
-        placeholder="Seleccione laboratorio"
-        allowEmpty="Todos"
-      />
-    </label>
+  <h1>Gráficas</h1>
 
-    <!-- Dropdown equipo -->
-    <label>
-      Equipo / Patrón:
-      <app-dropdown-filter
-        [options]="equipmentOptions"
-        [selected]="filters.equipment"
-        (selectedChange)="onEquipmentChange($event)"
-        placeholder="Seleccione equipo"
-        allowEmpty="Todos"
-      />
-    </label>
-    <!-- Fila 1 -->
-    <label>
-      Fecha desde:
-      <input
-        type="date"
-        [(ngModel)]="filters.dateFrom"
-        (change)="filterSessions()"
-        placeholder="aaaa-mm-dd"
-      />
-    </label>
+  <!-- 🗂 Pestañas -->
+  <div class="tab-buttons">
+    <button
+      [class.active]="activeTab === 'usuario'"
+      (click)="activeTab = 'usuario'"
+    >
+      Frecuencia por Responsable ({{ getTotal(userData) }})
+    </button>
 
-    <label>
-      Fecha hasta:
-      <input
-        type="date"
-        [(ngModel)]="filters.dateTo"
-        (change)="filterSessions()"
-        placeholder="aaaa-mm-dd"
-      />
-    </label>
+    <button
+      [class.active]="activeTab === 'laboratorio'"
+      (click)="activeTab = 'laboratorio'"
+    >
+      Frecuencia por Laboratorio ({{ getTotal(laboratoryData) }})
+    </button>
 
-    <label>
-      Hora desde:
-      <input
-        type="time"
-        [(ngModel)]="filters.timeFrom"
-        (change)="filterSessions()"
-        placeholder="hh:mm"
-      />
-    </label>
+    <button
+      [class.active]="activeTab === 'equipo'"
+      (click)="activeTab = 'equipo'"
+    >
+      Frecuencia por Equipo ({{ getTotal(equipmentData) }})
+    </button>
 
-    <label>
-      Hora hasta:
-      <input
-        type="time"
-        [(ngModel)]="filters.timeTo"
-        (change)="filterSessions()"
-        placeholder="hh:mm"
-      />
-    </label>
+    <button
+      [class.active]="activeTab === 'funcion'"
+      (click)="activeTab = 'funcion'"
+    >
+      Frecuencia por Función ({{ getTotal(functionData) }})
+    </button>
 
-    <!-- Dropdown responsable -->
-    <label>
-      Responsable:
-      <app-dropdown-filter
-        [options]="responsibleOptions"
-        [selected]="filters.user"
-        (selectedChange)="onUserChange($event)"
-        placeholder="Seleccione responsable"
-        allowEmpty="Todos"
-      />
-    </label>
+    <button
+      [class.active]="activeTab === 'muestras'"
+      (click)="activeTab = 'muestras'"
+    >
+      Cantidad de Muestras ({{ getTotal(sampleRangeData) }})
+    </button>
 
-    <!-- Verificado -->
-    <label>
-      Estado - Verificado:
-      <select [(ngModel)]="filters.verifiedStatus" (change)="filterSessions()">
-        <option value="">Todos</option>
-        <option value="SI">Sí</option>
-        <option value="NO">No</option>
-      </select>
-    </label>
+    <button [class.active]="activeTab === 'hora'" (click)="activeTab = 'hora'">
+      Sesiones por Hora ({{ getTotal(sessionHourData) }})
+    </button>
 
-    <!-- Para uso -->
-    <label>
-      Estado - Para uso:
-      <select [(ngModel)]="filters.usageStatus" (change)="filterSessions()">
-        <option value="">Todos</option>
-        <option value="Disponible">Disponible</option>
-        <option value="No disponible">No disponible</option>
-      </select>
-    </label>
+    <button
+      [class.active]="activeTab === 'historico'"
+      (click)="activeTab = 'historico'"
+    >
+      Historial de Sesiones ({{ sessionStartDates.length }})
+    </button>
 
-    <!-- Función utilizada -->
-    <label>
-      Función utilizada:
-      <app-dropdown-filter
-        [options]="filteredFunctions"
-        [selected]="filters.function"
-        (selectedChange)="onFunctionChange($event)"
-        placeholder="Seleccione función"
-        allowEmpty="Todas"
-      />
-    </label>
-
-    <!-- Tiempo de uso -->
-    <label>
-      Tiempo de uso desde (min):
-      <input
-        type="number"
-        min="0"
-        [(ngModel)]="filters.usageDurationMin"
-        (change)="filterSessions()"
-        placeholder="Mínimo"
-      />
-    </label>
-
-    <label>
-      Tiempo de uso hasta (min):
-      <input
-        type="number"
-        min="0"
-        [(ngModel)]="filters.usageDurationMax"
-        (change)="filterSessions()"
-        placeholder="Máximo"
-      />
-    </label>
-
-    <!-- Muestras -->
-    <label>
-      Muestras desde:
-      <input
-        type="number"
-        min="0"
-        [(ngModel)]="filters.sampleCountMin"
-        (change)="filterSessions()"
-        placeholder="Mínimo"
-      />
-    </label>
-
-    <label>
-      Muestras hasta:
-      <input
-        type="number"
-        min="0"
-        [(ngModel)]="filters.sampleCountMax"
-        (change)="filterSessions()"
-        placeholder="Máximo"
-      />
-    </label>
-
-
-
-    <!-- Botones -->
-    <button (click)="resetFilters()">Limpiar Filtros</button>
+    <button
+      [class.active]="activeTab === 'estado'"
+      (click)="activeTab = 'estado'"
+    >
+      Estado de Uso ({{ getTotal(usageData) }})
+    </button>
+    <button
+      [class.active]="activeTab === 'verificado'"
+      (click)="activeTab = 'verificado'"
+    >
+      Estado Verificado ({{ getTotal(verifiedData) }})
+    </button>
+    <button
+      [class.active]="activeTab === 'paraUso'"
+      (click)="activeTab = 'paraUso'"
+    >
+      Estado Para Uso ({{ getTotal(usageData) }})
+    </button>
   </div>
 
-  <!-- Estadísticas -->
-  <div class="summary-panel statistics-panel">
-    <h3 class="section-title">📌 Estadísticas Generales</h3>
-    <div class="stats-row">
-      <div class="stat-box neutral">
-        <h4>📦 Total de Sesiones</h4>
-        <p>{{ filteredSessions.length }}</p>
-      </div>
-    </div>
-  </div>
+  <!-- 📈 Gráficas -->
+  <div *ngIf="!isLoading" class="chart-box">
+    <h4 *ngIf="activeTab === 'usuario'">Frecuencia por Responsable</h4>
+    <canvas
+      *ngIf="activeTab === 'usuario'"
+      baseChart
+      [data]="userUsageChart.data"
+      [type]="userUsageChart.type"
+      [options]="userUsageChart.options"
+    ></canvas>
 
-  <!-- Tabla -->
-  <div class="table-panel">
-    <h3 class="section-title">📄 Lista de Sesiones</h3>
-    <div class="table-section">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Laboratorio</th>
-            <th>Equipo</th>
-            <th>Fecha</th>
-            <th>Hora</th>
-            <th>Responsable</th>
-            <th>Correo</th>
-            <th>Verificado</th>
-            <th>Estado para uso</th>
-            <th>Funciones</th>
-            <th>Minutos de uso</th>
-            <th>Muestras</th>
-            <th>Observaciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let s of filteredSessions">
-            <td data-label="ID">{{ s.id }}</td>
-            <td data-label="Laboratorio">{{ s.lab }}</td>
-            <td data-label="Equipo">{{ s.equipment }}</td>
-            <td data-label="Fecha">{{ s.date }}</td>
-            <td data-label="Hora">{{ s.time }}</td>
-            <td data-label="Responsable">{{ s.responsible }}</td>
-            <td data-label="Correo">{{ s.email }}</td>
-            <td data-label="Verificado">{{ s.verifiedStatus }}</td>
-            <td data-label="Estado para uso">{{ s.usageStatus }}</td>
-            <td data-label="Funciones">{{ s.functionsUsed?.join(", ") }}</td>
-            <td data-label="Minutos de uso">{{ s.usageDuration }}</td>
-            <td data-label="Muestras">{{ s.sampleCount }}</td>
-            <td data-label="Observaciones">{{ s.observations }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+    <h4 *ngIf="activeTab === 'estado'">Distribución de Estado de Uso</h4>
+    <canvas
+      *ngIf="activeTab === 'estado'"
+      baseChart
+      [data]="{ labels: usageLabels, datasets: [{ data: usageData }] }"
+      [type]="'pie'"
+      [options]="{ responsive: true, maintainAspectRatio: false }"
+    ></canvas>
 
-  <!-- 📊 Gráficas -->
-  <div class="chart-panel">
-    <h3 class="section-title">📈 Visualizaciones Gráficas</h3>
+    <h4 *ngIf="activeTab === 'historico'">Histórico de Inicio de Sesiones</h4>
+    <canvas
+      *ngIf="activeTab === 'historico'"
+      baseChart
+      [data]="sessionTimelineChart.data"
+      [type]="sessionTimelineChart.type"
+      [options]="sessionTimelineChart.options"
+    ></canvas>
 
-    <div class="chart-tabs">
-      <div class="tab-buttons">
-        <button
-          [class.active]="activeTab === 'lab'"
-          (click)="activeTab = 'lab'"
-        >
-          Laboratorio
-        </button>
-        <button
-          [class.active]="activeTab === 'equipment'"
-          (click)="activeTab = 'equipment'"
-        >
-          Equipo
-        </button>
-        <button
-          [class.active]="activeTab === 'date'"
-          (click)="activeTab = 'date'"
-        >
-          Fecha
-        </button>
-        <button
-          [class.active]="activeTab === 'time'"
-          (click)="activeTab = 'time'"
-        >
-          Hora
-        </button>
-        <button
-          [class.active]="activeTab === 'responsible'"
-          (click)="activeTab = 'responsible'"
-        >
-          Responsable
-        </button>
-        <button
-          [class.active]="activeTab === 'verified'"
-          (click)="activeTab = 'verified'"
-        >
-          Verificado
-        </button>
-        <button
-          [class.active]="activeTab === 'usageStatus'"
-          (click)="activeTab = 'usageStatus'"
-        >
-          Estado para uso
-        </button>
-        <button
-          [class.active]="activeTab === 'functions'"
-          (click)="activeTab = 'functions'"
-        >
-          Funciones Usadas
-        </button>
-        <button
-          [class.active]="activeTab === 'usage'"
-          (click)="activeTab = 'usage'"
-        >
-          Tiempo de Uso
-        </button>
-        <button
-          [class.active]="activeTab === 'samples'"
-          (click)="activeTab = 'samples'"
-        >
-          Muestras
-        </button>
-      </div>
+    <h4 *ngIf="activeTab === 'hora'">Sesiones por Hora del Día</h4>
+    <canvas
+      *ngIf="activeTab === 'hora'"
+      baseChart
+      [data]="sessionsByHourChart.data"
+      [type]="sessionsByHourChart.type"
+      [options]="sessionsByHourChart.options"
+    ></canvas>
 
-      <div class="tab-content" *ngIf="isBrowser">
-        <canvas
-          *ngIf="activeTab === 'date'"
-          baseChart
-          [data]="dateChart"
-          [type]="'bar'"
-          class="chart"
-        ></canvas>
-        <canvas
-          *ngIf="activeTab === 'time'"
-          baseChart
-          [data]="timeChart"
-          [type]="'bar'"
-          class="chart"
-        ></canvas>
-        <canvas
-          *ngIf="activeTab === 'verified'"
-          baseChart
-          [data]="verifiedChart"
-          [type]="'pie'"
-          class="chart"
-        ></canvas>
-        <canvas
-          *ngIf="activeTab === 'usage'"
-          baseChart
-          [data]="usageChart"
-          [type]="'bar'"
-          class="chart"
-        ></canvas>
-        <canvas
-          *ngIf="activeTab === 'samples'"
-          baseChart
-          [data]="samplesChart"
-          [type]="'bar'"
-          class="chart"
-        ></canvas>
-        <canvas
-          *ngIf="activeTab === 'functions'"
-          baseChart
-          [data]="functionsChart"
-          [type]="'bar'"
-          class="chart"
-        ></canvas>
-        <canvas
-          *ngIf="activeTab === 'lab'"
-          baseChart
-          [data]="labChart"
-          [type]="'bar'"
-          class="chart"
-        ></canvas>
-        <canvas
-          *ngIf="activeTab === 'equipment'"
-          baseChart
-          [data]="equipmentChart"
-          [type]="'bar'"
-          class="chart"
-        ></canvas>
-        <canvas
-          *ngIf="activeTab === 'usageStatus'"
-          baseChart
-          [data]="usageStatusChart"
-          [type]="'pie'"
-          class="chart"
-        ></canvas>
-        <canvas
-          *ngIf="activeTab === 'responsible'"
-          baseChart
-          [data]="responsibleChart"
-          [type]="'bar'"
-          class="chart"
-        ></canvas>
-      </div>
-    </div>
+    <h4 *ngIf="activeTab === 'laboratorio'">Frecuencia por Laboratorio</h4>
+    <canvas
+      *ngIf="activeTab === 'laboratorio'"
+      baseChart
+      [data]="labUsageChart.data"
+      [type]="labUsageChart.type"
+      [options]="labUsageChart.options"
+    ></canvas>
+
+    <h4 *ngIf="activeTab === 'equipo'">Frecuencia por Equipo</h4>
+    <canvas
+      *ngIf="activeTab === 'equipo'"
+      baseChart
+      [data]="equipmentUsageChart.data"
+      [type]="equipmentUsageChart.type"
+      [options]="equipmentUsageChart.options"
+    ></canvas>
+
+    <h4 *ngIf="activeTab === 'funcion'">Frecuencia por Función</h4>
+    <canvas
+      *ngIf="activeTab === 'funcion'"
+      baseChart
+      [data]="functionUsageChart.data"
+      [type]="functionUsageChart.type"
+      [options]="functionUsageChart.options"
+    ></canvas>
+    <h4 *ngIf="activeTab === 'verificado'">
+      Distribución de Estado Verificado
+    </h4>
+    <canvas
+      *ngIf="activeTab === 'verificado'"
+      baseChart
+      [data]="verifiedStatusChart.data"
+      [type]="verifiedStatusChart.type"
+      [options]="verifiedStatusChart.options"
+    ></canvas>
+    <h4 *ngIf="activeTab === 'paraUso'">Distribución de Estado Para Uso</h4>
+    <canvas
+      *ngIf="activeTab === 'paraUso'"
+      baseChart
+      [data]="usageStatusChart.data"
+      [type]="usageStatusChart.type"
+      [options]="usageStatusChart.options"
+    ></canvas>
+    <h4 *ngIf="activeTab === 'muestras'">
+      Distribución por Cantidad de Muestras
+    </h4>
+    <canvas
+      *ngIf="activeTab === 'muestras'"
+      baseChart
+      [data]="samplesChart.data"
+      [type]="samplesChart.type"
+      [options]="samplesChart.options"
+    ></canvas>
   </div>
 </div>
