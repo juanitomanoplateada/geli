@@ -102,22 +102,24 @@ export class UserService {
   private formatDate(dateString: string | null | undefined): string {
     if (!dateString) return '-'; // Si la fecha es vacía o nula, devolver "-"
 
-    // Verificar si el formato es correcto
     const parts = dateString.split('-');
     if (parts.length !== 3) {
-      console.error(`Fecha malformada: ${dateString}`); // Añadir log para depuración
-      return '-'; // Si no es una fecha válida, devolver "-"
+      console.error(`Fecha malformada: ${dateString}`);
+      return '-';
     }
 
     const [year, month, day] = parts;
 
-    // Verificar que todos los valores sean números válidos
     if (isNaN(+year) || isNaN(+month) || isNaN(+day)) {
-      console.error(`Fecha con valores inválidos: ${dateString}`); // Log de depuración
-      return '-'; // Devolver "-" si los valores no son correctos
+      console.error(`Fecha con valores inválidos: ${dateString}`);
+      return '-';
     }
 
-    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`; // Formateo de la fecha
+    // Normaliza a formato YYYY-MM-DD (por si viene como YYYY-M-D, etc.)
+    return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(
+      2,
+      '0'
+    )}`;
   }
 
   getUserByEmail(email: string): Observable<UserRecordResponse> {

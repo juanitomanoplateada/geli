@@ -168,8 +168,6 @@ export class UpdateUserComponent implements OnInit {
         : { positionName: selectedName }),
     };
 
-    console.log(payload);
-
     this.userService.updateUser(this.userId, payload).subscribe({
       next: (updated) => {
         this.feedbackSuccess = true;

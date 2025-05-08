@@ -15,7 +15,13 @@ export class UppercaseNospaceDirective {
     const end = input.selectionEnd;
 
     const originalValue = input.value;
-    const transformedValue = originalValue.toUpperCase().replace(/\s/g, '');
+
+    // Transformar: a mayúsculas, sin espacios, solo alfanuméricos con tildes, - y .
+    const transformedValue = originalValue
+      .toUpperCase()
+      .replace(/\s/g, '') // eliminar espacios
+      .replace(/[^A-ZÁÉÍÓÚÜÑ0-9\-.]/g, '') // permitir letras tildadas, ñ, números, guion y punto
+      .slice(0, 250); // limitar longitud
 
     if (originalValue !== transformedValue) {
       input.value = transformedValue;
@@ -24,7 +30,6 @@ export class UppercaseNospaceDirective {
         input.setSelectionRange(start, end);
       }
 
-      // Disparar evento para actualizar el FormControl
       const newEvent = new Event('input', { bubbles: true });
       input.dispatchEvent(newEvent);
     }

@@ -19,7 +19,7 @@ interface UserRecord {
   role: string;
   status: string;
   position?: string;
-  updatedAt: string;
+  creationDate: string;
 }
 
 interface ColumnConfig {
@@ -38,8 +38,8 @@ interface Filters {
   role: '' | 'Personal Autorizado' | 'Analista de Calidad';
   status: '' | 'Activo' | 'Inactivo';
   positionId?: number | null;
-  modificationDateFrom: string;
-  modificationDateTo: string;
+  creationDateFrom: string;
+  creationDateTo: string;
 }
 
 interface PositionDTO {
@@ -66,8 +66,8 @@ export class SearchUserComponent implements OnInit {
     role: '',
     status: '',
     positionId: null,
-    modificationDateFrom: '',
-    modificationDateTo: '',
+    creationDateFrom: '',
+    creationDateTo: '',
   };
 
   users: UserRecord[] = [];
@@ -89,7 +89,7 @@ export class SearchUserComponent implements OnInit {
     { key: 'role', label: 'Rol', type: 'text' },
     { key: 'position', label: 'Cargo', type: 'text' },
     { key: 'status', label: 'Estado', type: 'status' },
-    { key: 'updatedAt', label: 'Fecha de modificación', type: 'text' },
+    { key: 'creationDate', label: 'Fecha de Creación', type: 'text' },
     { key: 'actions', label: 'Acciones', type: 'actions' },
   ];
 
@@ -99,8 +99,8 @@ export class SearchUserComponent implements OnInit {
     { key: 'role', label: 'Rol' },
     { key: 'positionId', label: 'Cargo' },
     { key: 'status', label: 'Estado' },
-    { key: 'modificationDateFrom', label: 'Fecha de modificación desde' },
-    { key: 'modificationDateTo', label: 'Fecha de modificación hasta' },
+    { key: 'creationDateFrom', label: 'Fecha de creación desde' },
+    { key: 'creationDateTo', label: 'Fecha de creación hasta' },
   ];
 
   activeFilterKeys = this.availableFilterKeys.map((f) => f.key);
@@ -151,14 +151,14 @@ export class SearchUserComponent implements OnInit {
             allowEmptyOption: 'Todos',
           },
           {
-            key: 'modificationDateFrom',
-            label: 'Fecha de modificación desde',
+            key: 'creationDateFrom',
+            label: 'Fecha de creación desde',
             type: 'date',
             placeholder: 'dd/mm/yyyy',
           },
           {
-            key: 'modificationDateTo',
-            label: 'Fecha de modificación hasta',
+            key: 'creationDateTo',
+            label: 'Fecha de creación hasta',
             type: 'date',
             placeholder: 'dd/mm/yyyy',
           },
@@ -189,10 +189,9 @@ export class SearchUserComponent implements OnInit {
 
   performSearch(): void {
     if (
-      (this.filters.modificationDateFrom &&
-        this.filters.modificationDateFrom.length < 10) ||
-      (this.filters.modificationDateTo &&
-        this.filters.modificationDateTo.length < 10)
+      (this.filters.creationDateFrom &&
+        this.filters.creationDateFrom.length < 10) ||
+      (this.filters.creationDateTo && this.filters.creationDateTo.length < 10)
     ) {
       this.loading = false;
       return;
@@ -222,9 +221,8 @@ export class SearchUserComponent implements OnInit {
         typeof this.filters.positionId === 'number'
           ? this.filters.positionId
           : undefined,
-      modificationStatusDateFrom:
-        this.filters.modificationDateFrom || undefined,
-      modificationStatusDateTo: this.filters.modificationDateTo || undefined,
+      creationDateFrom: this.filters.creationDateFrom || undefined,
+      creationDateTo: this.filters.creationDateTo || undefined,
     };
 
     Object.keys(payload).forEach(
@@ -249,7 +247,7 @@ export class SearchUserComponent implements OnInit {
           role: this.mapRole(u.role),
           status: u.enabledStatus ? 'Activo' : 'Inactivo',
           position: u.position?.name || '—',
-          updatedAt: u.modificationStatusDate,
+          creationDate: u.creationDate,
         }));
 
         this.noResults = res.length === 0;
@@ -264,8 +262,8 @@ export class SearchUserComponent implements OnInit {
       role: '',
       status: '',
       positionId: null,
-      modificationDateFrom: '',
-      modificationDateTo: '',
+      creationDateFrom: '',
+      creationDateTo: '',
     };
     this.activeFilterKeys = this.availableFilterKeys.map((f) => f.key);
     this.performSearch();
@@ -290,10 +288,10 @@ export class SearchUserComponent implements OnInit {
       )?.name;
       if (cargo) parts.push(`cargo "${cargo}"`);
     }
-    if (this.lastFilters.modificationDateFrom)
-      parts.push(`fecha desde "${this.lastFilters.modificationDateFrom}"`);
-    if (this.lastFilters.modificationDateTo)
-      parts.push(`fecha hasta "${this.lastFilters.modificationDateTo}"`);
+    if (this.lastFilters.creationDateFrom)
+      parts.push(`fecha desde "${this.lastFilters.creationDateFrom}"`);
+    if (this.lastFilters.creationDateTo)
+      parts.push(`fecha hasta "${this.lastFilters.creationDateTo}"`);
 
     return parts.length
       ? `No se encontraron usuarios con ${parts.join(', ')}.`
