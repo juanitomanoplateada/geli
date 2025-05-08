@@ -171,11 +171,43 @@ export class RegisterSessionComponent implements AfterViewInit {
                 remarks: use.observations ?? '',
               },
 
-              availableFunctions: use.equipment.functions,
+              availableFunctions: this.ensureNAFunction(
+                use.equipment.functions
+              ),
             };
           });
         });
       });
+  }
+
+  private ensureNAFunction(functions: any[]): any[] {
+    const normalized = functions.map((f) => ({
+      ...f,
+      functionName: f.functionName.trim(),
+    }));
+
+    const hasOnlyNA =
+      normalized.length === 1 &&
+      normalized[0].functionName.toUpperCase() === 'N/A';
+
+    if (hasOnlyNA) {
+      return normalized; // ✅ dejar solo N/A si es la única
+    }
+
+    const hasNA = normalized.some(
+      (f) => f.functionName.toUpperCase() === 'N/A'
+    );
+
+    const cleaned = normalized.filter(
+      (f) => f.functionName.toUpperCase() !== 'N/A'
+    );
+
+    // ✅ Si no tenía N/A, lo agregamos
+    if (!hasNA) {
+      cleaned.unshift({ id: -1, functionName: 'N/A' });
+    }
+
+    return cleaned;
   }
 
   onSelectLab(labId: string) {

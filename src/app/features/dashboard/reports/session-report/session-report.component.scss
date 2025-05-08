@@ -1,22 +1,60 @@
 .session-report-container {
-  padding: 0 1.5rem;
   max-width: 1750px;
-  margin: 0 auto;
+  margin: auto;
   font-family: Arial, sans-serif;
 
-  // 🎯 Filtros
-  app-search-filter-only {
+  h1 {
+    font-size: 1.6rem;
+    text-align: center;
     margin-bottom: 2rem;
+  }
+
+  // ✅ Secciones separadas visualmente
+  .report-section {
+    margin-bottom: 3rem;
+    padding: 2rem;
+    border-radius: 12px;
+    background-color: #fafafa;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      text-align: left;
+      border-left: 4px solid #007bff;
+      padding-left: 0.8rem;
+      color: #333;
+    }
+
+    @media (max-width: 768px) {
+      padding: 1.2rem;
+
+      h2 {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  .filters-section {
+    background-color: #f0f8ff;
+  }
+
+  .stats-section {
+    background-color: #fffef5;
+  }
+
+  .charts-section {
+    background-color: #f9f9f9;
   }
 
   // ⏳ Estado de carga
   .loading-state {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 1rem;
     font-style: italic;
     color: #666;
-    justify-content: center;
 
     .spinner {
       width: 20px;
@@ -38,12 +76,13 @@
   .stats-boxes {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 1.5rem;
     margin-bottom: 2rem;
 
     .stat-box {
-      flex: 1;
-      min-width: 220px;
+      flex: 1 1 250px;
+      max-width: 300px;
       padding: 1.2rem;
       border-radius: 8px;
       text-align: center;
@@ -90,6 +129,7 @@
       background-color: #e0e0e0;
       cursor: pointer;
       transition: background-color 0.3s;
+      white-space: nowrap;
 
       &.active {
         background-color: #007bff;
@@ -106,24 +146,97 @@
   .chart-box {
     width: 100%;
     max-width: 1500px;
-    height: 50vh;
+    height: auto;
     min-height: 400px;
     margin: 0 auto 3rem auto;
     padding: 1.5rem;
     background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    text-align: center;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding-bottom: 3rem;
 
     canvas {
-      flex-grow: 1;
       width: 100% !important;
-      height: 100% !important;
+      height: auto !important;
+      max-height: 450px;
       object-fit: contain;
+    }
+
+    @media (max-width: 1024px) {
+      padding: 1rem;
+
+      canvas {
+        max-height: 400px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      padding: 0.8rem;
+
+      canvas {
+        max-height: 350px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      padding: 0.5rem;
+
+      canvas {
+        max-height: 300px;
+      }
+    }
+  }
+
+  // 📤 Botones de exportación
+  .export-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      color: white;
+      transition: background-color 0.2s ease;
+
+      &.excel {
+        background-color: #1d6f42; // Verde Excel
+        &:hover {
+          background-color: #145b35;
+        }
+      }
+
+      &.csv {
+        background-color: #f0ad4e; // Naranja CSV
+        color: black;
+        &:hover {
+          background-color: #ec9a22;
+        }
+      }
+
+      &.pdf {
+        background-color: #d9534f; // Rojo PDF
+        &:hover {
+          background-color: #c9302c;
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      justify-content: center;
+      flex-wrap: wrap;
+
+      button {
+        width: 100%;
+        max-width: 150px;
+        text-align: center;
+      }
     }
   }
 
@@ -135,16 +248,36 @@
     padding: 3rem;
   }
 
-  // 📱 Responsive adicional
-  @media (max-width: 1024px) {
-    .chart-box {
-      height: auto;
-      min-height: 300px;
-      padding: 1rem;
+  // 🖨️ PDF friendly
+  #pdfReportContent {
+    background-color: white;
+    color: black;
+    padding: 2rem;
+    font-family: "Arial", sans-serif;
+
+    h1,
+    h2 {
+      text-align: center;
+      margin-bottom: 1rem;
     }
 
     .stats-boxes {
+      display: flex;
+      justify-content: space-between;
+      margin: 1rem 0;
+    }
+
+    .chart-box {
+      page-break-inside: avoid;
+      margin-bottom: 2rem;
+    }
+  }
+
+  // 📱 Responsive tablets
+  @media (max-width: 1024px) {
+    .stats-boxes {
       flex-direction: column;
+      align-items: center;
     }
 
     .tab-buttons {
@@ -158,11 +291,17 @@
     }
   }
 
+  // 📱 Responsive móviles
   @media (max-width: 480px) {
     padding: 0.5rem;
 
+    h1 {
+      font-size: 1.3rem;
+    }
+
     .chart-box {
       padding: 1rem;
+      min-height: 250px;
     }
 
     .stats-boxes .stat-box {

@@ -39,9 +39,7 @@
           <h3>Lista de sesiones</h3>
           <button (click)="sortAscending = !sortAscending" class="sort-button">
             Ordenar por Sesiones:
-            {{
-              sortAscending ? "Más antiguas" : "Más recientes"
-            }}
+            {{ sortAscending ? "Más antiguas" : "Más recientes" }}
           </button>
         </div>
 
@@ -121,13 +119,7 @@
           </div>
 
           <div><strong>Tiempo de uso:</strong></div>
-          <div>
-            {{
-              selectedSession.inProgress
-                ? "⏳ En curso"
-                : selectedSession.usageDuration
-            }}
-          </div>
+          <div>{{ selectedSession.usageDuration }}</div>
 
           <div><strong>Cantidad de muestras analizadas:</strong></div>
           <div>

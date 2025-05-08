@@ -3,7 +3,14 @@ import {
   EquipmentUseResponse,
   EquipmentUseService,
 } from './../../../../core/session/services/equipment-use.service';
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  QueryList,
+  ViewChild,
+  ViewChildren,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SearchFilterOnlyComponent } from '../../../../shared/components/search-filter-only/search-filter-only.component';
@@ -22,6 +29,10 @@ import { Laboratory } from '../../../../core/laboratory/models/laboratory.model'
 import { EquipmentDto } from '../../../../core/equipment/models/equipment-response.dto';
 import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-session-report',
@@ -200,6 +211,17 @@ export class SessionReportComponent implements OnInit {
   usageStatusData = [0, 0];
   sampleRangeLabels: string[] = ['0', '1–5', '6–10', '11–20', '21+'];
   sampleRangeData: number[] = [0, 0, 0, 0, 0];
+
+  userUsageChartConfig!: ChartConfiguration<'bar'>;
+  labUsageChartConfig!: ChartConfiguration<'bar'>;
+  equipmentUsageChartConfig!: ChartConfiguration<'bar'>;
+  functionUsageChartConfig!: ChartConfiguration<'bar'>;
+  samplesChartConfig!: ChartConfiguration<'bar'>;
+  sessionsByHourChartConfig!: ChartConfiguration<'bar'>;
+  sessionTimelineChartConfig!: ChartConfiguration<'line'>;
+  sessionStatusChartConfig!: ChartConfiguration<'pie'>;
+  verifiedStatusChartConfig!: ChartConfiguration<'pie'>;
+  usageStatusChartConfig!: ChartConfiguration<'pie'>;
 
   constructor(
     private labService: LaboratoryService,
@@ -445,26 +467,269 @@ export class SessionReportComponent implements OnInit {
     this.userData = [...userMap.values()];
     this.verifiedData = [verified, notVerified];
     this.usageStatusData = [available, unavailable];
-  }
 
-  get sessionTimelineChart(): ChartConfiguration<'line'> {
+    this.userUsageChartConfig = {
+      type: 'bar',
+      data: {
+        labels: this.userLabels.length ? this.userLabels : ['Sin datos'],
+        datasets: [
+          {
+            data: this.userData.length ? this.userData : [0],
+            label: 'Sesiones',
+            backgroundColor: '#dc3545',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+          title: {
+            display: true,
+            text: 'Frecuencia de Uso por Responsable',
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            title: {
+              display: true,
+              text: 'Cantidad de Sesiones',
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Responsables',
+            },
+          },
+        },
+      },
+    };
+
+    this.labUsageChartConfig = {
+      type: 'bar',
+      data: {
+        labels: this.laboratoryLabels.length
+          ? this.laboratoryLabels
+          : ['Sin datos'],
+        datasets: [
+          {
+            data: this.laboratoryData.length ? this.laboratoryData : [0],
+            label: 'Sesiones',
+            backgroundColor: '#28a745',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+          title: {
+            display: true,
+            text: 'Frecuencia de Uso por Laboratorio',
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            title: { display: true, text: 'Cantidad de Sesiones' },
+          },
+          y: {
+            title: { display: true, text: 'Laboratorios' },
+          },
+        },
+      },
+    };
+
+    this.equipmentUsageChartConfig = {
+      type: 'bar',
+      data: {
+        labels: this.equipmentLabels.length
+          ? this.equipmentLabels
+          : ['Sin datos'],
+        datasets: [
+          {
+            data: this.equipmentData.length ? this.equipmentData : [0],
+            label: 'Sesiones',
+            backgroundColor: '#ffc107',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+          title: {
+            display: true,
+            text: 'Frecuencia de Uso por Equipo',
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            title: {
+              display: true,
+              text: 'Cantidad de Sesiones',
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Equipos',
+            },
+          },
+        },
+      },
+    };
+
+    this.functionUsageChartConfig = {
+      type: 'bar',
+      data: {
+        labels: this.functionLabels.length
+          ? this.functionLabels
+          : ['Sin datos'],
+        datasets: [
+          {
+            data: this.functionData.length ? this.functionData : [0],
+            label: 'Sesiones',
+            backgroundColor: '#17a2b8',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+          title: {
+            display: true,
+            text: 'Frecuencia de Uso por Función',
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            title: {
+              display: true,
+              text: 'Cantidad de Sesiones',
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Funciones Utilizadas',
+            },
+          },
+        },
+      },
+    };
+
+    this.samplesChartConfig = {
+      type: 'bar',
+      data: {
+        labels: this.sampleRangeLabels,
+        datasets: [
+          {
+            data: this.sampleRangeData,
+            label: 'Sesiones',
+            backgroundColor: '#20c997',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Distribución por Cantidad de Muestras',
+          },
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Rango de Muestras',
+            },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            title: {
+              display: true,
+              text: 'Cantidad de Sesiones',
+            },
+          },
+        },
+      },
+    };
+
+    this.sessionsByHourChartConfig = {
+      type: 'bar',
+      data: {
+        labels: this.sessionHourLabels.length
+          ? this.sessionHourLabels
+          : ['Sin datos'],
+        datasets: [
+          {
+            data: this.sessionHourData.length ? this.sessionHourData : [0],
+            label: 'Sesiones',
+            backgroundColor: '#6f42c1',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Sesiones por Hora del Día',
+          },
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Hora',
+            },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            title: {
+              display: true,
+              text: 'Cantidad de Sesiones',
+            },
+          },
+        },
+      },
+    };
+
     const dateCounts = new Map<string, number>();
-
     for (const date of this.sessionStartDates) {
       const formatted = date.toISOString().split('T')[0];
       dateCounts.set(formatted, (dateCounts.get(formatted) || 0) + 1);
     }
 
-    const labels = Array.from(dateCounts.keys()).sort();
-    const data = labels.map((label) => dateCounts.get(label)!);
+    const timelineLabels = Array.from(dateCounts.keys()).sort();
+    const timelineData = timelineLabels.map((label) => dateCounts.get(label)!);
 
-    return {
+    this.sessionTimelineChartConfig = {
       type: 'line',
       data: {
-        labels: labels.length ? labels : ['Sin datos'],
+        labels: timelineLabels.length ? timelineLabels : ['Sin datos'],
         datasets: [
           {
-            data: data.length ? data : [0],
+            data: timelineData.length ? timelineData : [0],
             label: 'Sesiones',
             fill: false,
             tension: 0.3,
@@ -507,239 +772,38 @@ export class SessionReportComponent implements OnInit {
         },
       },
     };
-  }
 
-  get labUsageChart(): ChartConfiguration<'bar'> {
-    return {
-      type: 'bar',
-      data: {
-        labels: this.laboratoryLabels.length
-          ? this.laboratoryLabels
-          : ['Sin datos'],
-        datasets: [
-          {
-            data: this.laboratoryData.length ? this.laboratoryData : [0],
-            label: 'Sesiones',
-            backgroundColor: '#28a745',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: {
-          title: {
-            display: true,
-            text: 'Frecuencia de Uso por Laboratorio',
-          },
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: {
-              display: true,
-              text: 'Cantidad de Sesiones',
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Laboratorios',
-            },
-          },
-        },
-      },
-    };
-  }
-
-  get equipmentUsageChart(): ChartConfiguration<'bar'> {
-    return {
-      type: 'bar',
-      data: {
-        labels: this.equipmentLabels.length
-          ? this.equipmentLabels
-          : ['Sin datos'],
-        datasets: [
-          {
-            data: this.equipmentData.length ? this.equipmentData : [0],
-            label: 'Sesiones',
-            backgroundColor: '#ffc107',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: {
-          title: {
-            display: true,
-            text: 'Frecuencia de Uso por Equipo',
-          },
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: {
-              display: true,
-              text: 'Cantidad de Sesiones',
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Equipos',
-            },
-          },
-        },
-      },
-    };
-  }
-
-  get functionUsageChart(): ChartConfiguration<'bar'> {
-    return {
-      type: 'bar',
-      data: {
-        labels: this.functionLabels.length
-          ? this.functionLabels
-          : ['Sin datos'],
-        datasets: [
-          {
-            data: this.functionData.length ? this.functionData : [0],
-            label: 'Sesiones',
-            backgroundColor: '#17a2b8',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: {
-          title: {
-            display: true,
-            text: 'Frecuencia de Uso por Función',
-          },
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: {
-              display: true,
-              text: 'Cantidad de Sesiones',
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Funciones Utilizadas',
-            },
-          },
-        },
-      },
-    };
-  }
-
-  get sessionsByHourChart(): ChartConfiguration<'bar'> {
-    return {
-      type: 'bar',
-      data: {
-        labels: this.sessionHourLabels.length
-          ? this.sessionHourLabels
-          : ['Sin datos'],
-        datasets: [
-          {
-            data: this.sessionHourData.length ? this.sessionHourData : [0],
-            label: 'Sesiones',
-            backgroundColor: '#6f42c1',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Sesiones por Hora del Día',
-          },
-        },
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Hora',
-            },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: {
-              display: true,
-              text: 'Cantidad de Sesiones',
-            },
-          },
-        },
-      },
-    };
-  }
-
-  get userUsageChart(): ChartConfiguration<'bar'> {
-    return {
-      type: 'bar',
-      data: {
-        labels: this.userLabels.length ? this.userLabels : ['Sin datos'],
-        datasets: [
-          {
-            data: this.userData.length ? this.userData : [0],
-            label: 'Sesiones',
-            backgroundColor: '#dc3545',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: {
-          title: {
-            display: true,
-            text: 'Frecuencia de Uso por Responsable',
-          },
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: {
-              display: true,
-              text: 'Cantidad de Sesiones',
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Responsables',
-            },
-          },
-        },
-      },
-    };
-  }
-
-  get verifiedStatusChart(): ChartConfiguration<'pie'> {
-    return {
+    this.sessionStatusChartConfig = {
       type: 'pie',
       data: {
-        labels: this.verifiedLabels,
+        labels: ['Finalizadas', 'En Progreso'],
+        datasets: [
+          {
+            data: this.usageData,
+            backgroundColor: ['#20c997', '#ffc107'],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Distribución de Estado de la Sesión',
+          },
+        },
+      },
+    };
+
+    this.verifiedStatusChartConfig = {
+      type: 'pie',
+      data: {
+        labels: ['SI', 'NO'],
         datasets: [
           {
             data: this.verifiedData,
-            backgroundColor: ['#20c997', '#adb5bd'],
+            backgroundColor: ['#0d6efd', '#adb5bd'],
           },
         ],
       },
@@ -754,17 +818,15 @@ export class SessionReportComponent implements OnInit {
         },
       },
     };
-  }
 
-  get usageStatusChart(): ChartConfiguration<'pie'> {
-    return {
+    this.usageStatusChartConfig = {
       type: 'pie',
       data: {
-        labels: this.usageStatusLabels,
+        labels: ['SI', 'NO'],
         datasets: [
           {
             data: this.usageStatusData,
-            backgroundColor: ['#007bff', '#6c757d'],
+            backgroundColor: ['#20c997', '#adb5bd'],
           },
         ],
       },
@@ -780,45 +842,127 @@ export class SessionReportComponent implements OnInit {
       },
     };
   }
-  get samplesChart(): ChartConfiguration<'bar'> {
-    return {
-      type: 'bar',
-      data: {
-        labels: this.sampleRangeLabels,
-        datasets: [
-          {
-            data: this.sampleRangeData,
-            label: 'Sesiones',
-            backgroundColor: '#20c997',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Distribución por Cantidad de Muestras',
-          },
-        },
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Rango de Muestras',
-            },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: {
-              display: true,
-              text: 'Cantidad de Sesiones',
-            },
-          },
-        },
-      },
-    };
+
+  exportToExcel(): void {
+    const data = this.mapSessionRecordsToExport();
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sesiones');
+
+    const excelBuffer: any = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+
+    const blob = new Blob([excelBuffer], {
+      type: 'application/octet-stream',
+    });
+
+    const fileName = `reporte_sesiones_${new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace(/[:T]/g, '-')}.xlsx`;
+
+    saveAs(blob, fileName);
+  }
+
+  exportToCSV(): void {
+    const data = this.mapSessionRecordsToExport();
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const csv = XLSX.utils.sheet_to_csv(worksheet);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+    const fileName = `reporte_sesiones_${new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace(/[:T]/g, '-')}.csv`;
+
+    saveAs(blob, fileName);
+  }
+
+  private mapSessionRecordsToExport(): any[] {
+    return this.sessionRecords.map((s) => {
+      const [startDate, startTime] = s.startUseTime.split('T');
+      const [endDate, endTime] = s.endUseTime
+        ? s.endUseTime.split('T')
+        : ['N/A', 'N/A'];
+
+      return {
+        ID: s.id,
+        Responsable: `${s.user.firstName} ${s.user.lastName}`,
+        Correo: s.user.email,
+        Identificación: s.user.identification,
+        'Código de inventario': s.equipment.inventoryNumber,
+        Equipo: s.equipment.equipmentName,
+        Laboratorio: s.equipment.laboratory.laboratoryName,
+        Ubicación: s.equipment.laboratory.location.locationName,
+        'Fecha de inicio': startDate,
+        'Hora de inicio': startTime,
+        'Fecha de fin': endDate,
+        'Hora de fin': endTime,
+        'Tiempo de uso': this.getUsageDuration(s.startUseTime, s.endUseTime),
+        'Sesión activa': s.isInUse ? 'Sí' : 'No',
+        Verificado: s.isVerified ? 'Sí' : 'No',
+        'Para uso': s.isAvailable ? 'Sí' : 'No',
+        'Cantidad de muestras': s.samplesNumber ?? 0,
+        'Funciones usadas': s.usedFunctions
+          .map((f) => f.functionName)
+          .join(', '),
+        Observaciones: s.observations ?? '',
+      };
+    });
+  }
+
+  private getUsageDuration(start: string, end: string | null): string {
+    if (!start || !end) return 'En curso';
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffMs = endDate.getTime() - startDate.getTime();
+
+    if (isNaN(diffMs) || diffMs < 0) return 'Inválido';
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const pad = (n: number): string => n.toString().padStart(2, '0');
+
+    if (days > 0) {
+      return `${days}d ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    }
+
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  }
+
+  @ViewChild('pdfReportContent', { static: false })
+  pdfReportContent!: ElementRef;
+
+  exportToPDF(): void {
+    const element = this.pdfReportContent.nativeElement;
+
+    html2canvas(element, {
+      scale: 2, // 🔍 Alta resolución
+      scrollY: -window.scrollY,
+      useCORS: true,
+    }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = 210;
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+      const fileName = `informe_sesiones_${new Date()
+        .toISOString()
+        .slice(0, 19)
+        .replace(/[:T]/g, '-')}.pdf`;
+
+      pdf.save(fileName);
+    });
   }
 }
