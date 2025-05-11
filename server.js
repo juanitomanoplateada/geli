@@ -4,8 +4,8 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// ⚠️ Asegúrate de que esta ruta coincida con donde Angular deja el `index.html`
-const DIST_FOLDER = path.join(__dirname, "dist/geli/browser");
+// 🟢 Ruta corregida: sin `/browser`
+const DIST_FOLDER = path.join(__dirname, "dist/geli");
 
 app.use(express.static(DIST_FOLDER));
 
