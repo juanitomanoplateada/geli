@@ -1,73 +1,62 @@
-GELI - Gestor de Equipos de Laboratorio Institucional
-GELI es un sistema integral de gestión de equipos de laboratorio, diseñado para registrar, monitorear y reportar el uso de equipos dentro de entornos institucionales. Proporciona un control estructurado de sesiones de uso, administración de usuarios y equipos, y generación de informes, todo ello con controles de acceso basados en roles.
+# 🚀 GELI - Gestor de Equipos de Laboratorio Institucional
 
-🚀 Características Principales
-Gestión de Sesiones: Registro y seguimiento de sesiones de uso de equipos, con historial personal y general.
+**GELI** es un sistema integral de gestión para equipos de laboratorio universitario. Facilita el registro, seguimiento, asignación y reporte del uso de equipos, incluyendo módulos de control de sesiones, usuarios, laboratorios y funciones.
 
-Administración de Usuarios: Control de acceso basado en roles (QUALITY-ADMIN-USER y AUTHORIZED-USER), con funcionalidades para búsqueda y actualización de información de usuarios.
+---
 
-Gestión de Equipos: Registro de equipos, asignación de permisos y seguimiento de su uso.
+## 📌 Características Principales
 
-Gestión de Laboratorios: Registro y búsqueda de laboratorios dentro de la institución.
+- ✅ **Gestión de Sesiones**: Registro de uso, historial personal y trazabilidad completa.
+- 🧑‍🔧 **Administración de Usuarios**: Control por roles (QUALITY-ADMIN-USER / AUTHORIZED-USER).
+- 🧪 **Gestión de Equipos**: Registro, permisos de uso y trazabilidad.
+- 🏫 **Gestión de Laboratorios**: Alta y edición de laboratorios con ubicación y estado.
+- 📊 **Sistema de Reportes**: Filtros avanzados, gráficas, exportación a PDF, Excel y CSV.
+- 🧩 **Arquitectura Modular**: Implementado en Angular, con componentes standalone y SCSS.
 
-Sistema de Reportes: Generación de informes detallados sobre el uso de equipos y sesiones registradas.
+---
 
-Interfaz Modular: Aplicación web desarrollada con Angular, organizada en módulos funcionales para facilitar la navegación y el mantenimiento.
+## 🧱 Estructura del Proyecto
+src/
+├── app/
+│ ├── features/
+│ │ ├── auth/ # Login, recuperación de contraseña
+│ │ ├── dashboard/ # Vistas protegidas por rol
+│ │ ├── reports/ # Reportes PDF/Excel/CSV con gráficas
+│ │ └── session/ # Registro y control de sesiones
+│ ├── core/ # Servicios, modelos, guards
+│ └── shared/ # Componentes reutilizables
+└── styles.scss # Estilos globales del sistema
 
-🛠️ Tecnologías Utilizadas
-Frontend: Angular
 
-Control de Acceso: Implementación de RoleGuard para proteger rutas según el rol del usuario.
+---
 
-Estilos: SCSS para la personalización de la interfaz de usuario.
+## 👥 Roles de Usuario
 
-📦 Estructura del Proyecto
-src/app/features/auth/: Componentes relacionados con la autenticación y seguridad.
+| Rol                 | Descripción                                                       |
+|---------------------|-------------------------------------------------------------------|
+| `QUALITY-ADMIN-USER` | Acceso total: gestión de usuarios, equipos, reportes y sesiones. |
+| `AUTHORIZED-USER`    | Solo puede iniciar y cerrar sesiones, y ver su historial.        |
 
-src/app/features/dashboard/: Componentes del panel principal, incluyendo rutas y vistas de reportes.
+---
 
-src/styles.scss: Archivo principal de estilos.
+## 🛠️ Tecnologías Utilizadas
 
-🔐 Roles de Usuario
-QUALITY-ADMIN-USER: Acceso completo a todas las funcionalidades, incluyendo administración de usuarios, configuración de equipos y generación de reportes.
+- **Angular** 18+
+- **TypeScript**
+- **SCSS Modular**
+- **ng2-charts** para visualización de gráficas
+- **html2canvas + jsPDF** para exportación de reportes
+- **XLSX + FileSaver** para exportación a Excel/CSV
 
-AUTHORIZED-USER: Acceso limitado al registro de sesiones y visualización de su historial personal.
+---
 
-📄 Documentación
-Para una descripción detallada de cada subsistema, consulta las siguientes secciones:
+## 📦 Instalación
 
-Gestión de Sesiones
-
-Administración de Usuarios
-
-Gestión de Equipos
-
-Gestión de Laboratorios
-
-Sistema de Reportes
-
-📥 Instalación y Uso
-Clona el repositorio:
-
-bash
-Copiar
-Editar
+```bash
 git clone https://github.com/juanitomanoplateada/geli.git
-Navega al directorio del proyecto:
-
-bash
-Copiar
-Editar
 cd geli
-Instala las dependencias:
-
-bash
-Copiar
-Editar
 npm install
-Inicia la aplicación:
-
-bash
-Copiar
-Editar
 ng serve
+
+Consulta la documentación oficial:
+🔗 https://deepwiki.com/juanitomanoplateada/geli
