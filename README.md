@@ -28,6 +28,9 @@ src/
 │   ├── core/              # Servicios, modelos, guards, interceptors
 │   └── shared/            # Componentes y directivas reutilizables
 └── styles.scss            # Estilos globales del sistema
+```
+
+---
 
 ## 👥 Roles de Usuario
 
@@ -57,3 +60,36 @@ git clone https://github.com/juanitomanoplateada/geli.git
 cd geli
 npm install
 ng serve
+```
+
+La aplicación estará disponible en http://localhost:4200.
+
+---
+
+## 📚 Documentación Extendida
+
+🔗 https://deepwiki.com/juanitomanoplateada/geli
+
+---
+
+## 📤 Funciones de Exportación
+
+| Tipo de Reporte     | Formato                          | Descripción                                           |
+|---------------------|----------------------------------|-------------------------------------------------------|
+| Reporte de sesiones | 📁 Excel (.xlsx), 📄 CSV (.csv)   | Incluye filtros aplicados y columnas seleccionadas    |
+| Reporte PDF         | 📑 PDF                           | Gráficas y texto explicativo en alta resolución       |
+
+---
+
+## 🎯 Filtros Avanzados
+
+- Laboratorio  
+- Equipo o Patrón  
+- Funciones utilizadas  
+- Estado verificado / para uso  
+- Rango de fechas y horas  
+- Usuario responsable  
+- Tiempo de uso y muestras analizadas  
+
+---
+
