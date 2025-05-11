@@ -1,27 +1,73 @@
-# Geli
+GELI - Gestor de Equipos de Laboratorio Institucional
+GELI es un sistema integral de gestión de equipos de laboratorio, diseñado para registrar, monitorear y reportar el uso de equipos dentro de entornos institucionales. Proporciona un control estructurado de sesiones de uso, administración de usuarios y equipos, y generación de informes, todo ello con controles de acceso basados en roles.
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.0.1.
+🚀 Características Principales
+Gestión de Sesiones: Registro y seguimiento de sesiones de uso de equipos, con historial personal y general.
 
-## Development server
+Administración de Usuarios: Control de acceso basado en roles (QUALITY-ADMIN-USER y AUTHORIZED-USER), con funcionalidades para búsqueda y actualización de información de usuarios.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+Gestión de Equipos: Registro de equipos, asignación de permisos y seguimiento de su uso.
 
-## Code scaffolding
+Gestión de Laboratorios: Registro y búsqueda de laboratorios dentro de la institución.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Sistema de Reportes: Generación de informes detallados sobre el uso de equipos y sesiones registradas.
 
-## Build
+Interfaz Modular: Aplicación web desarrollada con Angular, organizada en módulos funcionales para facilitar la navegación y el mantenimiento.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+🛠️ Tecnologías Utilizadas
+Frontend: Angular
 
-## Running unit tests
+Control de Acceso: Implementación de RoleGuard para proteger rutas según el rol del usuario.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Estilos: SCSS para la personalización de la interfaz de usuario.
 
-## Running end-to-end tests
+📦 Estructura del Proyecto
+src/app/features/auth/: Componentes relacionados con la autenticación y seguridad.
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+src/app/features/dashboard/: Componentes del panel principal, incluyendo rutas y vistas de reportes.
 
-## Further help
+src/styles.scss: Archivo principal de estilos.
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+🔐 Roles de Usuario
+QUALITY-ADMIN-USER: Acceso completo a todas las funcionalidades, incluyendo administración de usuarios, configuración de equipos y generación de reportes.
+
+AUTHORIZED-USER: Acceso limitado al registro de sesiones y visualización de su historial personal.
+
+📄 Documentación
+Para una descripción detallada de cada subsistema, consulta las siguientes secciones:
+
+Gestión de Sesiones
+
+Administración de Usuarios
+
+Gestión de Equipos
+
+Gestión de Laboratorios
+
+Sistema de Reportes
+
+📥 Instalación y Uso
+Clona el repositorio:
+
+bash
+Copiar
+Editar
+git clone https://github.com/juanitomanoplateada/geli.git
+Navega al directorio del proyecto:
+
+bash
+Copiar
+Editar
+cd geli
+Instala las dependencias:
+
+bash
+Copiar
+Editar
+npm install
+Inicia la aplicación:
+
+bash
+Copiar
+Editar
+ng serve
