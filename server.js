@@ -2,10 +2,10 @@ const express = require("express");
 const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 10000;
 
-// ⚠️ Asegúrate de que coincida con el nombre real del subdirectorio generado en dist
-const DIST_FOLDER = path.join(__dirname, "dist/geli");
+// ⚠️ Asegúrate de que esta ruta coincida con donde Angular deja el `index.html`
+const DIST_FOLDER = path.join(__dirname, "dist/geli/browser");
 
 app.use(express.static(DIST_FOLDER));
 
