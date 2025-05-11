@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist/out-tsc/server",
+    "target": "ES2022",
+    "module": "CommonJS", // ← CAMBIA ESTO
+    "moduleResolution": "Node",
+    "types": []
+  },
+  "files": ["src/main.server.ts"],
+  "angularCompilerOptions": {
+    "entryModule": "./src/app/app.config.server#config"
+  }
+}

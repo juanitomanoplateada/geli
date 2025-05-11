@@ -3,11 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "serve:ssr:geli": "node dist/geli/server/server.mjs",
     "start": "node server.js",
-    "build": "npx ng build --configuration=production"
+    "build": "npx ng build --configuration=production",
+    "build:ssr": "ng build --configuration=production && ng run geli:server",
+    "serve:ssr": "node dist/geli/server/main.mjs"
   },
   "private": true,
   "dependencies": {
