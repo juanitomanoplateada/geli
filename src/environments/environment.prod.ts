@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://<tu-app>.onrender.com/api',
+  apiBaseUrl: 'https://geli-backend.onrender.com/api',
 };

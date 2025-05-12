@@ -8,7 +8,7 @@ import {
   EquipmentFilterDto,
 } from '../models/equipment-request.dto';
 import { EquipmentUpdateDto } from '../models/equipment-update.dto';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../../environments/environment.prod';
 
 @Injectable({
   providedIn: 'root',
