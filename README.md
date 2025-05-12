@@ -1,27 +1,95 @@
-# Geli
+# 🚀 GELI - Gestor de Equipos de Laboratorio Institucional
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.0.1.
+**GELI** es un sistema integral de gestión para equipos de laboratorio universitario. Facilita el registro, seguimiento, asignación y reporte del uso de equipos, incluyendo módulos de control de sesiones, usuarios, laboratorios y funciones.
 
-## Development server
+---
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## 📌 Características Principales
 
-## Code scaffolding
+- ✅ Gestión de Sesiones: Registro de uso, historial personal y trazabilidad completa.
+- 🧑‍🔧 Administración de Usuarios: Control por roles (`QUALITY-ADMIN-USER` / `AUTHORIZED-USER`).
+- 🧪 Gestión de Equipos: Registro, permisos de uso y trazabilidad detallada.
+- 🏫 Gestión de Laboratorios: Alta y edición de laboratorios con ubicación, estado y observaciones.
+- 📊 Sistema de Reportes: Filtros avanzados, gráficas dinámicas y exportación a PDF, Excel y CSV.
+- 🧩 Arquitectura Modular: Implementado en Angular con componentes standalone y SCSS personalizado.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+---
 
-## Build
+## 🧱 Estructura del Proyecto
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+```plaintext
+src/
+├── app/
+│   ├── features/
+│   │   ├── auth/          # Login, cambio y recuperación de contraseña
+│   │   ├── dashboard/     # Navegación principal por rol
+│   │   ├── reports/       # Reportes exportables con gráficas
+│   │   └── session/       # Registro y seguimiento de uso
+│   ├── core/              # Servicios, modelos, guards, interceptors
+│   └── shared/            # Componentes y directivas reutilizables
+└── styles.scss            # Estilos globales del sistema
+```
 
-## Running unit tests
+---
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## 👥 Roles de Usuario
 
-## Running end-to-end tests
+| Rol                | Descripción                                                                 |
+|--------------------|------------------------------------------------------------------------------|
+| QUALITY-ADMIN-USER | Acceso total: usuarios, equipos, funciones, laboratorios y reportes.        |
+| AUTHORIZED-USER    | Acceso limitado: puede registrar sesiones y consultar su historial propio.  |
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+---
 
-## Further help
+## 🛠️ Tecnologías Utilizadas
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Angular 18+
+- TypeScript
+- SCSS modularizado
+- ng2-charts para gráficas
+- html2canvas + jsPDF para exportar visualizaciones a PDF
+- xlsx + FileSaver para exportar datos a Excel/CSV
+- Keycloak (opcional) para autenticación basada en tokens JWT
+
+---
+
+## 📦 Instalación y Ejecución
+
+```bash
+git clone https://github.com/juanitomanoplateada/geli.git
+cd geli
+npm install
+ng serve
+```
+
+La aplicación estará disponible en http://localhost:4200.
+
+---
+
+## 📚 Documentación Extendida
+
+🔗 https://deepwiki.com/juanitomanoplateada/geli
+
+---
+
+## 📤 Funciones de Exportación
+
+| Tipo de Reporte     | Formato                          | Descripción                                           |
+|---------------------|----------------------------------|-------------------------------------------------------|
+| Reporte de sesiones | 📁 Excel (.xlsx), 📄 CSV (.csv)   | Incluye filtros aplicados y columnas seleccionadas    |
+| Reporte PDF         | 📑 PDF                           | Gráficas y texto explicativo en alta resolución       |
+
+---
+
+## 🎯 Filtros Avanzados
+
+- Laboratorio  
+- Equipo o Patrón  
+- Funciones utilizadas  
+- Estado verificado / para uso  
+- Rango de fechas y horas  
+- Usuario responsable  
+- Tiempo de uso y muestras analizadas  
+
+---
+
