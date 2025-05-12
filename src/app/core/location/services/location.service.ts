@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export interface LocationDto {
   id: number;
@@ -9,7 +10,7 @@ export interface LocationDto {
 
 @Injectable({ providedIn: 'root' })
 export class LocationService {
-  private readonly baseUrl = 'http://localhost:8080/api/v1/locations';
+  private readonly baseUrl = `${environment.apiBaseUrl}/v1/locations`;
 
   constructor(private http: HttpClient) {}
 

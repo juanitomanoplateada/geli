@@ -8,12 +8,13 @@ import {
   EquipmentFilterDto,
 } from '../models/equipment-request.dto';
 import { EquipmentUpdateDto } from '../models/equipment-update.dto';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EquipmentService {
-  private readonly baseUrl = 'http://localhost:8080/api/v1/equipments';
+  private readonly baseUrl = `${environment.apiBaseUrl}/v1/equipments`;
 
   constructor(private http: HttpClient) {}
 

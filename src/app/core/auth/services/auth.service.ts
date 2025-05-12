@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrlAuth = 'http://localhost:8080/api/auth';
-  private apiUrlRecovery = 'http://localhost:8080/api/recovery';
-  private apiUrlPassword = 'http://localhost:8080/api/password';
+  private apiUrlAuth = `${environment.apiBaseUrl}/auth`;
+  private apiUrlRecovery = `${environment.apiBaseUrl}/recovery`;
+  private apiUrlPassword = `${environment.apiBaseUrl}/password`;
 
   constructor(private http: HttpClient) {}
 

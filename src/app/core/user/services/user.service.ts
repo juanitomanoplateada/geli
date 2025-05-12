@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { EquipmentDto } from '../../equipment/models/equipment-response.dto';
+import { environment } from '../../../../environments/environment';
 
 export interface CreateUserRequest {
   email: string;
@@ -35,7 +36,7 @@ export interface UserRecordResponse {
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  private readonly baseUrl = 'http://localhost:8080/api/v1/users';
+  private readonly baseUrl = `${environment.apiBaseUrl}/v1/users`;
 
   constructor(private http: HttpClient) {}
 

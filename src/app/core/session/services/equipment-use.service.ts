@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export interface EquipmentStartUseRequest {
   equipmentId: number;
@@ -74,7 +75,7 @@ export interface EquipmentUseFilterRequest {
 
 @Injectable({ providedIn: 'root' })
 export class EquipmentUseService {
-  private readonly baseUrl = 'http://localhost:8080/api/v1/equipment-use';
+  private readonly baseUrl = `${environment.apiBaseUrl}/v1/equipment-use`;
 
   constructor(private http: HttpClient) {}
 
