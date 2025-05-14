@@ -69,6 +69,9 @@ export class RegisterSessionComponent implements AfterViewInit {
   equipmentIdsInUse: Set<string> = new Set();
   isEquipmentInUseByAnotherUser: boolean = false;
 
+  isLoading: boolean = true;
+  isLoadingEquipments: boolean = false;
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private labService: LaboratoryService,
@@ -77,8 +80,7 @@ export class RegisterSessionComponent implements AfterViewInit {
     private equipmentUseService: EquipmentUseService
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
-    this.loadLabs();
-    this.loadActiveSessions();
+    this.loadInitialData();
   }
 
   ngAfterViewInit(): void {
@@ -180,6 +182,92 @@ export class RegisterSessionComponent implements AfterViewInit {
       });
   }
 
+  loadInitialData() {
+    this.isLoading = true;
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    const username = JSON.parse(atob(token.split('.')[1]))[
+      'preferred_username'
+    ];
+
+    this.userService
+      .getUserByEmail(`${username}@uptc.edu.co`)
+      .subscribe((user) => {
+        this.currentUserName = `${user.firstName} ${user.lastName}`;
+
+        this.labService.getLaboratories().subscribe((labs) => {
+          this.labs = labs;
+          this.labOptions = labs.map((lab) => ({
+            label: `${lab.laboratoryName} - ${lab.location.locationName}`,
+            value: String(lab.id),
+          }));
+
+          this.equipmentUseService.getAllEquipmentUses().subscribe((uses) => {
+            this.equipmentIdsInUse.clear();
+
+            const userUses = uses.filter(
+              (use: any) => use.user.id === user.id && use.isInUse === true
+            );
+
+            const sorted = userUses.sort(
+              (a: any, b: any) =>
+                new Date(b.startUseTime).getTime() -
+                new Date(a.startUseTime).getTime()
+            );
+
+            const ordered = this.sessionSortDescending
+              ? sorted
+              : sorted.reverse();
+
+            uses
+              .filter((use: any) => use.isInUse === true)
+              .forEach((use: any) =>
+                this.equipmentIdsInUse.add(String(use.equipment.id))
+              );
+
+            this.activeSessions = ordered.map((use: any) => {
+              const [date, timeWithMs] = use.startUseTime.split('T');
+              const time = timeWithMs.split('.')[0];
+
+              return {
+                id: use.id,
+                equipmentId: use.equipment.id,
+                lab: use.equipment.laboratory.laboratoryName,
+                labLocation: use.equipment.laboratory.location.locationName,
+                labLabel: `${use.equipment.laboratory.laboratoryName} - ${use.equipment.laboratory.location.locationName}`,
+                equipment: use.equipment.equipmentName,
+                equipmentInventoryNumber: use.equipment.inventoryNumber,
+                equipmentLabel: `${use.equipment.equipmentName} - ${use.equipment.inventoryNumber}`,
+                useDate: date,
+                startUseTime: time,
+                checkIn: {
+                  date: date,
+                  time: time,
+                  user: `${use.user.firstName} ${use.user.lastName}`,
+                },
+                checkOut: {
+                  verifiedStatus: '',
+                  usageStatus: '',
+                  usageDuration: '',
+                  sampleCount: use.samplesNumber ?? null,
+                  selectedFunctions: use.usedFunctions.map(
+                    (f: any) => f.functionName
+                  ),
+                  remarks: use.observations ?? '',
+                },
+                availableFunctions: this.ensureNAFunction(
+                  use.equipment.functions
+                ),
+              };
+            });
+
+            this.isLoading = false;
+          });
+        });
+      });
+  }
+
   private ensureNAFunction(functions: any[]): any[] {
     const normalized = functions.map((f) => ({
       ...f,
@@ -214,6 +302,8 @@ export class RegisterSessionComponent implements AfterViewInit {
     this.selectedLabId = labId;
     this.selectedEquipment = null;
     this.selectedEquipmentStatus = null;
+    this.equipmentOptions = [];
+    this.isLoadingEquipments = true; // ⏳ Empieza carga
 
     const selectedLab = this.labs.find((lab) => String(lab.id) === labId);
     this.selectedLabStatus = {
@@ -223,7 +313,7 @@ export class RegisterSessionComponent implements AfterViewInit {
     };
 
     if (!this.selectedLabStatus.active) {
-      this.equipmentOptions = [];
+      this.isLoadingEquipments = false;
       return;
     }
 
@@ -244,6 +334,8 @@ export class RegisterSessionComponent implements AfterViewInit {
           label: `${eq.equipmentName} - ${eq.inventoryNumber}`,
           value: String(eq.id),
         }));
+
+        this.isLoadingEquipments = false; // ✅ Fin carga
       });
   }
 

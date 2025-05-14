@@ -1,4 +1,8 @@
-<div class="session-wrapper">
+<div *ngIf="isLoading" class="spinner-wrapper">
+  <div class="spinner"></div>
+  <p>Cargando datos, por favor espera...</p>
+</div>
+<div *ngIf="!isLoading" class="session-wrapper">
   <!-- Iniciar nueva sesión -->
   <div class="header-section">
     <h1>Registrar Uso de Equipo / Patrón</h1>
@@ -28,9 +32,14 @@
           [placeholder]="'Seleccione un equipo / patrón'"
           [options]="equipmentOptions"
           [selectedValue]="selectedEquipment"
-          [disabled]="!selectedLabId || selectedLabStatus?.active === false"
+          [disabled]="
+            !selectedLabId ||
+            selectedLabStatus?.active === false ||
+            isLoadingEquipments
+          "
           (select)="onSelectEquipment($event)"
         />
+
         <div
           *ngIf="
             selectedEquipmentStatus?.active === false &&
@@ -59,7 +68,10 @@
         </div>
       </div>
     </div>
-
+    <div *ngIf="isLoadingEquipments" class="spinner-mini">
+      <div class="spinner"></div>
+      <p>Cargando equipos disponibles...</p>
+    </div>
     <!-- BOTÓN DE INICIO -->
     <button
       class="start-btn"
