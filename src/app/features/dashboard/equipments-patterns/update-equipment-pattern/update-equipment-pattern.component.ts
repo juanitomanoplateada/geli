@@ -34,10 +34,8 @@ import {
     UppercaseDirective,
     UppercaseNospaceDirective,
     ConfirmModalComponent,
-    DropdownSearchEntityComponent,
-    DropdownSearchEntityObjComponent,
-    TagMultiselectComponent,
-  ],
+    DropdownSearchEntityObjComponent
+],
   templateUrl: './update-equipment-pattern.component.html',
   styleUrls: ['./update-equipment-pattern.component.scss'],
 })
@@ -193,9 +191,7 @@ export class UpdateEquipmentPatternComponent implements OnInit {
 
     try {
       const payload = {
-        laboratory: {
-          id: Number(this.equipmentForm.get('lab')?.value),
-        },
+        laboratoryId: Number(this.equipmentForm.get('lab')?.value),
         availability:
           this.equipmentForm.get('availability')?.value === 'ACTIVO',
         equipmentObservations: this.equipmentForm.get('notes')?.value || '',
