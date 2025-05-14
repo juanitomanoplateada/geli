@@ -136,8 +136,8 @@ export class RegisterUserComponent implements OnInit {
 
     const payload: CreateUserRequest = {
       email: this.institutionalEmail.toUpperCase(),
-      firstName: this.userForm.value.firstName!,
-      lastName: this.userForm.value.lastName!,
+      firstName: this.userForm.value.firstName!.trim(),
+      lastName: this.userForm.value.lastName!.trim(),
       identification: this.userForm.value.identification!,
       role: mappedRole,
       positionId: existing?.id || 0,
