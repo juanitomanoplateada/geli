@@ -1,4 +1,8 @@
-<div class="register-container">
+<div *ngIf="isLoading" class="spinner-overlay">
+  <div class="spinner"></div>
+  <p>Cargando datos...</p>
+</div>
+<div *ngIf="!isLoading" class="register-container">
   <h1>Actualizar Laboratorio</h1>
   <p class="subtitle">Modifique los datos del laboratorio seleccionado.</p>
 

@@ -19,6 +19,7 @@ import {
   LocationDto,
 } from '../../../../core/location/services/location.service';
 import { Laboratory } from '../../../../core/laboratory/models/laboratory.model';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-update-laboratory',
@@ -47,6 +48,8 @@ export class UpdateLaboratoryComponent implements OnInit {
   modalFeedbackSuccess = false;
   showModalFeedback = false;
 
+  isLoading = true;
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -65,8 +68,44 @@ export class UpdateLaboratoryComponent implements OnInit {
 
   ngOnInit(): void {
     this.labId = Number(this.route.snapshot.paramMap.get('id'));
-    this.loadLocations();
-    this.loadLaboratoryData();
+    this.loadData();
+  }
+
+  private loadData(): void {
+    this.isLoading = true;
+
+    const locations$ = this.locationService.getAll();
+    const lab$ = this.laboratoryService.getLaboratoryById(this.labId);
+
+    forkJoin([locations$, lab$]).subscribe({
+      next: ([locations, lab]) => {
+        this.availableLocations = locations.map((l) => ({
+          label: l.locationName,
+          value: l,
+        }));
+
+        this.labForm.patchValue({
+          labName: lab.laboratoryName,
+          description: lab.laboratoryDescription,
+          locationName: lab.location.locationName,
+          status: lab.laboratoryAvailability ? 'ACTIVO' : 'INACTIVO',
+          notes: lab.laboratoryObservations,
+        });
+
+        this.selectedLocation = {
+          id: lab.location?.id || 0,
+          locationName: lab.location.locationName,
+        };
+
+        this.notesRequired = !lab.laboratoryAvailability;
+      },
+      error: (err) => {
+        console.error('Error al cargar datos:', err);
+      },
+      complete: () => {
+        this.isLoading = false;
+      },
+    });
   }
 
   private loadLocations(): void {

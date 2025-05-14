@@ -1,4 +1,8 @@
-<div class="register-container">
+<div *ngIf="isLoading" class="loading-overlay">
+  <div class="spinner"></div>
+  <p>Cargando información del equipo...</p>
+</div>
+<div *ngIf="!isLoading" class="register-container">
   <h1>Actualizar Equipo / Patrón</h1>
   <p class="subtitle">Modifique los datos del equipo o patrón seleccionado.</p>
 

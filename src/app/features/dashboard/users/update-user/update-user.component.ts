@@ -74,6 +74,8 @@ export class UpdateUserComponent implements OnInit {
     status: ['', Validators.required],
   });
 
+  isLoading = true;
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -106,10 +108,12 @@ export class UpdateUserComponent implements OnInit {
         status: user.enabledStatus ? 'ACTIVO' : 'INACTIVO',
       });
 
-      // Bloquear campos no editables
       ['email', 'firstName', 'lastName', 'identification', 'role'].forEach(
         (f) => this.userForm.get(f)?.disable()
       );
+
+      // 🔽 Marca la carga como completada
+      this.isLoading = false;
     });
   }
 

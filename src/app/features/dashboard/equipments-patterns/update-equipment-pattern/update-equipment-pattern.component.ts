@@ -34,8 +34,8 @@ import {
     UppercaseDirective,
     UppercaseNospaceDirective,
     ConfirmModalComponent,
-    DropdownSearchEntityObjComponent
-],
+    DropdownSearchEntityObjComponent,
+  ],
   templateUrl: './update-equipment-pattern.component.html',
   styleUrls: ['./update-equipment-pattern.component.scss'],
 })
@@ -57,6 +57,7 @@ export class UpdateEquipmentPatternComponent implements OnInit {
 
   selectedBrandOrProposed: string | null = null;
   selectedLab: string | null = null;
+  isLoading = true; // ← bandera inicial de carga
 
   constructor(
     private fb: FormBuilder,
@@ -107,22 +108,30 @@ export class UpdateEquipmentPatternComponent implements OnInit {
   }
 
   loadEquipment(): void {
-    this.equipmentService.getById(this.id).subscribe((equipment) => {
-      this.selectedBrandOrProposed = equipment.brand.brandName;
-      this.selectedLab = equipment.laboratory.id.toString();
-      this.selectedFunctions = equipment.functions;
+    this.isLoading = true;
+    this.equipmentService.getById(this.id).subscribe({
+      next: (equipment) => {
+        this.selectedBrandOrProposed = equipment.brand.brandName;
+        this.selectedLab = equipment.laboratory.id.toString();
+        this.selectedFunctions = equipment.functions;
 
-      this.equipmentForm.patchValue({
-        inventoryCode: equipment.inventoryNumber,
-        name: equipment.equipmentName,
-        brand: equipment.brand.id.toString(),
-        lab: equipment.laboratory.id.toString(),
-        availability: equipment.availability ? 'ACTIVO' : 'INACTIVO',
-        notes: equipment.equipmentObservations || '',
-        functionId: 'valid',
-      });
+        this.equipmentForm.patchValue({
+          inventoryCode: equipment.inventoryNumber,
+          name: equipment.equipmentName,
+          brand: equipment.brand.id.toString(),
+          lab: equipment.laboratory.id.toString(),
+          availability: equipment.availability ? 'ACTIVO' : 'INACTIVO',
+          notes: equipment.equipmentObservations || '',
+          functionId: 'valid',
+        });
 
-      this.notesRequired = !equipment.availability;
+        this.notesRequired = !equipment.availability;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+        // Manejo de error opcional
+      },
     });
   }
 

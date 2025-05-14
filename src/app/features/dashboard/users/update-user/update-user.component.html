@@ -1,4 +1,8 @@
-<div class="register-container">
+<div *ngIf="isLoading" class="loading-spinner">
+  <div class="spinner"></div>
+  <p>Cargando datos del usuario...</p>
+</div>
+<div *ngIf="!isLoading" class="register-container">
   <!-- Fechas de creación/modificación alineadas arriba derecha -->
   <div class="dates-header">
     <small><strong>Creación:</strong> {{ creationDate }}</small>
