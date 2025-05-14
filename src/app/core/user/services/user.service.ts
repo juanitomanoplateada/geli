@@ -52,19 +52,13 @@ export class UserService {
           return [];
         }
 
-        return users.map((user) => {
-          console.log(
-            `User ${user.id} - creationDate: ${user.creationDate}, modificationStatusDate: ${user.modificationStatusDate}`
-          );
-
-          return {
-            ...user,
-            creationDate: this.formatDate(user.creationDate),
-            modificationStatusDate: this.formatDate(
-              user.modificationStatusDate
-            ),
-          };
-        });
+        return users.map((user) => ({
+          ...user,
+          firstName: user.firstName?.trim() || '',
+          lastName: user.lastName?.trim() || '',
+          creationDate: this.formatDate(user.creationDate),
+          modificationStatusDate: this.formatDate(user.modificationStatusDate),
+        }));
       })
     );
   }
@@ -92,7 +86,7 @@ export class UserService {
 
   checkEmailExists(email: string): Observable<boolean> {
     return this.http.get<boolean>(`${this.baseUrl}/exists-by-email`, {
-        params: { email: email.toUpperCase() },
+      params: { email: email.toUpperCase() },
     });
   }
 
