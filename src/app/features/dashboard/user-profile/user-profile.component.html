@@ -1,4 +1,8 @@
-<div class="user-profile-container">
+<div *ngIf="isLoadingProfile" class="loading-container">
+  <div class="spinner"></div>
+  <p>Cargando perfil...</p>
+</div>
+<div *ngIf="!isLoadingProfile" class="user-profile-container">
   <div class="profile-card">
     <h1>Perfil de Usuario</h1>
 

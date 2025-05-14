@@ -23,7 +23,7 @@ export class UserProfileComponent implements OnInit {
     institutionalEmail: '',
     userStatus: '',
     role: '',
-    position: ''
+    position: '',
   };
 
   // Campos cambio de contraseña
@@ -47,6 +47,8 @@ export class UserProfileComponent implements OnInit {
   isPasswordChangeSuccessful = false;
   isLoadingPasswordChange = false;
 
+  isLoadingProfile = true;
+
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -54,24 +56,23 @@ export class UserProfileComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Obtener email del usuario autenticado
     const email = this.authService.getCurrentUserEmail();
 
-    // Cargar datos de perfil
     this.userService.getUserByEmail(email).subscribe({
       next: (user: UserRecordResponse) => {
-        console.log(user);
         this.userProfile = {
           fullName: `${user.firstName} ${user.lastName}`,
           userId: user.identification.toString(),
           institutionalEmail: user.email,
           userStatus: user.enabledStatus ? 'Activo' : 'Inactivo',
           role: this.translateRole(user.role),
-          position: user.position?.name ?? 'Sin posición'
+          position: user.position?.name ?? 'Sin posición',
         };
+        this.isLoadingProfile = false;
       },
       error: () => {
-        // Si falla, redirigir al login
+        this.isLoadingProfile = false;
+        // Aquí podrías redirigir al login si lo deseas
       },
     });
   }
