@@ -64,7 +64,7 @@
               class="form-input password-field"
               placeholder="Ingrese su contraseña actual"
               [(ngModel)]="currentPassword"
-              (input)="onCurrentPasswordInput()"
+              (blur)="onCurrentPasswordInput()"
               required
             />
             <span class="toggle-icon" (click)="toggleVisibility('current')">
