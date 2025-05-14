@@ -92,7 +92,7 @@ export class UserService {
 
   checkEmailExists(email: string): Observable<boolean> {
     return this.http.get<boolean>(`${this.baseUrl}/exists-by-email`, {
-      params: { email },
+        params: { email: email.toUpperCase() },
     });
   }
 
@@ -126,7 +126,7 @@ export class UserService {
   getUserByEmail(email: string): Observable<UserRecordResponse> {
     return this.http
       .get<UserRecordResponse>(`${this.baseUrl}/by-email`, {
-        params: { email },
+        params: { email: email.toUpperCase() },
       })
       .pipe(
         map((user) => ({
