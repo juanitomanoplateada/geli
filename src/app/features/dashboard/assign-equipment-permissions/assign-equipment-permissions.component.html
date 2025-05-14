@@ -1,8 +1,13 @@
 <div class="assign-equipment-permissions">
   <h1>Asignar Permisos de Uso de Equipos</h1>
 
+  <div *ngIf="isInitialLoading" class="loading-spinner">
+    <p>Cargando datos iniciales...</p>
+    <div class="spinner"></div>
+  </div>
+
   <!-- Selección de usuario -->
-  <div class="user-select-section">
+  <div *ngIf="!isInitialLoading" class="user-select-section">
     <label for="user">Seleccione un usuario</label>
     <app-dropdown-search
       [options]="userOptions"
@@ -68,6 +73,11 @@
     <button (click)="resetSearch()" class="try-again-btn">
       Limpiar búsqueda
     </button>
+  </div>
+
+  <div *ngIf="isLoadingEquipments" class="loading-spinner">
+    <p>Cargando equipos del usuario...</p>
+    <div class="spinner"></div>
   </div>
 
   <!-- Modal de confirmación -->

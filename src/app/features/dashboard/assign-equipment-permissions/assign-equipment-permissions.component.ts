@@ -20,6 +20,7 @@ import { EquipmentFilterDto } from '../../../core/equipment/models/equipment-req
 import { BrandService } from '../../../core/brand/services/brand.service';
 import { FunctionService } from '../../../core/function/services/function.service';
 import { LaboratoryService } from '../../../core/laboratory/services/laboratory.service';
+import { forkJoin } from 'rxjs';
 
 interface EquipmentTableRecord extends EquipmentDto {
   availabilityText: string;
@@ -128,6 +129,9 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
   showConfirmModal = false;
   isModalProcessing = false;
 
+  isInitialLoading = true; // loading inicial (usuarios y filtros)
+  isLoadingEquipments = false; // loading de equipos cuando se selecciona usuario
+
   constructor(
     private userService: UserService,
     private equipmentService: EquipmentService,
@@ -137,34 +141,45 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.userService.getUsers().subscribe((users) => {
-      if (!Array.isArray(users)) {
-        console.warn('⚠️ Usuarios recibidos es null o inválido:', users);
-        this.users = [];
-        this.userOptions = [];
-        return;
-      }
+    this.isInitialLoading = true;
 
-      this.users = users.filter((u) => u.role === 'AUTHORIZED-USER');
-      this.userOptions = this.users.map((u) => `${u.firstName} ${u.lastName}`);
-    });
+    forkJoin({
+      users: this.userService.getUsers(),
+      brands: this.brandService.getAll(),
+      functions: this.functionService.getAll(),
+      laboratories: this.laboratoryService.getLaboratories(),
+    }).subscribe({
+      next: ({ users, brands, functions, laboratories }) => {
+        // Usuarios
+        this.users = (users ?? []).filter((u) => u.role === 'AUTHORIZED-USER');
+        this.userOptions = this.users.map(
+          (u) => `${u.firstName} ${u.lastName}`
+        );
 
-    this.brandService.getAll().subscribe((brands) => {
-      this.options['brand'] = Array.isArray(brands)
-        ? brands.map((b) => ({ label: b.brandName, value: b.id }))
-        : [];
-    });
+        // Marcas
+        this.options['brand'] = brands.map((b) => ({
+          label: b.brandName,
+          value: b.id,
+        }));
 
-    this.functionService.getAll().subscribe((funcs) => {
-      this.options['function'] = Array.isArray(funcs)
-        ? funcs.map((f) => ({ label: f.functionName, value: f.id }))
-        : [];
-    });
+        // Funciones
+        this.options['function'] = functions.map((f) => ({
+          label: f.functionName,
+          value: f.id,
+        }));
 
-    this.laboratoryService.getLaboratories().subscribe((labs) => {
-      this.options['laboratory'] = Array.isArray(labs)
-        ? labs.map((l) => ({ label: l.laboratoryName, value: l.id }))
-        : [];
+        // Laboratorios
+        this.options['laboratory'] = laboratories.map((l) => ({
+          label: l.laboratoryName,
+          value: l.id,
+        }));
+      },
+      error: (err) => {
+        console.error('Error al cargar datos iniciales:', err);
+      },
+      complete: () => {
+        this.isInitialLoading = false;
+      },
     });
   }
 
@@ -174,19 +189,27 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     );
     if (!selected) return;
 
-    this.userService.getUserById(selected.id).subscribe((user) => {
-      this.selectedUser = user;
-      this.authorizedEquipments = (user.authorizedUserEquipments ?? []).map(
-        (eq) => ({
-          ...eq,
-          availabilityText: eq.availability ? 'Activo' : 'Inactivo',
-          functionsText: Array.isArray(eq.functions)
-            ? eq.functions.map((f) => f.functionName).join(', ')
-            : '—',
-        })
-      );
+    this.isLoadingEquipments = true;
 
-      this.performSearch();
+    this.userService.getUserById(selected.id).subscribe({
+      next: (user) => {
+        this.selectedUser = user;
+        this.authorizedEquipments = (user.authorizedUserEquipments ?? []).map(
+          (eq) => ({
+            ...eq,
+            availabilityText: eq.availability ? 'Activo' : 'Inactivo',
+            functionsText: Array.isArray(eq.functions)
+              ? eq.functions.map((f) => f.functionName).join(', ')
+              : '—',
+          })
+        );
+
+        this.performSearch();
+      },
+      error: (err) => {
+        console.error('Error al obtener usuario:', err);
+        this.isLoadingEquipments = false;
+      },
     });
   }
 
@@ -244,6 +267,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
         this.isLoading = false;
       },
     });
+    this.isLoadingEquipments = false;
   }
 
   updateAuthorizedEquipments(checked: EquipmentTableRecord[]): void {
