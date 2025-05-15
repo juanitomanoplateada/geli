@@ -461,20 +461,40 @@ export class RegisterSessionComponent implements AfterViewInit {
       const sessionStart = new Date(
         `${session.checkIn.date}T${session.checkIn.time}`
       );
-      let diffMs = now.getTime() - sessionStart.getTime();
+      const diffMs = now.getTime() - sessionStart.getTime();
 
       const seconds = Math.floor((diffMs / 1000) % 60);
       const minutes = Math.floor((diffMs / (1000 * 60)) % 60);
       const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-      const days = Math.floor((diffMs / (1000 * 60 * 60 * 24)) % 30); // aprox
-      const months = Math.floor((diffMs / (1000 * 60 * 60 * 24 * 30)) % 12); // aprox
-      const years = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 365)); // aprox
+      const days = Math.floor((diffMs / (1000 * 60 * 60 * 24)) % 30); // aproximado
+      const months = Math.floor((diffMs / (1000 * 60 * 60 * 24 * 30)) % 12); // aproximado
+      const years = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 365)); // aproximado
 
       const pad = (n: number) => n.toString().padStart(2, '0');
 
-      session.checkOut.usageDuration =
-        `${pad(years)}y:${pad(months)}m:${pad(days)}d ` +
-        `${pad(hours)}h:${pad(minutes)}m:${pad(seconds)}s`;
+      let duration = '';
+
+      if (years > 0) {
+        duration = `${pad(years)}y:${pad(months)}m:${pad(days)}d ${pad(
+          hours
+        )}h:${pad(minutes)}m:${pad(seconds)}s`;
+      } else if (months > 0) {
+        duration = `${pad(months)}m:${pad(days)}d ${pad(hours)}h:${pad(
+          minutes
+        )}m:${pad(seconds)}s`;
+      } else if (days > 0) {
+        duration = `${pad(days)}d ${pad(hours)}h:${pad(minutes)}m:${pad(
+          seconds
+        )}s`;
+      } else if (hours > 0) {
+        duration = `${pad(hours)}h:${pad(minutes)}m:${pad(seconds)}s`;
+      } else if (minutes > 0) {
+        duration = `${pad(minutes)}m:${pad(seconds)}s`;
+      } else {
+        duration = `${pad(seconds)}s`;
+      }
+
+      session.checkOut.usageDuration = duration;
     }
   }
 

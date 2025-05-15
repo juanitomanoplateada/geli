@@ -409,15 +409,23 @@ export class SessionHistoryComponent implements OnInit {
 
   calculateDuration(start: string, end: string | null): string {
     if (!start || !end) return 'En curso';
+
     const diff = new Date(end).getTime() - new Date(start).getTime();
-    if (diff <= 0) return '00:00:00:00';
+    if (diff <= 0) return '00s';
+
     const totalSeconds = Math.floor(diff / 1000);
     const days = Math.floor(totalSeconds / 86400);
     const hours = Math.floor((totalSeconds % 86400) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
+
     const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+
+    if (days > 0)
+      return `${pad(days)}d ${pad(hours)}h:${pad(minutes)}m:${pad(seconds)}s`;
+    if (hours > 0) return `${pad(hours)}h:${pad(minutes)}m:${pad(seconds)}s`;
+    if (minutes > 0) return `${pad(minutes)}m:${pad(seconds)}s`;
+    return `${pad(seconds)}s`;
   }
 
   getLabIdByName(name: string): number | undefined {
@@ -462,18 +470,31 @@ export class SessionHistoryComponent implements OnInit {
       if (session.inProgress && session.startDateTime) {
         const start = new Date(session.startDateTime);
         const diff = now.getTime() - start.getTime();
+
         if (diff > 0) {
           const totalSeconds = Math.floor(diff / 1000);
           const days = Math.floor(totalSeconds / 86400);
           const hours = Math.floor((totalSeconds % 86400) / 3600);
           const minutes = Math.floor((totalSeconds % 3600) / 60);
           const seconds = totalSeconds % 60;
+
           const pad = (n: number) => n.toString().padStart(2, '0');
-          session.usageDuration = `${pad(days)}:${pad(hours)}:${pad(
-            minutes
-          )}:${pad(seconds)}`;
+
+          if (days > 0) {
+            session.usageDuration = `${pad(days)}d ${pad(hours)}h:${pad(
+              minutes
+            )}m:${pad(seconds)}s`;
+          } else if (hours > 0) {
+            session.usageDuration = `${pad(hours)}h:${pad(minutes)}m:${pad(
+              seconds
+            )}s`;
+          } else if (minutes > 0) {
+            session.usageDuration = `${pad(minutes)}m:${pad(seconds)}s`;
+          } else {
+            session.usageDuration = `${pad(seconds)}s`;
+          }
         } else {
-          session.usageDuration = '00:00:00:00';
+          session.usageDuration = '00s';
         }
       }
     });
