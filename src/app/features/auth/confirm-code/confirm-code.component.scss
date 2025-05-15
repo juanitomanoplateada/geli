@@ -221,11 +221,67 @@ body {
   }
 }
 
-// ─── Responsive ─────────────────────────────────
-@media (max-width: 500px) {
+@media (max-width: 600px) {
+  .confirm-code-container {
+    width: 100%;
+    max-width: 95%;
+    padding: 1.5rem 1rem;
+    border-radius: 8px;
+  }
+
+  .confirm-code-header {
+    justify-content: center;
+
+    .btn-back {
+      font-size: 0.95rem;
+      padding: 0.4rem 0.9rem;
+    }
+  }
+
+  .confirm-code-logos {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    .confirm-code-logo {
+      width: 70%;
+      max-width: 180px;
+    }
+
+    .confirm-code-divider {
+      display: none;
+    }
+  }
+
+  .confirm-code-title {
+    font-size: 1.3rem;
+  }
+
+  .confirm-code-instructions {
+    font-size: 0.95rem;
+    margin: 1rem 0;
+  }
+
+  .confirm-code-input-group {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+
   .digit-input {
     width: 40px;
     height: 52px;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
+  }
+
+  .confirm-code-button {
+    font-size: 0.95rem;
+    padding: 0.65rem;
+  }
+
+  .resend-counter {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
   }
 }
