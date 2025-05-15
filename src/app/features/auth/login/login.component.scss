@@ -162,3 +162,57 @@ body {
     text-decoration: underline;
   }
 }
+
+@media (max-width: 600px) {
+  .login-container {
+    width: 100%;
+    max-width: 95%;
+    padding: 1.5rem 1rem;
+    border-radius: 8px;
+  }
+
+  .login-logos {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    .login-logo {
+      width: 70%;
+      max-width: 180px;
+    }
+
+    .login-divider {
+      display: none;
+    }
+  }
+
+  .login-title {
+    font-size: 1.3rem;
+  }
+
+  .login-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .login-input-group {
+    flex-direction: column;
+    align-items: stretch;
+
+    .login-domain {
+      margin-left: 0;
+      margin-top: 0.5rem;
+      width: 100%;
+      text-align: center;
+    }
+
+    .toggle-password {
+      right: 10px;
+      top: 65%;
+    }
+  }
+
+  .forgot-password-link {
+    font-size: 0.9rem;
+    text-align: center;
+  }
+}
