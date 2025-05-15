@@ -6,7 +6,8 @@
     "start": "node server.js",
     "build": "npx ng build --configuration=production",
     "build:ssr": "ng build --configuration=production && ng run geli:server",
-    "serve:ssr": "node dist/geli/server/main.mjs"
+    "serve:ssr": "node dist/geli/server/main.mjs",
+    "heroku-postbuild": "npm install --legacy-peer-deps && npm run build"
   },
   "private": true,
   "dependencies": {
