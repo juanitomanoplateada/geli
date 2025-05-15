@@ -76,4 +76,9 @@ export class DashboardComponent implements OnInit {
     }
     return '';
   }
+  onNavigate(): void {
+    if (window.innerWidth <= 768) {
+      this.sidebarOpen = false;
+    }
+  }
 }

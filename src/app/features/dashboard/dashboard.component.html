@@ -1,5 +1,7 @@
 <section class="dashboard-layout">
-  <button class="dashboard-toggle" (click)="toggleSidebar()">☰</button>
+  <button class="dashboard-toggle" (click)="toggleSidebar()">
+    {{ sidebarOpen ? "✖" : "☰" }}
+  </button>
 
   <nav class="dashboard-sidebar" [class.open]="sidebarOpen">
     <div class="dashboard-logo">
@@ -10,6 +12,7 @@
       routerLink="/dashboard/home"
       class="dashboard-link"
       [class.active]="isExactActive('/dashboard/home')"
+      (click)="onNavigate()"
       >Inicio</a
     >
 
@@ -26,6 +29,7 @@
         <a
           routerLink="/dashboard/sessions/register-session"
           [class.active]="isActive('/dashboard/sessions/register-session')"
+          (click)="onNavigate()"
           >Registrar Uso</a
         >
         <a
@@ -33,6 +37,7 @@
           [class.active]="
             isActive('/dashboard/sessions/personal-session-history')
           "
+          (click)="onNavigate()"
           >Historial</a
         >
       </div>
@@ -51,11 +56,13 @@
         <a
           routerLink="/dashboard/users/search-user"
           [class.active]="isActive('/dashboard/users/search-user')"
+          (click)="onNavigate()"
           >Buscar Usuario</a
         >
         <a
           routerLink="/dashboard/users/register-user"
           [class.active]="isActive('/dashboard/users/register-user')"
+          (click)="onNavigate()"
           >Registrar Usuario</a
         >
       </div>
@@ -79,6 +86,7 @@
         <a
           routerLink="/dashboard/laboratories/search-laboratory"
           [class.active]="isActive('/dashboard/laboratories/search-laboratory')"
+          (click)="onNavigate()"
           >Buscar Laboratorio</a
         >
         <a
@@ -86,6 +94,7 @@
           [class.active]="
             isActive('/dashboard/laboratories/register-laboratory')
           "
+          (click)="onNavigate()"
           >Registrar Laboratorio</a
         >
       </div>
@@ -114,6 +123,7 @@
           [class.active]="
             isActive('/dashboard/equipments-patterns/search-equipment-pattern')
           "
+          (click)="onNavigate()"
           >Buscar Equipo / Patrón</a
         >
         <a
@@ -123,6 +133,7 @@
               '/dashboard/equipments-patterns/register-equipment-pattern'
             )
           "
+          (click)="onNavigate()"
           >Registrar Equipo / Patrón</a
         >
       </div>
@@ -133,6 +144,7 @@
       routerLink="/dashboard/assign-equipment-permissions"
       class="dashboard-link"
       [class.active]="isExactActive('/dashboard/assign-equipment-permissions')"
+      (click)="onNavigate()"
       >Permisos de Uso</a
     >
 
@@ -141,6 +153,7 @@
       routerLink="/dashboard/sessions/session-history"
       class="dashboard-link"
       [class.active]="isExactActive('/dashboard/sessions/session-history')"
+      (click)="onNavigate()"
       >Historial de Sesiones</a
     >
 
@@ -149,6 +162,7 @@
       routerLink="/dashboard/reports/session-report"
       class="dashboard-link"
       [class.active]="isExactActive('/dashboard/reports/session-report')"
+      (click)="onNavigate()"
       >Reporte de Sesiones</a
     >
 
@@ -196,6 +210,7 @@
       routerLink="/dashboard/user-profile"
       class="dashboard-link"
       [class.active]="isExactActive('/dashboard/user-profile')"
+      (click)="onNavigate()"
       >Perfil de Usuario</a
     >
     <a (click)="logout()" class="dashboard-link">Cerrar Sesión</a>

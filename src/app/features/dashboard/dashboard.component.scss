@@ -186,3 +186,23 @@
     margin: 0 0.5rem;
   }
 }
+
+.dashboard-sidebar {
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .dashboard-sidebar {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    width: 250px;
+    height: 100vh;
+    overflow-y: auto; /* Asegura desplazamiento */
+    transition: left 0.3s ease;
+  }
+
+  .dashboard-sidebar.open {
+    left: 0;
+  }
+}
