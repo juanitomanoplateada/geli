@@ -461,11 +461,20 @@ export class RegisterSessionComponent implements AfterViewInit {
       const sessionStart = new Date(
         `${session.checkIn.date}T${session.checkIn.time}`
       );
-      const delta = new Date(now.getTime() - sessionStart.getTime());
-      const h = delta.getUTCHours().toString().padStart(2, '0');
-      const m = delta.getUTCMinutes().toString().padStart(2, '0');
-      const s = delta.getUTCSeconds().toString().padStart(2, '0');
-      session.checkOut.usageDuration = `${h}:${m}:${s}`;
+      let diffMs = now.getTime() - sessionStart.getTime();
+
+      const seconds = Math.floor((diffMs / 1000) % 60);
+      const minutes = Math.floor((diffMs / (1000 * 60)) % 60);
+      const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+      const days = Math.floor((diffMs / (1000 * 60 * 60 * 24)) % 30); // aprox
+      const months = Math.floor((diffMs / (1000 * 60 * 60 * 24 * 30)) % 12); // aprox
+      const years = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 365)); // aprox
+
+      const pad = (n: number) => n.toString().padStart(2, '0');
+
+      session.checkOut.usageDuration =
+        `${pad(years)}y:${pad(months)}m:${pad(days)}d ` +
+        `${pad(hours)}h:${pad(minutes)}m:${pad(seconds)}s`;
     }
   }
 
