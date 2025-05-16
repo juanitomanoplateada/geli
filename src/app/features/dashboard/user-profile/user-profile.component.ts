@@ -49,6 +49,9 @@ export class UserProfileComponent implements OnInit {
 
   isLoadingProfile = true;
 
+  private debounceTimer: any;
+  isValidatingCurrentPassword = false;
+
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -97,27 +100,6 @@ export class UserProfileComponent implements OnInit {
     if (field === 'new') this.isNewPasswordVisible = !this.isNewPasswordVisible;
     if (field === 'confirm')
       this.isConfirmPasswordVisible = !this.isConfirmPasswordVisible;
-  }
-
-  /** Valida la contraseña actual contra el backend */
-  onCurrentPasswordInput(): void {
-    if (!this.currentPassword) {
-      this.canShowNewPasswordFields = false;
-      this.invalidCurrentPassword = false;
-      return;
-    }
-
-    this.authService.validateCurrentPassword(this.currentPassword).subscribe({
-      next: () => {
-        this.canShowNewPasswordFields = true;
-        this.invalidCurrentPassword = false;
-      },
-      error: () => {
-        this.canShowNewPasswordFields = false;
-        this.invalidCurrentPassword = true;
-        this.resetNewPasswordFields();
-      },
-    });
   }
 
   /** Valida inputs de nueva contraseña y habilita el botón */
@@ -180,5 +162,33 @@ export class UserProfileComponent implements OnInit {
     this.currentPassword = '';
     this.resetNewPasswordFields();
     this.canShowNewPasswordFields = false;
+  }
+
+  onCurrentPasswordInput(): void {
+    clearTimeout(this.debounceTimer);
+
+    if (!this.currentPassword) {
+      this.canShowNewPasswordFields = false;
+      this.invalidCurrentPassword = false;
+      return;
+    }
+
+    this.debounceTimer = setTimeout(() => {
+      this.isValidatingCurrentPassword = true;
+
+      this.authService.validateCurrentPassword(this.currentPassword).subscribe({
+        next: () => {
+          this.isValidatingCurrentPassword = false;
+          this.canShowNewPasswordFields = true;
+          this.invalidCurrentPassword = false;
+        },
+        error: () => {
+          this.isValidatingCurrentPassword = false;
+          this.canShowNewPasswordFields = false;
+          this.invalidCurrentPassword = true;
+          this.resetNewPasswordFields();
+        },
+      });
+    }, 500); // debounce de 500ms
   }
 }
