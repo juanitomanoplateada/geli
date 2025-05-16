@@ -27,6 +27,14 @@ interface EquipmentTableRecord extends EquipmentDto {
   functionsText: string;
 }
 
+interface LaboratoryGroup {
+  id: number;
+  name: string;
+  expanded: boolean;
+  equipments: EquipmentTableRecord[];
+  allSelected: boolean;
+}
+
 @Component({
   selector: 'app-assign-equipment-permissions',
   standalone: true,
@@ -124,6 +132,10 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
 
   equipmentResults: EquipmentTableRecord[] = [];
   authorizedEquipments: EquipmentTableRecord[] = [];
+  
+  // Agrupación por laboratorio
+  laboratoryGroups: LaboratoryGroup[] = [];
+  showGroupedView = true; // por defecto mostrar vista agrupada
 
   // Confirm modal
   showConfirmModal = false;
@@ -257,27 +269,144 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
 
         this.equipmentResults = mapped;
         this.authorizedEquipments = [...hiddenAuthorized, ...visibleAuthorized];
+
+        // Agrupar por laboratorio después de actualizar los resultados
+        this.groupEquipmentsByLaboratory();
+
         this.hasSearched = true;
         this.isLoading = false;
+        this.isLoadingEquipments = false; // Actualizado: detener spinner de carga
       },
-      error: (err) => {
-        console.error('Error al buscar equipos:', err);
+      error: (error) => {
+        console.error('Error al buscar equipos:', error);
         this.equipmentResults = [];
         this.hasSearched = true;
         this.isLoading = false;
+        this.isLoadingEquipments = false; // Actualizado: detener spinner en caso de error
       },
     });
-    this.isLoadingEquipments = false;
+  }
+
+  // Método para agrupar equipos por laboratorio
+  groupEquipmentsByLaboratory(): void {
+    // Crear mapa de laboratorios
+    const labGroups = new Map<number, LaboratoryGroup>();
+
+    // Procesar cada equipo
+    this.equipmentResults.forEach((equipment) => {
+      const labId = equipment.laboratory?.id;
+      const labName = equipment.laboratory?.laboratoryName;
+
+      if (labId && labName) {
+        // Si el laboratorio ya existe en el mapa, agregar equipo
+        if (labGroups.has(labId)) {
+          labGroups.get(labId)?.equipments.push(equipment);
+        } else {
+          // Si no existe, crear nuevo grupo de laboratorio
+          labGroups.set(labId, {
+            id: labId,
+            name: labName,
+            expanded: true, // Expandido por defecto
+            equipments: [equipment],
+            allSelected: false,
+          });
+        }
+      }
+    });
+
+    // Convertir mapa a array
+    this.laboratoryGroups = Array.from(labGroups.values());
+    
+    // Actualizar estado de selecciu00f3n para cada grupo
+    this.updateGroupSelectionState();
+  }
+
+  // Método para alternar la expansión de un grupo
+  toggleGroupExpansion(group: LaboratoryGroup): void {
+    group.expanded = !group.expanded;
+  }
+
+  // Método para seleccionar/deseleccionar todos los equipos de un grupo
+  toggleGroupSelection(group: LaboratoryGroup): void {
+    const newState = !group.allSelected;
+
+    if (newState) {
+      // Seleccionar todos los equipos del grupo que no estén ya seleccionados
+      const currentIds = new Set(this.authorizedEquipments.map((eq) => eq.id));
+
+      group.equipments.forEach((equipment) => {
+        if (!currentIds.has(equipment.id)) {
+          this.authorizedEquipments.push(equipment);
+        }
+      });
+    } else {
+      // Deseleccionar todos los equipos del grupo
+      this.authorizedEquipments = this.authorizedEquipments.filter((auth) => !group.equipments.some((eq) => eq.id === auth.id));
+    }
+
+    // Actualizar estado del grupo
+    group.allSelected = newState;
+  }
+
+  // Método para alternar entre vista agrupada y vista plana
+  toggleGroupedView(): void {
+    this.showGroupedView = !this.showGroupedView;
+  }
+
+  // Método para verificar si un equipo está marcado como autorizado
+  isChecked(equipment: EquipmentTableRecord): boolean {
+    return this.authorizedEquipments.some((eq) => eq.id === equipment.id);
+  }
+  
+  // Método para manejar el cambio de estado de un checkbox individual
+  onItemCheckChange(item: EquipmentTableRecord): void {
+    if (this.isChecked(item)) {
+      // Si ya está seleccionado, eliminarlo
+      this.authorizedEquipments = this.authorizedEquipments.filter(eq => eq.id !== item.id);
+    } else {
+      // Si no está seleccionado, añadirlo
+      this.authorizedEquipments = [...this.authorizedEquipments, item];
+    }
+    
+    // Actualizar estado de grupos
+    this.updateGroupSelectionState();
+  }
+  
+  // Método para actualizar el estado de selección de todos los grupos
+  updateGroupSelectionState(): void {
+    this.laboratoryGroups.forEach(group => {
+      const allEquipmentIds = new Set(group.equipments.map(eq => eq.id));
+      const selectedEquipmentIds = new Set(this.authorizedEquipments.filter(eq => allEquipmentIds.has(eq.id)).map(eq => eq.id));
+      
+      // Un grupo está totalmente seleccionado si todos sus equipos están seleccionados
+      group.allSelected = selectedEquipmentIds.size === allEquipmentIds.size && allEquipmentIds.size > 0;
+    });
+  }
+  
+  // Método para obtener valores anidados de un objeto
+  resolveNestedValue(item: any, key: string): any {
+    if (!key.includes('.')) {
+      return item[key];
+    }
+    
+    const parts = key.split('.');
+    let value = item;
+    
+    for (const part of parts) {
+      if (value && typeof value === 'object') {
+        value = value[part];
+      } else {
+        return '';
+      }
+    }
+    
+    return value || '';
   }
 
   updateAuthorizedEquipments(checked: EquipmentTableRecord[]): void {
     const checkedIds = new Set(checked.map((eq) => eq.id));
-    const preserved = this.authorizedEquipments.filter((eq) =>
-      checkedIds.has(eq.id)
-    );
-    const newOnes = checked.filter(
-      (eq) => !preserved.some((e) => e.id === eq.id)
-    );
+    const preserved = this.authorizedEquipments.filter((eq) => checkedIds.has(eq.id));
+    const newOnes = checked.filter((eq) => !preserved.some((e) => e.id === eq.id));
     this.authorizedEquipments = [...preserved, ...newOnes];
   }
 
