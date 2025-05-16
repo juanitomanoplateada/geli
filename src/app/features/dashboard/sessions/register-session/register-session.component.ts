@@ -195,10 +195,20 @@ export class RegisterSessionComponent implements AfterViewInit {
       .getUserByEmail(`${username}@uptc.edu.co`)
       .subscribe((user) => {
         this.currentUserName = `${user.firstName} ${user.lastName}`;
+        const authorizedEquipments = user.authorizedUserEquipments || [];
+        
+        // Obtener los IDs únicos de laboratorios donde el usuario tiene equipos autorizados
+        const authorizedLabIds = new Set<number>();
+        authorizedEquipments.forEach((eq: EquipmentDto) => {
+          if (eq.laboratory && eq.laboratory.id !== undefined) {
+            authorizedLabIds.add(eq.laboratory.id);
+          }
+        });
 
         this.labService.getLaboratories().subscribe((labs) => {
-          this.labs = labs;
-          this.labOptions = labs.map((lab) => ({
+          // Filtrar laboratorios para mostrar solo aquellos donde el usuario tiene equipos autorizados
+          this.labs = labs.filter(lab => lab.id !== undefined && authorizedLabIds.has(lab.id));
+          this.labOptions = this.labs.map((lab) => ({
             label: `${lab.laboratoryName} - ${lab.location.locationName}`,
             value: String(lab.id),
           }));
