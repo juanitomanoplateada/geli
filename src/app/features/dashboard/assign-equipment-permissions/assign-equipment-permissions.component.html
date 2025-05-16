@@ -55,9 +55,72 @@
     (toggleAdvanced)="toggleAdvancedSearch()"
   ></app-search-advanced>
 
-  <!-- Tabla con checkbox por equipo -->
+  <!-- Toggle para cambiar entre vista agrupada y plana -->
+  <div *ngIf="!isLoading && equipmentResults.length > 0" class="view-toggle">
+    <button (click)="toggleGroupedView()" class="toggle-btn">
+      {{ showGroupedView ? 'Mostrar vista plana' : 'Mostrar vista agrupada' }}
+    </button>
+  </div>
+  
+  <!-- Vista agrupada por laboratorio -->
+  <div *ngIf="!isLoading && equipmentResults.length > 0 && showGroupedView" class="lab-groups">
+    <div *ngFor="let group of laboratoryGroups" class="lab-group">
+      <div class="lab-header" (click)="toggleGroupExpansion(group)">
+        <span class="toggle-icon">{{ group.expanded ? '▼' : '►' }}</span>
+        <h3>{{ group.name }}</h3>
+        <span class="equipment-count">({{ group.equipments.length }} equipos)</span>
+        <label class="select-all">
+          <input 
+            type="checkbox" 
+            [checked]="group.allSelected"
+            (change)="toggleGroupSelection(group)"
+            (click)="$event.stopPropagation()"
+          />
+          <span>Seleccionar todos</span>
+        </label>
+      </div>
+      <div class="lab-equipment-list" *ngIf="group.expanded">
+        <table class="equipment-table">
+          <thead>
+            <tr>
+              <th>✓</th>
+              <th *ngFor="let col of columns">{{ col.label }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of group.equipments; trackBy: trackById">
+              <td>
+                <label>
+                  <input
+                    type="checkbox"
+                    [checked]="isChecked(item)"
+                    (change)="onItemCheckChange(item)"
+                  />
+                </label>
+              </td>
+              <td *ngFor="let col of columns">
+                <span *ngIf="col.type === 'text'">
+                  {{ resolveNestedValue(item, col.key) }}
+                </span>
+                <span *ngIf="col.type === 'status'">
+                  <span
+                    [class.available]="resolveNestedValue(item, col.key) === 'Disponible'"
+                    [class.unavailable]="resolveNestedValue(item, col.key) === 'No disponible'"
+                  >
+                    {{ resolveNestedValue(item, col.key) }}
+                  </span>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Vista plana (tabla original) -->
   <app-results-table-checkbox
-    *ngIf="!isLoading && equipmentResults.length > 0"
+    *ngIf="!isLoading && equipmentResults.length > 0 && !showGroupedView"
     [columns]="columns"
     [data]="equipmentResults"
     [checkedItems]="authorizedEquipments"
