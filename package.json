@@ -27,6 +27,7 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
+    "jwt-decode": "^4.0.0",
     "ng2-charts": "3.0.0",
     "rxjs": "^7.8.2",
     "tslib": "^2.3.0",

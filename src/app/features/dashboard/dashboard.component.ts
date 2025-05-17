@@ -15,12 +15,14 @@ export class DashboardComponent implements OnInit {
   roles: string[] = [];
   activeSubmenu: string | null = null;
   sidebarOpen: boolean = false;
+  name: string = '';
 
   constructor(private router: Router, private session: UserSessionService) {}
 
   ngOnInit() {
     this.username = this.session.getUsername() ?? 'USUARIO';
     this.roles = this.session.getRoles();
+    this.name = this.session.getNameFromToken();
   }
 
   hasRole(allowed: string[]): boolean {

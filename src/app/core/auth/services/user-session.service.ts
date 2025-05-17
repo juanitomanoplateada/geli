@@ -2,6 +2,12 @@ import { isPlatformBrowser } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { decodeToken } from './token.utils';
 import { Router } from '@angular/router';
+import { jwtDecode } from 'jwt-decode';
+
+interface DecodedToken {
+  name?: string;
+  [key: string]: any;
+}
 
 @Injectable({ providedIn: 'root' })
 export class UserSessionService {
@@ -49,6 +55,18 @@ export class UserSessionService {
     if (this.isBrowser()) {
       localStorage.clear();
       this.router.navigate(['/auth/login']);
+    }
+  }
+
+  getNameFromToken(): string {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return '';
+    try {
+      const decoded = jwtDecode<DecodedToken>(token);
+      return decoded.name ?? '';
+    } catch (e) {
+      console.error('Error decoding JWT', e);
+      return '';
     }
   }
 }
