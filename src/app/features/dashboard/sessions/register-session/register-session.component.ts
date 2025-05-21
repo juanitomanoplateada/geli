@@ -20,6 +20,8 @@ import { Laboratory } from '../../../../core/laboratory/models/laboratory.model'
 import { EquipmentDto } from '../../../../core/equipment/models/equipment-response.dto';
 import { LabeledOption } from '../../../../shared/components/dropdown-search-entity-obj/dropdown-search-entity-obj.component';
 
+import { Router } from '@angular/router';
+
 @Component({
   selector: 'app-register-session',
   standalone: true,
@@ -77,7 +79,8 @@ export class RegisterSessionComponent implements AfterViewInit {
     private labService: LaboratoryService,
     private equipmentService: EquipmentService,
     private userService: UserService,
-    private equipmentUseService: EquipmentUseService
+    private equipmentUseService: EquipmentUseService,
+    private router: Router
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     this.loadInitialData();
@@ -196,7 +199,7 @@ export class RegisterSessionComponent implements AfterViewInit {
       .subscribe((user) => {
         this.currentUserName = `${user.firstName} ${user.lastName}`;
         const authorizedEquipments = user.authorizedUserEquipments || [];
-        
+
         // Obtener los IDs únicos de laboratorios donde el usuario tiene equipos autorizados
         const authorizedLabIds = new Set<number>();
         authorizedEquipments.forEach((eq: EquipmentDto) => {
@@ -207,7 +210,9 @@ export class RegisterSessionComponent implements AfterViewInit {
 
         this.labService.getLaboratories().subscribe((labs) => {
           // Filtrar laboratorios para mostrar solo aquellos donde el usuario tiene equipos autorizados
-          this.labs = labs.filter(lab => lab.id !== undefined && authorizedLabIds.has(lab.id));
+          this.labs = labs.filter(
+            (lab) => lab.id !== undefined && authorizedLabIds.has(lab.id)
+          );
           this.labOptions = this.labs.map((lab) => ({
             label: `${lab.laboratoryName} - ${lab.location.locationName}`,
             value: String(lab.id),
@@ -578,13 +583,15 @@ export class RegisterSessionComponent implements AfterViewInit {
         this.finishSessionError = false;
 
         setTimeout(() => {
-          this.activeSessions = this.activeSessions.filter(
-            (s) => s.id !== session.id
-          );
+          this.loadActiveSessions();
+
           this.selectedSessionId = null;
           this.showSummaryModal = false;
           this.isFinishingSession = false;
           this.finishSessionSuccess = false;
+          this.router.navigate([
+            '/dashboard/sessions/personal-session-history',
+          ]);
         }, 4000);
       },
       error: () => {

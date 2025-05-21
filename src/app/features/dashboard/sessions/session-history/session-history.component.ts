@@ -51,7 +51,7 @@ export class SessionHistoryComponent implements OnInit {
   searchQuery = '';
   isLoading = false;
   showAdvancedSearch = false;
-  sortAscending = true;
+  sortAscending = false;
   selectedSession: SessionRecord | null = null;
 
   filters = {
