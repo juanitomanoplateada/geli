@@ -1,10 +1,14 @@
-import { Directive, HostListener } from '@angular/core';
+import { Directive, HostListener, ElementRef } from '@angular/core';
 
 @Directive({
   selector: '[appIntegerOnly]',
   standalone: true,
 })
 export class IntegerOnlyDirective {
+  private maxLength = 10; // Cambia este valor al límite que desees
+
+  constructor(private el: ElementRef<HTMLInputElement>) {}
+
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     const allowedKeys = [
@@ -16,8 +20,21 @@ export class IntegerOnlyDirective {
     ];
 
     const isNumber = /^[0-9]$/.test(event.key);
+    const currentValue = this.el.nativeElement.value;
 
-    if (!isNumber && !allowedKeys.includes(event.key)) {
+    // Permitir teclas de control o navegación
+    if (allowedKeys.includes(event.key)) {
+      return;
+    }
+
+    // Impedir si no es número
+    if (!isNumber) {
+      event.preventDefault();
+      return;
+    }
+
+    // Impedir si ya se alcanzó el máximo de dígitos
+    if (currentValue.length >= this.maxLength) {
       event.preventDefault();
     }
   }
