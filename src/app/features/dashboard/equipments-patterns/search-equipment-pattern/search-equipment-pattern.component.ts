@@ -102,8 +102,6 @@ export class SearchEquipmentPatternComponent implements OnInit {
   columns: ColumnConfig[] = [
     { key: 'inventoryCode', label: 'N° Inventario', type: 'text' },
     { key: 'name', label: 'Nombre', type: 'text' },
-    { key: 'brand', label: 'Marca', type: 'text' },
-    { key: 'function', label: 'Funciones', type: 'text' },
     { key: 'laboratory', label: 'Laboratorio', type: 'text' },
     { key: 'availability', label: 'Estado', type: 'status' },
     { key: 'actions', label: 'Acciones', type: 'actions' },

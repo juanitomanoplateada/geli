@@ -85,7 +85,6 @@ export class SearchUserComponent implements OnInit {
   columns: ColumnConfig[] = [
     { key: 'identification', label: 'Identificación', type: 'text' },
     { key: 'fullName', label: 'Nombre completo', type: 'text' },
-    { key: 'email', label: 'Correo institucional', type: 'text' },
     { key: 'role', label: 'Rol', type: 'text' },
     { key: 'position', label: 'Cargo', type: 'text' },
     { key: 'status', label: 'Estado', type: 'status' },
