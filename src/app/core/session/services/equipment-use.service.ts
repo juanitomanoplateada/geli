@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../../environments/environment.prod';
 
 export interface EquipmentStartUseRequest {
@@ -99,7 +99,13 @@ export class EquipmentUseService {
   }
 
   getAllEquipmentUses(): Observable<EquipmentUseResponse[]> {
-    return this.http.get<EquipmentUseResponse[]>(this.baseUrl);
+    return this.http.get<EquipmentUseResponse[]>(this.baseUrl).pipe(
+      map((res) => res ?? []), // Si res es null, retorna []
+      catchError((err) => {
+        console.error('Error al obtener equipment uses:', err);
+        return of([]); // Retorna array vacío en caso de error
+      })
+    );
   }
 
   getEquipmentUseById(id: number): Observable<EquipmentUseResponse> {
