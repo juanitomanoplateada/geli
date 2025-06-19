@@ -6,10 +6,10 @@ import { Router } from '@angular/router';
 import { FieldConfig } from '../../../../shared/model/field-config.model';
 import { SearchAdvancedComponent } from '../../../../shared/components/search-advanced/search-advanced.component';
 import { ResultsTableComponent } from '../../../../shared/components/results-table/results-table.component';
-import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 
 import { UserService } from '../../../../core/user/services/user.service';
-import { PositionService } from '../../../../core/position/services/position.service';
+import { PositionService } from './../../../../core/services/position/position.service';
+import { PositionDto } from './../../../../core/dto/position/position-response.dto';
 
 interface UserRecord {
   id: number;
@@ -35,16 +35,11 @@ interface ActionButton {
 }
 
 interface Filters {
-  role: '' | 'Personal Autorizado' | 'Analista de Calidad';
-  status: '' | 'Activo' | 'Inactivo';
+  role: '' | 'PERSONAL AUTORIZADO' | 'ANALISTA DE CALIDAD';
+  status: '' | 'ACTIVO' | 'INACTIVO';
   positionId?: number | null;
   creationDateFrom: string;
   creationDateTo: string;
-}
-
-interface PositionDTO {
-  id: number;
-  name: string;
 }
 
 @Component({
@@ -55,7 +50,6 @@ interface PositionDTO {
     FormsModule,
     SearchAdvancedComponent,
     ResultsTableComponent,
-    ConfirmModalComponent,
   ],
   templateUrl: './search-user.component.html',
   styleUrls: ['./search-user.component.scss'],
@@ -71,7 +65,7 @@ export class SearchUserComponent implements OnInit {
   };
 
   users: UserRecord[] = [];
-  positions: PositionDTO[] = [];
+  positions: PositionDto[] = [];
   loading = false;
   showFilters = false;
   hasSearched = false;
@@ -84,7 +78,7 @@ export class SearchUserComponent implements OnInit {
 
   columns: ColumnConfig[] = [
     { key: 'identification', label: 'Identificación', type: 'text' },
-    { key: 'fullName', label: 'Nombre completo', type: 'text' },
+    { key: 'fullName', label: 'Nombre Completo', type: 'text' },
     { key: 'role', label: 'Rol', type: 'text' },
     { key: 'position', label: 'Cargo', type: 'text' },
     { key: 'status', label: 'Estado', type: 'status' },
@@ -107,6 +101,12 @@ export class SearchUserComponent implements OnInit {
   options: { [key: string]: any[] } = {};
 
   noResults = false;
+
+  // Variables de paginación
+  currentPage = 0;
+  totalPages = 0;
+  pageSize = 5;
+  pageSizeOptions = [5, 15, 30, 50, 100];
 
   constructor(
     private router: Router,
@@ -133,21 +133,21 @@ export class SearchUserComponent implements OnInit {
             key: 'role',
             label: 'Rol',
             type: 'select',
-            options: ['Personal Autorizado', 'Analista de Calidad'],
-            allowEmptyOption: 'Todos',
+            options: ['PERSONAL AUTORIZADO', 'ANALISTA DE CALIDAD'],
+            allowEmptyOption: 'TODOS',
           },
           {
             key: 'positionId',
             label: 'Cargo',
             type: 'dropdown',
-            allowEmptyOption: 'Todos',
+            allowEmptyOption: 'TODOS',
           },
           {
             key: 'status',
             label: 'Estado',
             type: 'select',
-            options: ['Activo', 'Inactivo'],
-            allowEmptyOption: 'Todos',
+            options: ['ACTIVO', 'INACTIVO'],
+            allowEmptyOption: 'TODOS',
           },
           {
             key: 'creationDateFrom',
@@ -175,6 +175,17 @@ export class SearchUserComponent implements OnInit {
     });
   }
 
+  changePage(page: number) {
+    this.currentPage = page;
+    this.performSearch();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.currentPage = 0;
+    this.performSearch();
+  }
+
   get isFilterReady(): boolean {
     return (
       this.fieldsConfig.length > 0 && !!this.options?.['positionId']?.length
@@ -197,7 +208,7 @@ export class SearchUserComponent implements OnInit {
     }
 
     this.hasSearched = true;
-    this.noResults = false; // Reinicia antes de buscar
+    this.noResults = false;
     this.lastQuery = this.query.trim();
     this.lastFilters = { ...this.filters };
     this.loading = true;
@@ -211,9 +222,9 @@ export class SearchUserComponent implements OnInit {
       email: q,
       enabledStatus: this.getEnabledStatusValue(this.filters.status),
       role:
-        this.filters.role === 'Personal Autorizado'
+        this.filters.role === 'PERSONAL AUTORIZADO'
           ? 'AUTHORIZED-USER'
-          : this.filters.role === 'Analista de Calidad'
+          : this.filters.role === 'ANALISTA DE CALIDAD'
           ? 'QUALITY-ADMIN-USER'
           : undefined,
       positionId:
@@ -228,31 +239,32 @@ export class SearchUserComponent implements OnInit {
       (k) => payload[k] === undefined && delete payload[k]
     );
 
-    this.userService.filterUsers(payload).subscribe({
-      next: (res) => {
-        // Blindaje absoluto: si no es array, lo tratamos como vacío
-        if (!Array.isArray(res)) {
+    this.userService
+      .filterUsers(payload, this.currentPage, this.pageSize)
+      .subscribe({
+        next: (res) => {
+          this.users = (res.content || []).map((u: any) => ({
+            id: u.id,
+            fullName: `${u.firstName} ${u.lastName}`,
+            identification: u.identification,
+            email: u.email,
+            role: this.mapRole(u.role),
+            status: u.enabledStatus ? 'ACTIVO' : 'INACTIVO',
+            position: u.position?.name || '—',
+            creationDate: u.creationDate,
+          }));
+
+          this.totalPages = res.totalPages || 0;
+          this.noResults = this.users.length === 0;
+          this.loading = false;
+        },
+        error: () => {
           this.users = [];
+          this.totalPages = 0;
           this.noResults = true;
           this.loading = false;
-          return;
-        }
-
-        this.users = res.map((u: any) => ({
-          id: u.id,
-          fullName: `${u.firstName} ${u.lastName}`,
-          identification: u.identification,
-          email: u.email,
-          role: this.mapRole(u.role),
-          status: u.enabledStatus ? 'Activo' : 'Inactivo',
-          position: u.position?.name || '—',
-          creationDate: u.creationDate,
-        }));
-
-        this.noResults = res.length === 0;
-        this.loading = false;
-      },
-    });
+        },
+      });
   }
 
   resetSearch(): void {
@@ -314,7 +326,7 @@ export class SearchUserComponent implements OnInit {
 
   confirmToggleStatus(): void {
     if (!this.selectedUser) return;
-    const newStatus = this.selectedUser.status !== 'Activo';
+    const newStatus = this.selectedUser.status !== 'ACTIVO';
     this.confirmLoading = true;
     this.userService
       .toggleUserStatus(this.selectedUser.id, newStatus)
@@ -332,9 +344,9 @@ export class SearchUserComponent implements OnInit {
 
   private mapRole(r: string) {
     return r === 'AUTHORIZED-USER'
-      ? 'Personal Autorizado'
+      ? 'PERSONAL AUTORIZADO'
       : r === 'QUALITY-ADMIN-USER'
-      ? 'Analista de Calidad'
+      ? 'ANALISTA DE CALIDAD'
       : r;
   }
 
@@ -347,8 +359,8 @@ export class SearchUserComponent implements OnInit {
     },
   ];
   private getEnabledStatusValue(status: string): boolean | undefined {
-    if (status === 'Activo') return true;
-    if (status === 'Inactivo') return false;
+    if (status === 'ACTIVO') return true;
+    if (status === 'INACTIVO') return false;
     return undefined;
   }
 }

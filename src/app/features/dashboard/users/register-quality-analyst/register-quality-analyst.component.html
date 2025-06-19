@@ -1,5 +1,5 @@
 <div class="register-container">
-  <h1>Registro de Usuario</h1>
+  <h1>Registro de Analista de Calidad</h1>
   <p class="subtitle">
     Ingrese los datos de la persona a registrar en el sistema.
   </p>
@@ -101,26 +101,6 @@
       </div>
     </div>
 
-    <!-- Grupo: Rol -->
-    <div class="form-group">
-      <label for="role">Rol <span class="required">*</span></label>
-      <select id="role" class="form-control" formControlName="role">
-        <option value="" disabled selected>
-          Seleccione el rol del usuario
-        </option>
-        <option *ngFor="let role of availableRoles" [value]="role">
-          {{ role }}
-        </option>
-      </select>
-
-      <div
-        *ngIf="userForm.get('role')?.invalid && userForm.get('role')?.touched"
-        class="error-message"
-      >
-        Debe seleccionar un rol.
-      </div>
-    </div>
-
     <!-- Grupo: Cargo -->
     <div class="form-group">
       <label for="cargo">Cargo <span class="required">*</span></label>
@@ -129,14 +109,14 @@
         agregarlo.
       </p>
       <app-dropdown-search-addable
-        [options]="availableCargos"
-        [selectedValue]="cargoValue"
-        (select)="userForm.get('cargo')?.setValue($event)"
+        [options]="availablePositionNames"
+        [selectedValue]="positionValue"
+        (select)="userForm.get('position')?.setValue($event)"
         placeholder="Seleccione o cree un cargo del usuario"
       ></app-dropdown-search-addable>
 
       <div
-        *ngIf="userForm.get('cargo')?.invalid && userForm.get('cargo')?.touched"
+        *ngIf="userForm.get('position')?.invalid && userForm.get('position')?.touched"
         class="error-message"
       >
         Debe seleccionar o agregar un cargo.
@@ -198,8 +178,8 @@
           <li>
             <strong>Identificación:</strong> {{ userForm.value.identification }}
           </li>
-          <li><strong>Rol Asignado:</strong> {{ userForm.value.role }}</li>
-          <li><strong>Cargo:</strong> {{ userForm.value.cargo }}</li>
+          <li><strong>Rol Asignado:</strong> ANALISTA DE CALIDAD</li>
+          <li><strong>Cargo:</strong> {{ userForm.value.position }}</li>
         </ul>
 
         <!-- Feedback Modal -->

@@ -1,30 +1,74 @@
 <div class="search-bar">
-  <!-- Input principal de búsqueda -->
-  <input
-    type="text"
-    appUppercase
-    [(ngModel)]="searchQuery"
-    (ngModelChange)="searchQueryChange.emit($event)"
-    (keyup.enter)="onSearch()"
-    placeholder="Buscar..."
-    class="search-input"
-    [disabled]="isLoading"
-  />
+  <!-- Campo de búsqueda con botón limpiar -->
+  <div class="search-input-wrapper">
+    <input title="Ingresa la información correspondiente"
+      type="text"
+      appInputRules
+      [alphanumericWithDash]="true"
+      [maxLength]="25"
+      [uppercase]="true"
+      [noSpaces]="false"
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="searchQueryChange.emit($event)"
+      (keyup.enter)="onSearch()"
+      [placeholder]="placeholder || 'Buscar...'"
+      class="search-input"
+      [disabled]="isLoading"
+    />
+    <button
+      *ngIf="searchQuery"
+      type="button"
+      class="clear-input-btn"
+      (click)="clearInput()"
+      aria-label="Limpiar búsqueda"
+    >
+      ✖
+    </button>
+  </div>
 
-  <!-- Botón de buscar -->
-  <button (click)="onSearch()" class="search-button" [disabled]="isLoading">
-    🔍 <span *ngIf="!isLoading">Buscar</span>
-    <span *ngIf="isLoading">Buscando...</span>
-  </button>
+  <!-- Botones principales -->
+  <div class="search-actions">
+    <button class="search-button" (click)="onSearch()" [disabled]="isLoading">
+      🔍 {{ isLoading ? "Buscando..." : "Buscar" }}
+    </button>
 
-  <!-- Botón de búsqueda avanzada -->
-  <button
-    (click)="onToggleAdvanced()"
-    class="advanced-search-btn"
-    [disabled]="isLoading"
-  >
-    {{ showAdvancedSearch ? "Ocultar filtros" : "Búsqueda avanzada" }}
-  </button>
+    <button
+      class="advanced-search-btn"
+      (click)="onToggleAdvanced()"
+      [disabled]="isLoading"
+    >
+      {{ showAdvancedSearch ? "Ocultar filtros" : "Búsqueda avanzada" }}
+    </button>
+  </div>
+
+  <!-- Paginación -->
+  <div class="pagination-controls">
+    <button
+      (click)="onPageChange(currentPage - 1)"
+      [disabled]="currentPage === 0"
+    >
+      ◀ Anterior
+    </button>
+
+    <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+
+    <button
+      (click)="onPageChange(currentPage + 1)"
+      [disabled]="currentPage + 1 >= totalPages"
+    >
+      Siguiente ▶
+    </button>
+
+    <select
+      title="Selecciona cantidad por página"
+      [ngModel]="pageSize"
+      (ngModelChange)="onPageSizeChange($event)"
+    >
+      <option *ngFor="let size of pageSizeOptions" [value]="size">
+        {{ size }} por página
+      </option>
+    </select>
+  </div>
 </div>
 
 <!-- Panel de filtros avanzados -->

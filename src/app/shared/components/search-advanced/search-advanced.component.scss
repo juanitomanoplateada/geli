@@ -1,49 +1,98 @@
 .search-bar {
   display: flex;
-  gap: 1rem;
   flex-wrap: wrap;
   align-items: center;
+  gap: 1rem;
   margin-bottom: 1rem;
 
-  .search-input {
+  .search-input-wrapper {
+    position: relative;
     flex: 1 1 300px;
-    padding: 0.5rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    min-width: 200px;
-  }
+    min-width: 280px;
+    max-height: 45px;
 
-  .search-button,
-  .advanced-search-btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    min-width: 140px;
-    text-align: center;
-    white-space: nowrap;
-  }
+    .search-input {
+      width: 100%;
+      padding: 0.5rem 2.5rem 0.5rem 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
 
-  /* Botón Buscar */
-  .search-button {
-    background-color: #007bff; /* Azul */
-    color: white;
-
-    &:hover {
-      background-color: #0056b3; /* Azul más oscuro */
+    .clear-input-btn {
+      position: absolute;
+      top: 50%;
+      right: 0.75rem;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 1rem;
+      color: #888;
+      cursor: pointer;
     }
   }
 
-  /* Botón Búsqueda avanzada */
-  .advanced-search-btn {
-    background-color: #6c757d; /* Gris */
-    color: white;
+  .search-actions {
+    display: flex;
+    gap: 0.5rem;
 
-    &:hover {
-      background-color: #5a6268; /* Gris más oscuro */
+    .search-button,
+    .advanced-search-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 4px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      min-width: 140px;
+      text-align: center;
+    }
+
+    .search-button {
+      background-color: #007bff;
+      color: white;
+
+      &:hover {
+        background-color: #0056b3;
+      }
+    }
+
+    .advanced-search-btn {
+      background-color: #6c757d;
+      color: white;
+
+      &:hover {
+        background-color: #5a6268;
+      }
+    }
+  }
+
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+
+    button {
+      padding: 0.4rem 0.8rem;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &:disabled {
+        background-color: #b0bec5;
+        cursor: not-allowed;
+      }
+    }
+
+    select {
+      padding: 0.4rem;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
   }
 
@@ -51,13 +100,18 @@
     flex-direction: column;
     align-items: stretch;
 
-    .search-input {
-      flex: 1 1 auto;
+    .search-actions,
+    .pagination-controls {
       width: 100%;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: stretch;
     }
 
     .search-button,
-    .advanced-search-btn {
+    .advanced-search-btn,
+    .pagination-controls button,
+    .pagination-controls select {
       width: 100%;
     }
   }
@@ -99,42 +153,6 @@
     text-align: center;
     .clear-filters-btn {
       width: 100%;
-    }
-  }
-}
-
-/* Botones de Activar/Desactivar */
-.actions-buttons {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.toggle-status-button {
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  white-space: nowrap;
-  min-width: 140px;
-  text-align: center;
-
-  &.activate {
-    background-color: #28a745; /* Verde */
-
-    &:hover {
-      background-color: #218838; /* Verde más oscuro */
-    }
-  }
-
-  &.deactivate {
-    background-color: #dc3545; /* Rojo */
-
-    &:hover {
-      background-color: #c82333; /* Rojo más oscuro */
     }
   }
 }

@@ -1,10 +1,11 @@
 import { PositionService } from './../../../../core/services/position/position.service';
-import { Component, OnInit } from '@angular/core';
+import { PositionDto } from './../../../../core/dto/position/position-response.dto';
 import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import {
+  FormBuilder,
   FormsModule,
   ReactiveFormsModule,
-  FormBuilder,
   Validators,
 } from '@angular/forms';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
@@ -12,14 +13,11 @@ import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppe
 import { UppercaseNospaceDirective } from '../../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
 import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
 import { DropdownSearchAddableComponent } from '../../../../shared/components/dropdown-search-addable/dropdown-search-addable.component';
-import {
-  UserService,
-  CreateUserRequest,
-} from '../../../../core/user/services/user.service';
-import { PositionDto } from '../../../../core/dto/position/position-response.dto';
+import { UserService } from '../../../../core/user/services/user.service';
+import { CreateUserRequest } from '../../../../core/dto/user/create-user-request.dto';
 
 @Component({
-  selector: 'app-register-user',
+  selector: 'app-register-authorized-personnel',
   standalone: true,
   imports: [
     CommonModule,
@@ -31,14 +29,12 @@ import { PositionDto } from '../../../../core/dto/position/position-response.dto
     IntegerOnlyDirective,
     DropdownSearchAddableComponent,
   ],
-  templateUrl: './register-user.component.html',
-  styleUrls: ['./register-user.component.scss'],
+  templateUrl: './register-authorized-personnel.component.html',
+  styleUrl: './register-authorized-personnel.component.scss',
 })
-export class RegisterUserComponent implements OnInit {
-  readonly availableRoles = ['PERSONAL AUTORIZADO', 'ANALISTA DE CALIDAD'];
-
+export class RegisterAuthorizedPersonnelComponent {
   availablePositions: PositionDto[] = [];
-  availableCargos: string[] = [];
+  availablePositionNames: string[] = [];
 
   showConfirmationModal = false;
   feedbackMessage: string | null = null;
@@ -61,24 +57,23 @@ export class RegisterUserComponent implements OnInit {
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
     identification: ['', Validators.required],
-    role: ['', Validators.required],
-    cargo: ['', Validators.required],
+    position: ['', Validators.required],
   });
 
   ngOnInit() {
     this.positionService.getAll().subscribe((list) => {
       if (Array.isArray(list)) {
         this.availablePositions = list;
-        this.availableCargos = list.map((p) => p.name);
+        this.availablePositionNames = list.map((p) => p.name);
       } else {
         this.availablePositions = [];
-        this.availableCargos = [];
+        this.availablePositionNames = [];
       }
     });
   }
 
-  get cargoValue(): string | null {
-    return this.userForm.get('cargo')?.value ?? null;
+  get positionValue(): string | null {
+    return this.userForm.get('position')?.value ?? null;
   }
 
   get institutionalEmail(): string {
@@ -121,13 +116,7 @@ export class RegisterUserComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    const roleMap: Record<string, string> = {
-      'PERSONAL AUTORIZADO': 'AUTHORIZED-USER',
-      'ANALISTA DE CALIDAD': 'QUALITY-ADMIN-USER',
-    };
-    const mappedRole = roleMap[this.userForm.value.role!];
-
-    const selectedName = this.userForm.value.cargo!.trim().toUpperCase();
+    const selectedName = this.userForm.value.position!.trim().toUpperCase();
     const existing = this.availablePositions.find(
       (p) => p.name === selectedName
     );
@@ -137,7 +126,7 @@ export class RegisterUserComponent implements OnInit {
       firstName: this.userForm.value.firstName!.trim(),
       lastName: this.userForm.value.lastName!.trim(),
       identification: this.userForm.value.identification!,
-      role: mappedRole,
+      role: 'AUTHORIZED-USER',
       positionId: existing?.id || 0,
     };
 
@@ -149,7 +138,7 @@ export class RegisterUserComponent implements OnInit {
             this.resetForm();
             this.showConfirmationModal = false;
             this.isSubmitting = false;
-          }, 2000); // Espera 2 segundos antes de cerrar
+          }, 2000);
         },
         error: () => {
           this.modalFeedback('❌ Error al registrar usuario.', false);
@@ -162,7 +151,7 @@ export class RegisterUserComponent implements OnInit {
       this.positionService.create({ name: selectedName }).subscribe({
         next: (newPosition) => {
           this.availablePositions.push(newPosition);
-          this.availableCargos.push(newPosition.name);
+          this.availablePositionNames.push(newPosition.name);
           payload.positionId = newPosition.id;
           createUser();
         },
@@ -183,11 +172,11 @@ export class RegisterUserComponent implements OnInit {
 
     setTimeout(() => {
       this.showModalFeedback = false;
-    }, 5000); // Muestra el mensaje durante 2 segundos
+    }, 5000);
   }
 
   resetForm(): void {
-    this.userForm.reset({ role: '', cargo: '' });
+    this.userForm.reset({ position: '' });
     this.feedbackMessage = null;
     this.emailAlreadyExists = false;
     this.showConfirmationModal = false;
@@ -212,17 +201,12 @@ export class RegisterUserComponent implements OnInit {
   }
 
   private transformFormValuesToUppercase(): void {
-    [
-      'email',
-      'firstName',
-      'lastName',
-      'identification',
-      'role',
-      'cargo',
-    ].forEach((field) => {
-      const ctl = this.userForm.get(field);
-      if (ctl?.value) ctl.setValue(ctl.value.toString().toUpperCase());
-    });
+    ['email', 'firstName', 'lastName', 'identification', 'position'].forEach(
+      (field) => {
+        const ctl = this.userForm.get(field);
+        if (ctl?.value) ctl.setValue(ctl.value.toString().toUpperCase());
+      }
+    );
   }
 
   private showFeedback(msg: string, success: boolean) {

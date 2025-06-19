@@ -4,15 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { EquipmentDto } from '../../equipment/models/equipment-response.dto';
 import { environment } from '../../../../environments/environment.prod';
-
-export interface CreateUserRequest {
-  email: string;
-  firstName: string;
-  lastName: string;
-  identification: string;
-  role: string;
-  positionId: number;
-}
+import { CreateUserRequest } from '../../dto/user/create-user-request.dto';
 
 export interface PositionResponse {
   id: number;

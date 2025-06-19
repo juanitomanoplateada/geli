@@ -17,6 +17,15 @@
     (triggerSearch)="performSearch()"
     (clearFilters)="resetSearch()"
     (toggleAdvanced)="toggleFilters()"
+    [placeholder]="'Buscar por nombre, apellido o ID'"
+    [currentPage]="currentPage"
+    [totalPages]="totalPages"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="pageSizeOptions"
+    [isLoading]="loading"
+    [hasData]="users.length > 0"
+    (pageChange)="changePage($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
   ></app-search-advanced>
 
   <!-- Estado de carga -->
@@ -42,26 +51,4 @@
       Limpiar búsqueda
     </button>
   </div>
-
-  <app-confirm-modal
-    *ngIf="selectedUser"
-    [title]="
-      selectedUser.status === 'Activo'
-        ? '¿Desactivar usuario?'
-        : '¿Activar usuario?'
-    "
-    [show]="showConfirmModal"
-    [confirmLabel]="selectedUser.status === 'Activo' ? 'Desactivar' : 'Activar'"
-    [cancelLabel]="'Cancelar'"
-    [isLoading]="confirmLoading"
-    (confirm)="confirmToggleStatus()"
-    (cancel)="closeConfirmModal()"
-  >
-    <div class="user-info">
-      <p><strong>Nombre:</strong> {{ selectedUser.fullName }}</p>
-      <p><strong>Correo:</strong> {{ selectedUser.email }}</p>
-      <p><strong>Identificación:</strong> {{ selectedUser.identification }}</p>
-      <p><strong>Estado actual:</strong> {{ selectedUser.status }}</p>
-    </div>
-  </app-confirm-modal>
 </div>

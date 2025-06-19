@@ -59,11 +59,26 @@
           (click)="onNavigate()"
           >Buscar Usuario</a
         >
+        <!--
         <a
           routerLink="/dashboard/users/register-user"
           [class.active]="isActive('/dashboard/users/register-user')"
           (click)="onNavigate()"
-          >Registrar Usuario</a
+        >
+          Registrar Usuario
+        </a>
+        -->
+        <a
+          routerLink="/dashboard/users/register-authorized-personnel"
+          [class.active]="isActive('/dashboard/users/register-authorized-personnel')"
+          (click)="onNavigate()"
+          >Registrar Personal Autorizado</a
+        >
+        <a
+          routerLink="/dashboard/users/register-quality-analyst"
+          [class.active]="isActive('/dashboard/users/register-quality-analyst')"
+          (click)="onNavigate()"
+          >Registrar Analista de Calidad</a
         >
       </div>
     </div>

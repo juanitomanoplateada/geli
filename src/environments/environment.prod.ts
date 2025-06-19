@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://geli-backend-production.up.railway.app/api',
+  apiBaseUrl: 'http://localhost:8080/api',
 };
