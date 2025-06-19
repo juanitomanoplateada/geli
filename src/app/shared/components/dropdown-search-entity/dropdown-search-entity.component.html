@@ -6,18 +6,32 @@
 >
   <div class="selected" (click)="toggleDropdown()">
     {{ displaySelectedLabel() || placeholder }}
+    <span class="arrow" [class.open]="showDropdown()">&#9660;</span>
   </div>
 
   <div class="dropdown-list" *ngIf="showDropdown()">
-    <input
-      type="text"
-      [ngModel]="searchTerm()"
-      (ngModelChange)="searchTerm.set($event.toUpperCase())"
-      placeholder="Buscar..."
-      title="Buscar opciones"
-      aria-label="Buscar opción"
-      appUppercase
-    />
+    <div class="input-wrapper">
+      <input
+        type="text"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event.toUpperCase())"
+        placeholder="Buscar..."
+        title="Buscar opciones"
+        aria-label="Buscar opción"
+        appUppercase
+      />
+
+      <button
+        *ngIf="searchTerm().trim()"
+        type="button"
+        class="clear-btn"
+        (click)="clearSearch($event)"
+        aria-label="Limpiar búsqueda"
+        title="Limpiar búsqueda"
+      >
+        ✖
+      </button>
+    </div>
 
     <div
       class="option"

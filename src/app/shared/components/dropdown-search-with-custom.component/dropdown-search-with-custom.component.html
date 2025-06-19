@@ -1,0 +1,52 @@
+<div class="dropdown-search">
+  <label *ngIf="label" class="dropdown-label">{{ label }}</label>
+
+  <div class="dropdown-header" (click)="toggleDropdown()">
+    {{ selectedOption ? selectedOption[displayKey] : selectPlaceholder }}
+    <span class="arrow">{{ isOpen ? "▲" : "▼" }}</span>
+  </div>
+
+  <div class="dropdown-body" *ngIf="isOpen">
+    <div class="dropdown-input-wrapper">
+      <ng-content select="input"></ng-content>
+
+      <button
+        *ngIf="searchText"
+        type="button"
+        class="clear-btn"
+        (click)="clearFilter(); $event.stopPropagation()"
+        aria-label="Borrar búsqueda"
+      >
+        ✕
+      </button>
+    </div>
+
+    <ul class="dropdown-options">
+      <li
+        *ngFor="let option of filteredOptions"
+        (click)="selectOption(option)"
+        class="dropdown-option"
+      >
+        {{ option[displayKey] }}
+      </li>
+      <li
+        *ngIf="shouldShowCustomOption"
+        (click)="addCustomOption()"
+        class="dropdown-option dropdown-option--custom"
+      >
+        + Agregar "{{ searchText }}"
+      </li>
+    </ul>
+  </div>
+
+  <p
+    *ngIf="feedback"
+    class="dropdown-feedback"
+    [ngClass]="{
+      'dropdown-feedback--success': feedbackState === 'success',
+      'dropdown-feedback--error': feedbackState === 'error'
+    }"
+  >
+    {{ feedback }}
+  </p>
+</div>

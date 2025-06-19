@@ -14,10 +14,8 @@ import {
   FunctionDto,
   FunctionService,
 } from '../../../../core/function/services/function.service';
-import {
-  UserRecordResponse,
-  UserService,
-} from '../../../../core/user/services/user.service';
+import { UserRecordResponse } from '../../../../core/dto/user/record-user-response.dto';
+import { UserService } from '../../../../core/services/user/user.service';
 import { Laboratory } from '../../../../core/laboratory/models/laboratory.model';
 import { EquipmentDto } from '../../../../core/equipment/models/equipment-response.dto';
 

@@ -9,19 +9,11 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
-import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
-import { UppercaseNospaceDirective } from '../../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
-import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
-import { DropdownSearchAddableComponent } from '../../../../shared/components/dropdown-search-addable/dropdown-search-addable.component';
+import { DropdownSearchEntityComponent } from '../../../../shared/components/dropdown-search-entity/dropdown-search-entity.component';
 
-import {
-  UserService,
-  UserRecordResponse,
-} from '../../../../core/user/services/user.service';
-import {
-  PositionService,
-  PositionDto,
-} from '../../../../core/position/services/position.service';
+import { UserService } from '../../../../core/services/user/user.service';
+import { PositionService } from '../../../../core/services/position/position.service';
+import { PositionDto } from '../../../../core/dto/position/position-response.dto';
 
 interface UpdateUserRequest {
   isActive: boolean;
@@ -37,11 +29,8 @@ interface UpdateUserRequest {
     FormsModule,
     ReactiveFormsModule,
     ConfirmModalComponent,
-    UppercaseDirective,
-    UppercaseNospaceDirective,
-    IntegerOnlyDirective,
-    DropdownSearchAddableComponent,
-  ],
+    DropdownSearchEntityComponent
+],
   templateUrl: './update-user.component.html',
   styleUrls: ['./update-user.component.scss'],
 })
@@ -53,13 +42,19 @@ export class UpdateUserComponent implements OnInit {
   readonly availableRoles = ['PERSONAL AUTORIZADO', 'ANALISTA DE CALIDAD'];
   readonly availableStatuses = ['ACTIVO', 'INACTIVO'];
 
-  availablePositions: PositionDto[] = [];
-  availableCargos: string[] = [];
+  availablePositionsList: {
+    label: string;
+    value: { id: number; positionName: string };
+  }[] = [];
+
+  selectedPosition: { id: number; positionName: string } | null = null;
+  proposedPositionName: string | null = null;
 
   showConfirmationModal = false;
   feedbackMessage: string | null = null;
   feedbackSuccess = false;
   isSubmitting = false;
+  isLoading = true;
 
   userForm = this.fb.group({
     email: [
@@ -70,11 +65,9 @@ export class UpdateUserComponent implements OnInit {
     lastName: [{ value: '', disabled: true }, Validators.required],
     identification: [{ value: '', disabled: true }, Validators.required],
     role: [{ value: '', disabled: true }, Validators.required],
-    cargo: ['', Validators.required],
+    positionName: ['', Validators.required],
     status: ['', Validators.required],
   });
-
-  isLoading = true;
 
   constructor(
     private fb: FormBuilder,
@@ -86,10 +79,25 @@ export class UpdateUserComponent implements OnInit {
 
   ngOnInit() {
     this.userId = Number(this.route.snapshot.paramMap.get('id'));
-    this.positionService.getAll().subscribe((positions) => {
-      this.availablePositions = positions;
-      this.availableCargos = positions.map((p) => p.name);
-      this.loadUser();
+    this.loadPositions();
+  }
+
+  private loadPositions(): void {
+    this.positionService.getAll().subscribe({
+      next: (positions) => {
+        if (!positions) {
+          this.availablePositionsList = [];
+          return;
+        }
+        this.availablePositionsList = positions.map((p) => ({
+          label: p.positionName,
+          value: { id: p.id, positionName: p.positionName },
+        }));
+        this.loadUser();
+      },
+      error: (err) => {
+        console.error('Error cargando posiciones:', err);
+      },
     });
   }
 
@@ -104,7 +112,7 @@ export class UpdateUserComponent implements OnInit {
         lastName: user.lastName,
         identification: user.identification,
         role: this.mapRoleToSpanish(user.role),
-        cargo: user.position?.name ?? '',
+        positionName: user.position?.positionName ?? '',
         status: user.enabledStatus ? 'ACTIVO' : 'INACTIVO',
       });
 
@@ -112,32 +120,29 @@ export class UpdateUserComponent implements OnInit {
         (f) => this.userForm.get(f)?.disable()
       );
 
-      // 🔽 Marca la carga como completada
+      const matched = this.availablePositionsList.find(
+        (p) =>
+          p.label.toUpperCase() ===
+          (user.position?.positionName ?? '').toUpperCase()
+      );
+
+      if (matched) {
+        this.selectedPosition = matched.value;
+      } else if (user.position?.positionName) {
+        this.proposedPositionName = user.position.positionName.toUpperCase();
+      }
+
       this.isLoading = false;
     });
+  }
+
+  get raw() {
+    return this.userForm.getRawValue();
   }
 
   get institutionalEmail(): string {
     const prefix = this.userForm.get('email')?.value || '';
     return `${prefix}@uptc.edu.co`.toLowerCase();
-  }
-
-  get cargoValue(): string | null {
-    return this.userForm.get('cargo')?.value ?? null;
-  }
-
-  isAddingNewCargo = false;
-
-  onSelectCargo(name: string) {
-    const upper = name.trim().toUpperCase();
-    const exists = this.availableCargos.some((c) => c.toUpperCase() === upper);
-    this.isAddingNewCargo = !exists;
-
-    // Si no existe, agregamos SOLO al array localmente (no en DB)
-    if (!exists) {
-      this.availableCargos.push(upper);
-    }
-    this.userForm.get('cargo')?.setValue(upper);
   }
 
   submitForm(): void {
@@ -151,24 +156,20 @@ export class UpdateUserComponent implements OnInit {
     this.showConfirmationModal = true;
   }
 
-  get raw() {
-    return this.userForm.getRawValue();
-  }
-
   confirmUpdate(): void {
     if (this.isSubmitting) return;
     this.isSubmitting = true;
 
     const isActive = this.userForm.get('status')?.value === 'ACTIVO';
-    const selectedName = this.userForm.value.cargo!.trim().toUpperCase();
-    const existing = this.availablePositions.find(
-      (p) => p.name === selectedName
+    const selectedName = this.userForm.value.positionName!.trim().toUpperCase();
+    const existing = this.availablePositionsList.find(
+      (p) => p.label.toUpperCase() === selectedName
     );
 
     const payload: UpdateUserRequest = {
       isActive,
       ...(existing
-        ? { positionId: existing.id }
+        ? { positionId: existing.value.id }
         : { positionName: selectedName }),
     };
 
@@ -183,8 +184,8 @@ export class UpdateUserComponent implements OnInit {
           this.feedbackMessage = null;
           this.showConfirmationModal = false;
           this.isSubmitting = false;
-          this.loadUser(); // refresca datos
-        }, 4000); // ⏱ 4 segundos de feedback
+          this.loadUser();
+        }, 4000);
       },
       error: () => {
         this.feedbackSuccess = false;
@@ -218,15 +219,7 @@ export class UpdateUserComponent implements OnInit {
   }
 
   private transformValuesToUppercase(): void {
-    [
-      'email',
-      'firstName',
-      'lastName',
-      'identification',
-      'role',
-      'cargo',
-      'status',
-    ].forEach((field) => {
+    ['positionName', 'status'].forEach((field) => {
       const ctl = this.userForm.get(field);
       if (ctl?.value) ctl.setValue(ctl.value.toString().toUpperCase());
     });
@@ -236,5 +229,24 @@ export class UpdateUserComponent implements OnInit {
     this.feedbackMessage = message;
     this.feedbackSuccess = success;
     setTimeout(() => (this.feedbackMessage = null), 5000);
+  }
+
+  onSelectPosition(position: { id: number; positionName: string }): void {
+    this.selectedPosition = position;
+    this.proposedPositionName = null;
+    this.userForm.get('positionName')?.setValue(position.positionName);
+  }
+
+  onProposedPosition(name: string): void {
+    this.proposedPositionName = name.trim().toUpperCase();
+    this.selectedPosition = null;
+    this.userForm.get('positionName')?.setValue(this.proposedPositionName);
+  }
+
+  get selectedPositionOrProposed(): PositionDto | null {
+    if (this.selectedPosition) return this.selectedPosition;
+    if (this.proposedPositionName)
+      return { id: 0, positionName: this.proposedPositionName };
+    return null;
   }
 }

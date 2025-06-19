@@ -124,7 +124,7 @@ export class SearchUserComponent implements OnInit {
         this.positions = positionList;
 
         this.options['positionId'] = positionList.map((p) => ({
-          label: p.name,
+          label: p.positionName,
           value: p.id,
         }));
 
@@ -194,6 +194,7 @@ export class SearchUserComponent implements OnInit {
 
   onFiltersChange(updated: Partial<Filters>) {
     this.filters = { ...this.filters, ...updated };
+    this.currentPage = 0;
     this.performSearch();
   }
 
@@ -250,7 +251,7 @@ export class SearchUserComponent implements OnInit {
             email: u.email,
             role: this.mapRole(u.role),
             status: u.enabledStatus ? 'ACTIVO' : 'INACTIVO',
-            position: u.position?.name || '—',
+            position: u.position?.positionName || '—',
             creationDate: u.creationDate,
           }));
 
@@ -277,6 +278,7 @@ export class SearchUserComponent implements OnInit {
       creationDateTo: '',
     };
     this.activeFilterKeys = this.availableFilterKeys.map((f) => f.key);
+    this.currentPage = 0;
     this.performSearch();
   }
 
@@ -296,7 +298,7 @@ export class SearchUserComponent implements OnInit {
     if (this.lastFilters.positionId) {
       const cargo = this.positions.find(
         (p) => p.id === this.lastFilters.positionId
-      )?.name;
+      )?.positionName;
       if (cargo) parts.push(`cargo "${cargo}"`);
     }
     if (this.lastFilters.creationDateFrom)

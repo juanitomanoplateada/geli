@@ -1,3 +1,3 @@
 export interface CreatePositionRequestDto {
-  name: string;
+  positionName: string;
 }

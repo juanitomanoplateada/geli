@@ -3,9 +3,9 @@ import {
   EventEmitter,
   Input,
   Output,
-  Signal,
   computed,
   signal,
+  Signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -30,9 +30,7 @@ export class DropdownSearchAddableComponent {
   @Input() selectedValue: string | null = null;
   @Input() disabled = false;
 
-  /** Cuando se elige un elemento existente */
   @Output() select = new EventEmitter<string>();
-  /** Cuando se solicita agregar el término escrito */
   @Output() addNew = new EventEmitter<string>();
 
   showDropdown = signal(false);
@@ -45,28 +43,32 @@ export class DropdownSearchAddableComponent {
       .filter((opt) => opt.includes(term) && opt !== this.selectedValue);
   }
 
-  /** Muestra “Agregar” si el término no está en options y no está vacío */
   readonly canAddNew = computed(() => {
     const term = this.searchTerm().trim().toUpperCase();
     return term !== '' && !this.options.some((o) => o.toUpperCase() === term);
   });
 
   toggleDropdown(): void {
-    if (!this.disabled) {
-      this.showDropdown.update((v) => !v);
-    }
+    if (!this.disabled) this.showDropdown.update((v) => !v);
   }
 
-  onSelect(option: string): void {
+  onInputChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchTerm.set(input.value.toUpperCase());
+  }
+
+  onSelect(option: string, event?: MouseEvent): void {
+    event?.stopPropagation();
     this.select.emit(option);
     this.resetDropdown();
   }
 
-  onAddNew(): void {
+  onAddNew(event?: MouseEvent): void {
+    event?.stopPropagation();
     const term = this.searchTerm().trim();
     if (!term) return;
-    this.addNew.emit(term); // sólo emitimos
-    this.select.emit(term); // y seleccionamos
+    this.addNew.emit(term);
+    this.select.emit(term);
     this.resetDropdown();
   }
 
@@ -74,7 +76,7 @@ export class DropdownSearchAddableComponent {
     this.showDropdown.set(false);
   }
 
-  private resetDropdown() {
+  private resetDropdown(): void {
     this.searchTerm.set('');
     this.showDropdown.set(false);
   }

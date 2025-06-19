@@ -10,10 +10,8 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 import { FieldConfig } from '../../../shared/model/field-config.model';
 import { ColumnConfig } from '../../../shared/model/column-config.model';
 
-import {
-  UserService,
-  UserRecordResponse,
-} from '../../../core/user/services/user.service';
+import { UserRecordResponse } from '../../../core/dto/user/record-user-response.dto';
+import { UserService } from '../../../core/services/user/user.service';
 import { EquipmentService } from '../../../core/equipment/services/equipment.service';
 import { EquipmentDto } from '../../../core/equipment/models/equipment-response.dto';
 import { EquipmentFilterDto } from '../../../core/equipment/models/equipment-request.dto';
@@ -132,7 +130,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
 
   equipmentResults: EquipmentTableRecord[] = [];
   authorizedEquipments: EquipmentTableRecord[] = [];
-  
+
   // Agrupación por laboratorio
   laboratoryGroups: LaboratoryGroup[] = [];
   showGroupedView = true; // por defecto mostrar vista agrupada
@@ -316,7 +314,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
 
     // Convertir mapa a array
     this.laboratoryGroups = Array.from(labGroups.values());
-    
+
     // Actualizar estado de selecciu00f3n para cada grupo
     this.updateGroupSelectionState();
   }
@@ -357,7 +355,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
   isChecked(equipment: EquipmentTableRecord): boolean {
     return this.authorizedEquipments.some((eq) => eq.id === equipment.id);
   }
-  
+
   // Método para manejar el cambio de estado de un checkbox individual
   onItemCheckChange(item: EquipmentTableRecord): void {
     if (this.isChecked(item)) {
@@ -367,31 +365,31 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
       // Si no está seleccionado, añadirlo
       this.authorizedEquipments = [...this.authorizedEquipments, item];
     }
-    
+
     // Actualizar estado de grupos
     this.updateGroupSelectionState();
   }
-  
+
   // Método para actualizar el estado de selección de todos los grupos
   updateGroupSelectionState(): void {
     this.laboratoryGroups.forEach(group => {
       const allEquipmentIds = new Set(group.equipments.map(eq => eq.id));
       const selectedEquipmentIds = new Set(this.authorizedEquipments.filter(eq => allEquipmentIds.has(eq.id)).map(eq => eq.id));
-      
+
       // Un grupo está totalmente seleccionado si todos sus equipos están seleccionados
       group.allSelected = selectedEquipmentIds.size === allEquipmentIds.size && allEquipmentIds.size > 0;
     });
   }
-  
+
   // Método para obtener valores anidados de un objeto
   resolveNestedValue(item: any, key: string): any {
     if (!key.includes('.')) {
       return item[key];
     }
-    
+
     const parts = key.split('.');
     let value = item;
-    
+
     for (const part of parts) {
       if (value && typeof value === 'object') {
         value = value[part];
@@ -399,7 +397,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
         return '';
       }
     }
-    
+
     return value || '';
   }
 

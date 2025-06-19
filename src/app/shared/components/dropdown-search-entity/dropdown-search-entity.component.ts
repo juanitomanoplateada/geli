@@ -25,6 +25,7 @@ import { ClickOutsideDirective } from '../../directives/click-outside/click-outs
   styleUrls: ['./dropdown-search-entity.component.scss'],
 })
 export class DropdownSearchEntityComponent<T = any> {
+  @Input() displayKey: string = 'label';
   @Input() placeholder: string = 'Seleccione una opción';
   @Input() options: { label: string; value: T }[] = [];
   @Input() selectedValue: T | null = null;
@@ -82,6 +83,7 @@ export class DropdownSearchEntityComponent<T = any> {
   }
 
   close(): void {
+    this.searchTerm.set('');
     this.showDropdown.set(false);
   }
 
@@ -92,19 +94,17 @@ export class DropdownSearchEntityComponent<T = any> {
 
   displaySelectedLabel(): string | null {
     if (!this.selectedValue) return null;
-
-    if (typeof this.selectedValue === 'string') {
-      return this.selectedValue;
-    }
-
+    if (typeof this.selectedValue === 'string') return this.selectedValue;
     if (
       typeof this.selectedValue === 'object' &&
-      this.selectedValue !== null &&
-      'locationName' in this.selectedValue
-    ) {
-      return (this.selectedValue as any).locationName;
-    }
-
+      this.displayKey in this.selectedValue
+    )
+      return (this.selectedValue as any)[this.displayKey];
     return null;
+  }
+
+  clearSearch(event?: MouseEvent): void {
+    event?.stopPropagation(); // <- Esto evita que se dispare el clickOutside
+    this.searchTerm.set('');
   }
 }

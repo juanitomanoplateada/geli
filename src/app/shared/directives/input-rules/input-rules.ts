@@ -12,6 +12,8 @@ export class InputRulesDirective {
   @Input() noSpaces = false;
   @Input() maxLength: number | null = null;
   @Input() alphanumericWithDash = false;
+  @Input() lettersNumbersDotNoSpaces = false;
+  @Input() onlyLettersWithSpaces = false;
 
   constructor(private el: ElementRef<HTMLInputElement>) {}
 
@@ -25,10 +27,17 @@ export class InputRulesDirective {
     if (this.onlyLetters) value = value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, '');
     if (this.onlyNumbers) value = value.replace(/[^0-9]/g, '');
     if (this.onlyAlphanumeric) value = value.replace(/[^A-Za-z0-9]/g, '');
-    if (this.maxLength !== null) value = value.slice(0, this.maxLength);
-    if (this.alphanumericWithDash) {
+    if (this.alphanumericWithDash)
       value = value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9-]/g, '');
+
+    if (this.lettersNumbersDotNoSpaces)
+      value = value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9.]/g, '');
+
+    if (this.onlyLettersWithSpaces) {
+      value = value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]/g, '');
     }
+
+    if (this.maxLength !== null) value = value.slice(0, this.maxLength);
 
     if (input.value !== value) {
       const start = input.selectionStart;

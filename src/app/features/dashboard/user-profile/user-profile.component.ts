@@ -1,12 +1,10 @@
+import { UserRecordResponse } from './../../../core/dto/user/record-user-response.dto';
+import { UserService } from './../../../core/services/user/user.service';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/services/auth.service';
-import {
-  UserService,
-  UserRecordResponse,
-} from '../../../core/user/services/user.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -69,7 +67,7 @@ export class UserProfileComponent implements OnInit {
           institutionalEmail: user.email,
           userStatus: user.enabledStatus ? 'Activo' : 'Inactivo',
           role: this.translateRole(user.role),
-          position: user.position?.name ?? 'Sin posición',
+          position: user.position?.positionName ?? 'Sin posición',
         };
         this.isLoadingProfile = false;
       },

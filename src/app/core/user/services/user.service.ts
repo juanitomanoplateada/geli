@@ -2,37 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { EquipmentDto } from '../../equipment/models/equipment-response.dto';
 import { environment } from '../../../../environments/environment.prod';
-
-export interface CreateUserRequest {
-  email: string;
-  firstName: string;
-  lastName: string;
-  identification: string;
-  role: string;
-  positionId: number;
-}
-
-export interface PositionResponse {
-  id: number;
-  name: string;
-}
-
-export interface UserRecordResponse {
-  id: number;
-  keycloakId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  identification: string;
-  enabledStatus: boolean;
-  role: string;
-  modificationStatusDate: string;
-  creationDate: string;
-  position?: PositionResponse;
-  authorizedUserEquipments?: EquipmentDto[];
-}
+import { UserRecordResponse } from '../../dto/user/record-user-response.dto';
+import { CreateUserRequest } from '../../dto/user/create-user-request.dto';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {

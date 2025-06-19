@@ -11,10 +11,9 @@
   <div class="dropdown-list" *ngIf="showDropdown()">
     <input
       type="text"
-      [ngModel]="searchTerm()"
-      (ngModelChange)="searchTerm.set($event.toUpperCase())"
+      [value]="searchTerm()"
+      (input)="onInputChange($event)"
       placeholder="Buscar..."
-      title="Buscar opciones"
       aria-label="Buscar opción"
       appUppercase
     />
@@ -22,12 +21,12 @@
     <div
       class="option"
       *ngFor="let opt of filteredOptions"
-      (click)="onSelect(opt)"
+      (click)="onSelect(opt, $event)"
     >
       {{ opt }}
     </div>
 
-    <div class="option add-new" *ngIf="canAddNew()" (click)="onAddNew()">
+    <div class="option add-new" *ngIf="canAddNew()" (click)="onAddNew($event)">
       ➕ Agregar “{{ searchTerm().trim() }}”
     </div>
   </div>

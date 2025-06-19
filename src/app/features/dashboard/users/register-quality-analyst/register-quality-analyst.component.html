@@ -17,8 +17,11 @@
           formControlName="email"
           placeholder="Ej: juan.perez123"
           class="form-control email-input"
-          appUppercaseNospace
           (input)="checkEmailExists()"
+          appInputRules
+          [lettersNumbersDotNoSpaces]="true"
+          [uppercase]="true"
+          [maxLength]="15"
         />
         <span class="domain-display">&#64;uptc.edu.co</span>
       </div>
@@ -35,15 +38,29 @@
     </div>
 
     <!-- Grupo: Nombre Completo -->
+
     <div class="form-group">
       <label>Nombres <span class="required">*</span></label>
-      <input
-        type="text"
-        formControlName="firstName"
-        placeholder="Ej: Juan Sebastián"
-        class="form-control"
-        appUppercase
-      />
+      <div class="input-clear-wrapper">
+        <input
+          type="text"
+          formControlName="firstName"
+          placeholder="Ej: Juan Sebastián"
+          class="form-control"
+          appInputRules
+          [uppercase]="true"
+          [onlyLettersWithSpaces]="true"
+          [maxLength]="50"
+        />
+        <button
+          type="button"
+          *ngIf="userForm.get('firstName')?.value"
+          class="clear-btn"
+          (click)="userForm.get('firstName')?.setValue('')"
+        >
+          ✖
+        </button>
+      </div>
 
       <div
         *ngIf="
@@ -58,13 +75,26 @@
 
     <div class="form-group">
       <label>Apellidos <span class="required">*</span></label>
-      <input
-        type="text"
-        formControlName="lastName"
-        placeholder="Ej: Pérez Gómez"
-        class="form-control"
-        appUppercase
-      />
+      <div class="input-clear-wrapper">
+        <input
+          type="text"
+          formControlName="lastName"
+          placeholder="Ej: Pérez Gómez"
+          class="form-control"
+          appInputRules
+          [uppercase]="true"
+          [onlyLettersWithSpaces]="true"
+          [maxLength]="50"
+        />
+        <button
+          type="button"
+          *ngIf="userForm.get('lastName')?.value"
+          class="clear-btn"
+          (click)="userForm.get('lastName')?.setValue('')"
+        >
+          ✖
+        </button>
+      </div>
 
       <div
         *ngIf="
@@ -78,18 +108,30 @@
 
     <!-- Grupo: Identificación -->
     <div class="form-group">
-      <label for="identification"
-        >Identificación <span class="required">*</span></label
-      >
-      <input
-        id="identification"
-        type="text"
-        formControlName="identification"
-        placeholder="Ej: 1234567890"
-        class="form-control"
-        appUppercaseNospace
-        appIntegerOnly
-      />
+      <label for="identification">
+        Identificación <span class="required">*</span>
+      </label>
+      <div class="input-clear-wrapper">
+        <input
+          id="identification"
+          type="text"
+          formControlName="identification"
+          placeholder="Ej: 1234567890"
+          class="form-control"
+          appInputRules
+          [onlyNumbers]="true"
+          [maxLength]="15"
+        />
+        <button
+          type="button"
+          *ngIf="userForm.get('identification')?.value"
+          class="clear-btn"
+          (click)="userForm.get('identification')?.setValue('')"
+        >
+          ✖
+        </button>
+      </div>
+
       <div
         *ngIf="
           userForm.get('identification')?.invalid &&
@@ -101,22 +143,23 @@
       </div>
     </div>
 
-    <!-- Grupo: Cargo -->
+    <!-- Cargo -->
     <div class="form-group">
       <label for="cargo">Cargo <span class="required">*</span></label>
-      <p class="field-hint">
-        Busque primero el cargo. Si no lo encuentra, escriba uno nuevo para
-        agregarlo.
-      </p>
-      <app-dropdown-search-addable
-        [options]="availablePositionNames"
-        [selectedValue]="positionValue"
-        (select)="userForm.get('position')?.setValue($event)"
-        placeholder="Seleccione o cree un cargo del usuario"
-      ></app-dropdown-search-addable>
+      <app-dropdown-search-entity
+        [options]="availablePositionsList"
+        [selectedValue]="selectedPositionOrProposed"
+        (select)="onSelectPosition($event)"
+        (addNew)="onProposedPosition($event)"
+        placeholder="Seleccione o agregue un cargo"
+        displayKey="positionName"
+      ></app-dropdown-search-entity>
 
       <div
-        *ngIf="userForm.get('position')?.invalid && userForm.get('position')?.touched"
+        *ngIf="
+          userForm.get('positionName')?.invalid &&
+          userForm.get('positionName')?.touched
+        "
         class="error-message"
       >
         Debe seleccionar o agregar un cargo.
@@ -179,7 +222,7 @@
             <strong>Identificación:</strong> {{ userForm.value.identification }}
           </li>
           <li><strong>Rol Asignado:</strong> ANALISTA DE CALIDAD</li>
-          <li><strong>Cargo:</strong> {{ userForm.value.position }}</li>
+          <li><strong>Cargo:</strong> {{ userForm.value.positionName }}</li>
         </ul>
 
         <!-- Feedback Modal -->

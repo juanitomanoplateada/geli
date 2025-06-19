@@ -1,20 +1,20 @@
 import { Component } from '@angular/core';
-import { PositionService } from './../../../../core/services/position/position.service';
-import { PositionDto } from './../../../../core/dto/position/position-response.dto';
+import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
   FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+
 import { UserService } from '../../../../core/services/user/user.service';
+import { PositionService } from './../../../../core/services/position/position.service';
 import { CreateUserRequest } from '../../../../core/dto/user/create-user-request.dto';
-import { DropdownSearchAddableComponent } from '../../../../shared/components/dropdown-search-addable/dropdown-search-addable.component';
-import { UppercaseNospaceDirective } from '../../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
+import { PositionDto } from '../../../../core/dto/position/position-response.dto';
+
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
-import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
-import { CommonModule } from '@angular/common';
-import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
+import { DropdownSearchEntityComponent } from '../../../../shared/components/dropdown-search-entity/dropdown-search-entity.component';
+import { InputRulesDirective } from '../../../../shared/directives/input-rules/input-rules';
 
 @Component({
   selector: 'app-register-quality-analyst',
@@ -24,17 +24,20 @@ import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppe
     FormsModule,
     ReactiveFormsModule,
     ConfirmModalComponent,
-    UppercaseDirective,
-    UppercaseNospaceDirective,
-    IntegerOnlyDirective,
-    DropdownSearchAddableComponent,
+    DropdownSearchEntityComponent,
+    InputRulesDirective,
   ],
   templateUrl: './register-quality-analyst.component.html',
   styleUrl: './register-quality-analyst.component.scss',
 })
 export class RegisterQualityAnalystComponent {
-  availablePositions: PositionDto[] = [];
-  availablePositionNames: string[] = [];
+  availablePositionsList: {
+    label: string;
+    value: { id: number; positionName: string };
+  }[] = [];
+
+  selectedPosition: { id: number; positionName: string } | null = null;
+  proposedPositionName: string | null = null;
 
   showConfirmationModal = false;
   feedbackMessage: string | null = null;
@@ -46,34 +49,40 @@ export class RegisterQualityAnalystComponent {
   modalFeedbackMessage = '';
   modalFeedbackSuccess = false;
 
+  userForm = this.fb.group({
+    email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._-]+$/)]],
+    firstName: ['', Validators.required],
+    lastName: ['', Validators.required],
+    identification: ['', Validators.required],
+    positionName: ['', Validators.required],
+  });
+
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
     private positionService: PositionService
   ) {}
 
-  userForm = this.fb.group({
-    email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._-]+$/)]],
-    firstName: ['', Validators.required],
-    lastName: ['', Validators.required],
-    identification: ['', Validators.required],
-    position: ['', Validators.required],
-  });
-
-  ngOnInit() {
-    this.positionService.getAll().subscribe((list) => {
-      if (Array.isArray(list)) {
-        this.availablePositions = list;
-        this.availablePositionNames = list.map((p) => p.name);
-      } else {
-        this.availablePositions = [];
-        this.availablePositionNames = [];
-      }
-    });
+  ngOnInit(): void {
+    this.loadPositions();
   }
 
-  get positionValue(): string | null {
-    return this.userForm.get('position')?.value ?? null;
+  private loadPositions(): void {
+    this.positionService.getAll().subscribe({
+      next: (positions) => {
+        if (!positions) {
+          this.availablePositionsList = [];
+          return;
+        }
+        this.availablePositionsList = positions.map((p) => ({
+          label: p.positionName,
+          value: { id: p.id, positionName: p.positionName },
+        }));
+      },
+      error: (err) => {
+        console.error('Error cargando posiciones:', err);
+      },
+    });
   }
 
   get institutionalEmail(): string {
@@ -83,7 +92,6 @@ export class RegisterQualityAnalystComponent {
 
   submitForm(): void {
     if (this.isSubmitting) return;
-    this.transformFormValuesToUppercase();
 
     const prefix = this.userForm.get('email')?.value || '';
     if (!prefix) {
@@ -92,6 +100,7 @@ export class RegisterQualityAnalystComponent {
 
     const email = this.institutionalEmail;
     this.isSubmitting = true;
+
     this.userService.checkEmailExists(email).subscribe({
       next: (exists) => {
         this.emailAlreadyExists = exists;
@@ -116,9 +125,9 @@ export class RegisterQualityAnalystComponent {
 
     this.isSubmitting = true;
 
-    const selectedName = this.userForm.value.position!.trim().toUpperCase();
-    const existing = this.availablePositions.find(
-      (p) => p.name === selectedName
+    const positionName = this.userForm.value.positionName!.trim().toUpperCase();
+    const existing = this.availablePositionsList.find(
+      (opt) => opt.label.toUpperCase() === positionName
     );
 
     const payload: CreateUserRequest = {
@@ -127,7 +136,7 @@ export class RegisterQualityAnalystComponent {
       lastName: this.userForm.value.lastName!.trim(),
       identification: this.userForm.value.identification!,
       role: 'QUALITY-ADMIN-USER',
-      positionId: existing?.id || 0,
+      positionId: existing?.value.id || 0,
     };
 
     const createUser = () => {
@@ -148,10 +157,15 @@ export class RegisterQualityAnalystComponent {
     };
 
     if (!existing) {
-      this.positionService.create({ name: selectedName }).subscribe({
+      this.positionService.create({ positionName }).subscribe({
         next: (newPosition) => {
-          this.availablePositions.push(newPosition);
-          this.availablePositionNames.push(newPosition.name);
+          this.availablePositionsList.push({
+            label: newPosition.positionName,
+            value: {
+              id: newPosition.id,
+              positionName: newPosition.positionName,
+            },
+          });
           payload.positionId = newPosition.id;
           createUser();
         },
@@ -165,18 +179,13 @@ export class RegisterQualityAnalystComponent {
     }
   }
 
-  private modalFeedback(message: string, success: boolean) {
-    this.modalFeedbackMessage = message;
-    this.modalFeedbackSuccess = success;
-    this.showModalFeedback = true;
-
-    setTimeout(() => {
-      this.showModalFeedback = false;
-    }, 5000);
-  }
-
   resetForm(): void {
-    this.userForm.reset({ position: '' });
+    this.userForm.reset({ positionName: '' });
+
+    // Limpieza adicional para el dropdown
+    this.selectedPosition = null;
+    this.proposedPositionName = null;
+
     this.feedbackMessage = null;
     this.emailAlreadyExists = false;
     this.showConfirmationModal = false;
@@ -193,6 +202,7 @@ export class RegisterQualityAnalystComponent {
       this.emailAlreadyExists = false;
       return;
     }
+
     const email = this.institutionalEmail;
     this.userService.checkEmailExists(email).subscribe({
       next: (exists) => (this.emailAlreadyExists = exists),
@@ -200,18 +210,37 @@ export class RegisterQualityAnalystComponent {
     });
   }
 
-  private transformFormValuesToUppercase(): void {
-    ['email', 'firstName', 'lastName', 'identification', 'position'].forEach(
-      (field) => {
-        const ctl = this.userForm.get(field);
-        if (ctl?.value) ctl.setValue(ctl.value.toString().toUpperCase());
-      }
-    );
-  }
-
-  private showFeedback(msg: string, success: boolean) {
+  private showFeedback(msg: string, success: boolean): void {
     this.feedbackMessage = msg;
     this.feedbackSuccess = success;
     setTimeout(() => (this.feedbackMessage = null), 5000);
+  }
+
+  private modalFeedback(message: string, success: boolean): void {
+    this.modalFeedbackMessage = message;
+    this.modalFeedbackSuccess = success;
+    this.showModalFeedback = true;
+    setTimeout(() => {
+      this.showModalFeedback = false;
+    }, 5000);
+  }
+
+  onSelectPosition(position: { id: number; positionName: string }): void {
+    this.selectedPosition = position;
+    this.proposedPositionName = null;
+    this.userForm.get('positionName')?.setValue(position.positionName);
+  }
+
+  onProposedPosition(name: string): void {
+    this.proposedPositionName = name.trim().toUpperCase();
+    this.selectedPosition = null;
+    this.userForm.get('positionName')?.setValue(this.proposedPositionName);
+  }
+
+  get selectedPositionOrProposed(): PositionDto | null {
+    if (this.selectedPosition) return this.selectedPosition;
+    if (this.proposedPositionName)
+      return { id: 0, positionName: this.proposedPositionName };
+    return null;
   }
 }

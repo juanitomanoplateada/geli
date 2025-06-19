@@ -1,3 +1,4 @@
+import { UserService } from './../../../../core/services/user/user.service';
 import { PositionService } from './../../../../core/services/position/position.service';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -12,10 +13,7 @@ import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppe
 import { UppercaseNospaceDirective } from '../../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
 import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
 import { DropdownSearchAddableComponent } from '../../../../shared/components/dropdown-search-addable/dropdown-search-addable.component';
-import {
-  UserService,
-  CreateUserRequest,
-} from '../../../../core/user/services/user.service';
+import { CreateUserRequest } from '../../../../core/dto/user/create-user-request.dto';
 import { PositionDto } from '../../../../core/dto/position/position-response.dto';
 
 @Component({
@@ -69,7 +67,7 @@ export class RegisterUserComponent implements OnInit {
     this.positionService.getAll().subscribe((list) => {
       if (Array.isArray(list)) {
         this.availablePositions = list;
-        this.availableCargos = list.map((p) => p.name);
+        this.availableCargos = list.map((p) => p.positionName);
       } else {
         this.availablePositions = [];
         this.availableCargos = [];
@@ -129,7 +127,7 @@ export class RegisterUserComponent implements OnInit {
 
     const selectedName = this.userForm.value.cargo!.trim().toUpperCase();
     const existing = this.availablePositions.find(
-      (p) => p.name === selectedName
+      (p) => p.positionName === selectedName
     );
 
     const payload: CreateUserRequest = {
@@ -159,10 +157,10 @@ export class RegisterUserComponent implements OnInit {
     };
 
     if (!existing) {
-      this.positionService.create({ name: selectedName }).subscribe({
+      this.positionService.create({ positionName: selectedName }).subscribe({
         next: (newPosition) => {
           this.availablePositions.push(newPosition);
-          this.availableCargos.push(newPosition.name);
+          this.availableCargos.push(newPosition.positionName);
           payload.positionId = newPosition.id;
           createUser();
         },

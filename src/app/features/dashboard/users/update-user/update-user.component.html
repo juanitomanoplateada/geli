@@ -2,8 +2,9 @@
   <div class="spinner"></div>
   <p>Cargando datos del usuario...</p>
 </div>
+
 <div *ngIf="!isLoading" class="register-container">
-  <!-- Fechas de creación/modificación alineadas arriba derecha -->
+  <!-- Fechas -->
   <div class="dates-header">
     <small><strong>Creación:</strong> {{ creationDate }}</small>
     <small><strong>Última modificación:</strong> {{ modificationDate }}</small>
@@ -11,103 +12,55 @@
 
   <h1>Actualizar Usuario</h1>
   <p class="subtitle">
-    Modifique los datos permitidos del usuario en el sistema.
+    Modifique el cargo y el estado del usuario. La demás información es solo de
+    consulta.
   </p>
 
   <form [formGroup]="userForm" (ngSubmit)="submitForm()">
-    <!-- Correo Institucional -->
-    <div class="form-group">
-      <label for="email"
-        >Correo Institucional <span class="required">*</span></label
-      >
-      <div class="email-input-group">
-        <input
-          id="email"
-          type="text"
-          formControlName="email"
-          placeholder="Usuario Institucional"
-          class="form-control readonly-field"
-          appUppercaseNospace
-        />
-        <span class="domain-display">&#64;uptc.edu.co</span>
+    <!-- Información General (No editable) -->
+    <div class="info-group">
+      <div class="info-field">
+        <label>Correo Institucional</label>
+        <div class="info-value">{{ raw.email }}&#64;uptc.edu.co</div>
+      </div>
+
+      <div class="info-field">
+        <label>Nombres</label>
+        <div class="info-value">{{ raw.firstName }}</div>
+      </div>
+      <div class="info-field">
+        <label>Apellidos</label>
+        <div class="info-value">{{ raw.lastName }}</div>
+      </div>
+
+      <div class="info-field">
+        <label>Identificación</label>
+        <div class="info-value">{{ raw.identification }}</div>
+      </div>
+
+      <div class="info-field">
+        <label>Rol</label>
+        <div class="info-value">{{ raw.role }}</div>
       </div>
     </div>
 
-    <!-- Nombre Completo -->
-    <div class="form-group">
-      <label>Nombre Completo <span class="required">*</span></label>
-      <div class="name-split-row">
-        <input
-          type="text"
-          formControlName="firstName"
-          placeholder="Nombres"
-          class="form-control readonly-field"
-          appUppercase
-        />
-        <input
-          type="text"
-          formControlName="lastName"
-          placeholder="Apellidos"
-          class="form-control readonly-field"
-          appUppercase
-        />
-      </div>
-    </div>
-
-    <!-- Identificación -->
-    <div class="form-group">
-      <label for="identification"
-        >Identificación <span class="required">*</span></label
-      >
-      <input
-        id="identification"
-        type="text"
-        formControlName="identification"
-        placeholder="Número de identificación"
-        class="form-control readonly-field"
-        appUppercaseNospace
-        appIntegerOnly
-      />
-    </div>
-
-    <!-- Rol -->
-    <div class="form-group">
-      <label for="role">Rol <span class="required">*</span></label>
-      <select
-        id="role"
-        class="form-control readonly-field"
-        formControlName="role"
-      >
-        <option *ngFor="let r of availableRoles" [value]="r">{{ r }}</option>
-      </select>
-    </div>
-
-    <!-- Cargo -->
+    <!-- Sección editable -->
     <div class="form-group">
       <label for="cargo">Cargo <span class="required">*</span></label>
-      <p class="field-hint">
-        Busque primero el cargo. Si no lo encuentra, escriba uno nuevo para
-        agregarlo.
-      </p>
-      <app-dropdown-search-addable
-        [options]="availableCargos"
-        [selectedValue]="cargoValue"
-        (select)="onSelectCargo($event)"
-      ></app-dropdown-search-addable>
+      <app-dropdown-search-entity
+        [options]="availablePositionsList"
+        [selectedValue]="selectedPositionOrProposed"
+        (select)="onSelectPosition($event)"
+        (addNew)="onProposedPosition($event)"
+        placeholder="Seleccione o agregue un cargo"
+        displayKey="positionName"
+      ></app-dropdown-search-entity>
     </div>
 
-    <!-- Estado -->
     <div class="form-group">
       <label for="status">Estado <span class="required">*</span></label>
       <select id="status" class="form-control" formControlName="status">
         <option *ngFor="let s of availableStatuses" [value]="s">
-          <span
-            class="status-dot"
-            [ngClass]="{
-              'dot-active': s === 'ACTIVO',
-              'dot-inactive': s === 'INACTIVO'
-            }"
-          ></span>
           {{ s }}
         </option>
       </select>
@@ -148,16 +101,28 @@
         Está a punto de actualizar la información de un usuario en el sistema.
         Por favor, revise los cambios antes de confirmar:
       </p>
+
       <ul class="summary-list">
-        <li><strong>Correo Institucional:</strong> {{ institutionalEmail }}</li>
+        <li>
+          <strong>Correo Institucional:</strong>
+          {{ raw.email }}&#64;uptc.edu.co
+        </li>
         <li>
           <strong>Nombre Completo:</strong> {{ raw.firstName }}
-          {{ raw.lastName }}
+          {{ userForm.value.lastName }}
         </li>
-        <li><strong>Identificación:</strong> {{ raw.identification }}</li>
+        <li>
+          <strong>Identificación:</strong> {{ raw.identification }}
+        </li>
         <li><strong>Rol Asignado:</strong> {{ raw.role }}</li>
-        <li><strong>Cargo:</strong> {{ raw.cargo }}</li>
-        <li><strong>Estado Actual:</strong> {{ raw.status }}</li>
+        <li>
+          <strong>Cargo:</strong>
+          {{
+            selectedPositionOrProposed?.positionName ||
+              userForm.value.positionName
+          }}
+        </li>
+        <li><strong>Estado Actual:</strong> {{ userForm.value.status }}</li>
       </ul>
 
       <div
