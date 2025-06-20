@@ -23,12 +23,11 @@
         Nuevo Nombre <span class="required">*</span>
       </label>
 
-      <div class="input-with-spinner">
+      <div class="input-clear-wrapper">
         <input
           type="text"
           class="form-control"
           formControlName="newPositionName"
-          [disabled]="checkingName"
           placeholder="Ej: Coordinador de Procesos"
           appInputRules
           [uppercase]="true"
@@ -36,7 +35,15 @@
           [onlyLettersWithSpaces]="true"
         />
 
-        <!-- Spinner mientras se consulta -->
+        <button
+          type="button"
+          class="clear-btn"
+          *ngIf="updateForm.get('newPositionName')?.value"
+          (click)="updateForm.get('newPositionName')?.setValue('')"
+        >
+          ✖
+        </button>
+
         <div class="spinner" *ngIf="checkingName" title="Verificando..."></div>
       </div>
 

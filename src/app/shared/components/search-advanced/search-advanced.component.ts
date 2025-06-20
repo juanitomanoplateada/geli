@@ -134,4 +134,8 @@ export class SearchAdvancedComponent {
   onPageSizeChange(size: number) {
     this.pageSizeChange.emit(size);
   }
+
+  onRefresh(): void {
+    this.onSearch(); // o alguna lógica específica para recargar sin modificar el estado
+  }
 }

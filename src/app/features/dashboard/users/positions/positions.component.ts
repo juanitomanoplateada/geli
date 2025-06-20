@@ -53,7 +53,7 @@ export class PositionsComponent implements OnInit {
   ) {
     this.updateForm = this.fb.group({
       currentPosition: [null, Validators.required],
-      newPositionName: ['', Validators.required],
+      newPositionName: [{ value: '', disabled: false }, Validators.required],
     });
   }
 
@@ -92,6 +92,8 @@ export class PositionsComponent implements OnInit {
   }
 
   setupNameChecker(): void {
+    const newPositionCtrl = this.updateForm.get('newPositionName');
+
     this.nameCheck$
       .pipe(
         debounceTime(600),
@@ -105,7 +107,9 @@ export class PositionsComponent implements OnInit {
             this.nameExists = false;
             return of(false);
           }
+
           this.checkingName = true;
+          newPositionCtrl?.disable(); // 🔒 Desactiva mientras consulta
           return this.positionService.existsByName(trimmed);
         })
       )
@@ -113,14 +117,16 @@ export class PositionsComponent implements OnInit {
         next: (exists) => {
           this.nameExists = exists;
           this.checkingName = false;
+          newPositionCtrl?.enable(); // ✅ Rehabilita siempre tras respuesta
         },
         error: () => {
           this.nameExists = false;
           this.checkingName = false;
+          newPositionCtrl?.enable(); // ✅ Habilita incluso si hay error
         },
       });
 
-    this.updateForm.get('newPositionName')?.valueChanges.subscribe((val) => {
+    newPositionCtrl?.valueChanges.subscribe((val) => {
       this.nameCheck$.next(val);
     });
   }

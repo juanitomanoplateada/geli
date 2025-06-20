@@ -8,11 +8,9 @@ import { ResultsTableComponent } from '../../../../shared/components/results-tab
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 
 import { FieldConfig } from '../../../../shared/model/field-config.model';
-import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
-import {
-  LocationService,
-  LocationDto,
-} from '../../../../core/location/services/location.service';
+import { LaboratoryService } from '../../../../core/services/laboratory/laboratory.service';
+import { LocationService } from '../../../../core/services/location/location.service';
+import { LocationDto } from '../../../../core/dto/location/location-response.dto';
 
 interface LaboratoryRecord {
   id: number;
@@ -103,6 +101,12 @@ export class SearchLaboratoryComponent implements OnInit {
   ];
   activeFilterKeys: string[] = this.availableFilterKeys.map((f) => f.key);
 
+  // Variables de paginación
+  currentPage = 0;
+  totalPages = 0;
+  pageSize = 5;
+  pageSizeOptions = [5, 15, 30, 50, 100];
+
   constructor(
     private router: Router,
     private labService: LaboratoryService,
@@ -126,6 +130,17 @@ export class SearchLaboratoryComponent implements OnInit {
         this.options['locationId'] = [];
       },
     });
+  }
+
+  changePage(page: number) {
+    this.currentPage = page;
+    this.performSearch();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.currentPage = 0;
+    this.performSearch();
   }
 
   get isFilterReady(): boolean {
@@ -157,30 +172,47 @@ export class SearchLaboratoryComponent implements OnInit {
       }
     });
 
-    this.labService.filterLaboratories(payload).subscribe({
-      next: (res) => {
-        this.lastQuery = this.query.trim();
-        this.lastFilters = { ...this.filters };
-        this.hasSearched = true;
+    this.labService
+      .filterLaboratories(payload, this.currentPage, this.pageSize)
+      .subscribe({
+        next: (res) => {
+          this.lastQuery = this.query.trim();
+          this.lastFilters = { ...this.filters };
+          this.hasSearched = true;
 
-        this.laboratories = (res || []).map((l: any) => ({
-          id: l.id,
-          labName: l.laboratoryName,
-          description: l.laboratoryDescription,
-          locationName: l.location?.locationName || '—',
-          status: l.laboratoryAvailability ? 'Activo' : 'Inactivo',
-          notes: l.laboratoryObservations || '—',
-        }));
+          if (!res || !res.content) {
+            // Si no hay resultados o el backend responde con 204 sin cuerpo
+            this.totalPages = 0;
+            this.laboratories = [];
+          } else {
+            this.totalPages = res.totalPages;
+            this.currentPage = res.page;
 
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error al buscar laboratorios:', err);
-        this.laboratories = [];
-        this.hasSearched = true;
-        this.loading = false;
-      },
-    });
+            this.laboratories = res.content.map((l: any) => ({
+              id: l.id,
+              labName: l.laboratoryName,
+              description: l.laboratoryDescription,
+              locationName: l.location?.locationName || '—',
+              status: l.laboratoryAvailability ? 'Activo' : 'Inactivo',
+              notes: l.laboratoryObservations || '—',
+            }));
+          }
+
+          this.loading = false;
+        },
+        error: (err) => {
+          if (err.status === 204) {
+            // Manejo explícito para No Content
+            this.totalPages = 0;
+            this.laboratories = [];
+          } else {
+            console.error('Error al buscar laboratorios:', err);
+          }
+
+          this.hasSearched = true;
+          this.loading = false;
+        },
+      });
   }
 
   resetSearch(): void {

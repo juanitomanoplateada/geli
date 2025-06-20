@@ -156,7 +156,7 @@ h1 {
   }
 }
 
-.input-with-spinner {
+.input-clear-wrapper {
   position: relative;
   display: flex;
   align-items: center;
@@ -164,12 +164,25 @@ h1 {
   input {
     flex: 1;
     padding-right: 2.2rem;
-    font-size: 1rem;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #888;
+
+    &:hover {
+      color: #000;
+    }
   }
 
   .spinner {
     position: absolute;
-    right: 10px;
+    right: 2.2rem;
     width: 18px;
     height: 18px;
     border: 2px solid #ccc;

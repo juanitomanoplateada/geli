@@ -16,6 +16,15 @@
     (triggerSearch)="performSearch()"
     (clearFilters)="resetSearch()"
     (toggleAdvanced)="toggleFilters()"
+    [placeholder]="'Buscar por nombre'"
+    [currentPage]="currentPage"
+    [totalPages]="totalPages"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="pageSizeOptions"
+    [isLoading]="loading"
+    [hasData]="laboratories.length > 0"
+    (pageChange)="changePage($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
   ></app-search-advanced>
 
   <div *ngIf="loading" class="loading-state">

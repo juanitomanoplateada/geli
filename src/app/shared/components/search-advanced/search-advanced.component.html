@@ -1,7 +1,8 @@
 <div class="search-bar">
   <!-- Campo de búsqueda con botón limpiar -->
   <div class="search-input-wrapper">
-    <input title="Ingresa la información correspondiente"
+    <input
+      title="Ingresa la información correspondiente"
       type="text"
       appInputRules
       [alphanumericWithDash]="true"
@@ -69,6 +70,14 @@
       </option>
     </select>
   </div>
+  <button
+    class="refresh-button"
+    (click)="onRefresh()"
+    [disabled]="isLoading"
+    title="Refrescar búsqueda"
+  >
+    🔄
+  </button>
 </div>
 
 <!-- Panel de filtros avanzados -->
