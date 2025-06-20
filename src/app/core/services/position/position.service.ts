@@ -24,4 +24,16 @@ export class PositionService {
   create(payload: CreatePositionRequestDto): Observable<PositionDto> {
     return this.http.post<PositionDto>(this.baseUrl, payload);
   }
+
+  /** GET check if a position name already exists */
+  existsByName(name: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.baseUrl}/exists`, {
+      params: { name },
+    });
+  }
+
+  /** PUT update a position by ID */
+  update(id: number, dto: PositionDto): Observable<PositionDto> {
+    return this.http.put<PositionDto>(`${this.baseUrl}/${id}`, dto);
+  }
 }

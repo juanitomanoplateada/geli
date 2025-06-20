@@ -9,9 +9,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
-import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
-import { UppercaseNospaceDirective } from '../../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
-import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
 import { UserService } from '../../../../core/user/services/user.service';
 import { CreateUserRequest } from '../../../../core/dto/user/create-user-request.dto';
 import { DropdownSearchEntityComponent } from '../../../../shared/components/dropdown-search-entity/dropdown-search-entity.component';

@@ -3,8 +3,8 @@ import {
   EventEmitter,
   Input,
   Output,
-  computed,
   signal,
+  computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,7 @@ import { ClickOutsideDirective } from '../../directives/click-outside/click-outs
 import { InputRulesDirective } from '../../directives/input-rules/input-rules';
 
 @Component({
-  selector: 'app-dropdown-search-entity',
+  selector: 'app-dropdown-search-select',
   standalone: true,
   imports: [
     CommonModule,
@@ -20,10 +20,10 @@ import { InputRulesDirective } from '../../directives/input-rules/input-rules';
     ClickOutsideDirective,
     InputRulesDirective,
   ],
-  templateUrl: './dropdown-search-entity.component.html',
-  styleUrls: ['./dropdown-search-entity.component.scss'],
+  templateUrl: './dropdown-search-select.component.html',
+  styleUrls: ['./dropdown-search-select.component.scss'],
 })
-export class DropdownSearchEntityComponent<T = any> {
+export class DropdownSearchSelectComponent<T = any> {
   @Input() displayKey: string = 'label';
   @Input() placeholder: string = 'Seleccione una opción';
   @Input() options: { label: string; value: T }[] = [];
@@ -31,37 +31,14 @@ export class DropdownSearchEntityComponent<T = any> {
   @Input() disabled = false;
 
   @Output() select = new EventEmitter<T>();
-  @Output() addNew = new EventEmitter<string>();
 
   showDropdown = signal(false);
   searchTerm = signal('');
 
   get filteredOptions(): { label: string; value: T }[] {
     const term = this.searchTerm().toUpperCase();
-
-    return this.options.filter((opt) => {
-      const labelMatches = opt.label.toUpperCase().includes(term);
-
-      // Excluir opción ya seleccionada visualmente
-      const isSameAsSelected =
-        (typeof this.selectedValue === 'string' &&
-          opt.label.toUpperCase() === this.selectedValue.toUpperCase()) ||
-        (typeof this.selectedValue === 'object' &&
-          this.selectedValue !== null &&
-          'locationName' in this.selectedValue &&
-          opt.label.toUpperCase() ===
-            (this.selectedValue as any).locationName.toUpperCase());
-
-      return labelMatches && !isSameAsSelected;
-    });
+    return this.options.filter((opt) => opt.label.toUpperCase().includes(term));
   }
-
-  readonly canAddNew = computed(() => {
-    const term = this.searchTerm().trim().toUpperCase();
-    return (
-      term !== '' && !this.options.some((o) => o.label.toUpperCase() === term)
-    );
-  });
 
   toggleDropdown(): void {
     if (!this.disabled) {
@@ -74,19 +51,11 @@ export class DropdownSearchEntityComponent<T = any> {
     this.resetDropdown();
   }
 
-  onAddNew(): void {
-    const term = this.searchTerm().trim();
-    if (!term) return;
-    this.addNew.emit(term);
+  close(): void {
     this.resetDropdown();
   }
 
-  close(): void {
-    this.searchTerm.set('');
-    this.showDropdown.set(false);
-  }
-
-  private resetDropdown() {
+  resetDropdown() {
     this.searchTerm.set('');
     this.showDropdown.set(false);
   }
@@ -103,7 +72,7 @@ export class DropdownSearchEntityComponent<T = any> {
   }
 
   clearSearch(event?: MouseEvent): void {
-    event?.stopPropagation(); // <- Esto evita que se dispare el clickOutside
+    event?.stopPropagation();
     this.searchTerm.set('');
   }
 }

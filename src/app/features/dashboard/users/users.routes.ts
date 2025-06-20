@@ -4,6 +4,7 @@ import { RegisterUserComponent } from './register-user/register-user.component';
 import { UpdateUserComponent } from './update-user/update-user.component';
 import { RegisterQualityAnalystComponent } from './register-quality-analyst/register-quality-analyst.component';
 import { RegisterAuthorizedPersonnelComponent } from './register-authorized-personnel/register-authorized-personnel.component';
+import { PositionsComponent } from './positions/positions.component';
 
 export const usersRoutes: Routes = [
   { path: 'search-user', component: SearchUserComponent },
@@ -11,9 +12,11 @@ export const usersRoutes: Routes = [
   {
     path: 'register-quality-analyst',
     component: RegisterQualityAnalystComponent,
-  },{
+  },
+  {
     path: 'register-authorized-personnel',
     component: RegisterAuthorizedPersonnelComponent,
   },
   { path: 'update-user/:id', component: UpdateUserComponent },
+  { path: 'positions', component: PositionsComponent },
 ];

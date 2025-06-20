@@ -14,6 +14,7 @@ export class InputRulesDirective {
   @Input() alphanumericWithDash = false;
   @Input() lettersNumbersDotNoSpaces = false;
   @Input() onlyLettersWithSpaces = false;
+  @Input() brandSafeCharacters = false;
 
   constructor(private el: ElementRef<HTMLInputElement>) {}
 
@@ -36,6 +37,8 @@ export class InputRulesDirective {
     if (this.onlyLettersWithSpaces) {
       value = value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]/g, '');
     }
+    if (this.brandSafeCharacters)
+      value = value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9.,\-_/()&+:;'"# ]/g, '');
 
     if (this.maxLength !== null) value = value.slice(0, this.maxLength);
 

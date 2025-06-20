@@ -20,10 +20,9 @@
         aria-label="Buscar opción"
         appInputRules
         [uppercase]="true"
-        [maxLength]=50
+        [maxLength]="50"
         [brandSafeCharacters]="true"
       />
-
       <button
         *ngIf="searchTerm().trim()"
         type="button"
@@ -42,10 +41,6 @@
       (click)="onSelect(opt)"
     >
       {{ opt.label }}
-    </div>
-
-    <div class="option add-new" *ngIf="canAddNew()" (click)="onAddNew()">
-      ➕ Agregar “{{ searchTerm().trim() }}”
     </div>
   </div>
 </div>
