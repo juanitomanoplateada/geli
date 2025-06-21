@@ -1,0 +1,110 @@
+<div class="update-container">
+  <h1>Actualizar Nombre de Ubicación</h1>
+  <p class="subtitle">Seleccione la ubicación que desea modificar.</p>
+
+  <form [formGroup]="updateForm" (ngSubmit)="openConfirmationModal()">
+    <!-- Dropdown -->
+    <div class="form-group">
+      <label for="currentPosition"
+        >Ubicación Actual <span class="required">*</span></label
+      >
+      <app-dropdown-search-select
+        [options]="availableLocations"
+        [selectedValue]="selectedLocation"
+        (select)="onSelectLocation($event)"
+        placeholder="Buscar y seleccionar una ubicación"
+        displayKey="locationName"
+      ></app-dropdown-search-select>
+    </div>
+
+    <!-- Input nuevo nombre -->
+    <div class="form-group">
+      <label for="newLocationName">
+        Nuevo Nombre <span class="required">*</span>
+      </label>
+
+      <div class="input-clear-wrapper">
+        <input
+          type="text"
+          class="form-control"
+          formControlName="newLocationName"
+          placeholder="Ej: Coordinador de Procesos"
+          appInputRules
+          [uppercase]="true"
+          [maxLength]="50"
+          [onlyLettersWithSpaces]="true"
+        />
+
+        <button
+          type="button"
+          class="clear-btn"
+          *ngIf="updateForm.get('newLocationName')?.value"
+          (click)="updateForm.get('newLocationName')?.setValue('')"
+        >
+          ✖
+        </button>
+
+        <div class="spinner" *ngIf="checkingName" title="Verificando..."></div>
+      </div>
+
+      <!-- Mensajes de validación -->
+      <div class="error-message" *ngIf="isSameAsCurrent">
+        El nuevo nombre no puede ser igual al actual.
+      </div>
+      <div class="error-message" *ngIf="!isSameAsCurrent && nameExists">
+        Ya existe una ubicación con ese nombre.
+      </div>
+    </div>
+
+    <!-- Botón de acción -->
+    <div class="button-group">
+      <button
+        type="submit"
+        class="btn submit-btn"
+        [disabled]="
+          !updateForm.valid ||
+          isSubmitting ||
+          nameExists ||
+          isSameAsCurrent ||
+          checkingName
+        "
+      >
+        Guardar Cambios
+      </button>
+    </div>
+
+    <!-- Confirmación -->
+    <div class="modal-backdrop" *ngIf="showConfirmationModal">
+      <app-confirm-modal
+        [title]="'Confirmar Actualización de Ubicación'"
+        [show]="showConfirmationModal"
+        [confirmLabel]="'Actualizar Ubicación'"
+        [cancelLabel]="'Cancelar'"
+        [isLoading]="isSubmitting"
+        (confirm)="submitUpdate()"
+        (cancel)="cancelConfirmation()"
+      >
+        <p>Está a punto de actualizar el siguiente cargo:</p>
+        <ul class="summary-list">
+          <li>
+            <strong>Cargo actual:</strong> {{ selectedLocation?.locationName }}
+          </li>
+          <li>
+            <strong>Nuevo nombre:</strong>
+            {{ updateForm.value.newLocationName }}
+          </li>
+        </ul>
+
+        <div
+          *ngIf="showModalFeedback"
+          [ngClass]="
+            modalFeedbackSuccess ? 'feedback success' : 'feedback error'
+          "
+          class="modal-feedback-message"
+        >
+          {{ modalFeedbackMessage }}
+        </div>
+      </app-confirm-modal>
+    </div>
+  </form>
+</div>

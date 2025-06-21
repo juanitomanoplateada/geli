@@ -118,6 +118,12 @@
           (click)="onNavigate()"
           >Registrar Laboratorio</a
         >
+        <a
+          routerLink="/dashboard/laboratories/locations"
+          [class.active]="isActive('/dashboard/laboratories/locations')"
+          (click)="onNavigate()"
+          >Actualizar Nombre de Ubicación</a
+        >
       </div>
     </div>
 

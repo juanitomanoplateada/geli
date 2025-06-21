@@ -33,7 +33,7 @@ interface FilterKey {
 }
 
 interface Filters {
-  status: '' | 'Activo' | 'Inactivo';
+  status: '' | 'ACTIVO' | 'INACTIVO';
   locationId?: number;
 }
 
@@ -70,7 +70,7 @@ export class SearchLaboratoryComponent implements OnInit {
 
   columns: ColumnConfig[] = [
     { key: 'labName', label: 'Nombre', type: 'text' },
-    { key: 'locationName', label: 'Lugar', type: 'text' },
+    { key: 'locationName', label: 'Ubicación', type: 'text' },
     { key: 'status', label: 'Estado', type: 'status' },
     { key: 'actions', label: 'Acciones', type: 'actions' },
   ];
@@ -78,16 +78,16 @@ export class SearchLaboratoryComponent implements OnInit {
   fieldsConfig: FieldConfig[] = [
     {
       key: 'locationId', // ahora usamos el ID
-      label: 'Lugar',
+      label: 'Ubicación',
       type: 'dropdown',
-      allowEmptyOption: 'Todos',
+      allowEmptyOption: 'TODAS',
     },
     {
       key: 'status',
       label: 'Estado',
       type: 'select',
-      options: ['Activo', 'Inactivo'],
-      allowEmptyOption: 'Todos',
+      options: ['ACTIVO', 'INACTIVO'],
+      allowEmptyOption: 'TODOS',
     },
   ];
 
@@ -96,7 +96,7 @@ export class SearchLaboratoryComponent implements OnInit {
   };
 
   availableFilterKeys: FilterKey[] = [
-    { key: 'locationId', label: 'Lugar' },
+    { key: 'locationId', label: 'Ubicación' },
     { key: 'status', label: 'Estado' },
   ];
   activeFilterKeys: string[] = this.availableFilterKeys.map((f) => f.key);
@@ -149,6 +149,7 @@ export class SearchLaboratoryComponent implements OnInit {
 
   onFiltersChange(updated: Partial<Filters>) {
     this.filters = { ...this.filters, ...updated };
+    this.currentPage = 0;
     this.performSearch();
   }
 
@@ -159,9 +160,9 @@ export class SearchLaboratoryComponent implements OnInit {
       laboratoryName: this.query.trim() || undefined,
       locationId: this.filters.locationId || undefined,
       laboratoryAvailability:
-        this.filters.status === 'Activo'
+        this.filters.status === 'ACTIVO'
           ? true
-          : this.filters.status === 'Inactivo'
+          : this.filters.status === 'INACTIVO'
           ? false
           : undefined,
     };
@@ -193,7 +194,7 @@ export class SearchLaboratoryComponent implements OnInit {
               labName: l.laboratoryName,
               description: l.laboratoryDescription,
               locationName: l.location?.locationName || '—',
-              status: l.laboratoryAvailability ? 'Activo' : 'Inactivo',
+              status: l.laboratoryAvailability ? 'ACTIVO' : 'INACTIVO',
               notes: l.laboratoryObservations || '—',
             }));
           }

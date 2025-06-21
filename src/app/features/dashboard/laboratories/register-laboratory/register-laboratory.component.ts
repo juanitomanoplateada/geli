@@ -8,14 +8,14 @@ import {
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
-import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { DropdownSearchEntityComponent } from '../../../../shared/components/dropdown-search-entity/dropdown-search-entity.component';
 
-import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
-import { LocationService } from '../../../../core/location/services/location.service';
-import { Laboratory } from '../../../../core/laboratory/models/laboratory.model';
-import { LocationDto } from '../../../../core/location/services/location.service';
+import { LaboratoryService } from '../../../../core/services/laboratory/laboratory.service';
+import { LocationService } from '../../../../core/services/location/location.service';
+import { LaboratoryResponseDto } from '../../../../core/dto/laboratory/laboratory-response.dto';
+import { LocationDto } from '../../../../core/dto/location/location-response.dto';
+import { InputRulesDirective } from '../../../../shared/directives/input-rules/input-rules';
 
 @Component({
   selector: 'app-register-laboratory',
@@ -24,7 +24,7 @@ import { LocationDto } from '../../../../core/location/services/location.service
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    UppercaseDirective,
+    InputRulesDirective,
     ConfirmModalComponent,
     DropdownSearchEntityComponent,
   ],
@@ -57,7 +57,6 @@ export class RegisterLaboratoryComponent implements OnInit {
   ) {
     this.labForm = this.fb.group({
       labName: ['', Validators.required],
-      description: ['', Validators.required],
       locationName: ['', Validators.required],
       status: ['', Validators.required],
       notes: [''],
@@ -161,7 +160,7 @@ export class RegisterLaboratoryComponent implements OnInit {
       id: number;
       locationName: string;
     }) => {
-      const payload: Laboratory = {
+      const payload: LaboratoryResponseDto = {
         laboratoryName: form.labName,
         laboratoryDescription: form.description,
         location: {
@@ -242,5 +241,9 @@ export class RegisterLaboratoryComponent implements OnInit {
     if (this.proposedLocationName)
       return { id: 0, locationName: this.proposedLocationName };
     return null;
+  }
+
+  clearLabName(): void {
+    this.labForm.get('labName')?.setValue('');
   }
 }

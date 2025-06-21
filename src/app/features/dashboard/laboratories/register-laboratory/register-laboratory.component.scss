@@ -47,7 +47,6 @@
   }
 
   select.form-control {
-    appearance: none;
     background-image: url('data:image/svg+xml,<svg fill="%233498db" height="24" viewBox="0 0 24 24" width="24"><path d="M7 10l5 5 5-5z"/></svg>');
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
@@ -206,5 +205,29 @@
   &::before {
     content: "ℹ️";
     margin-right: 6px;
+  }
+}
+
+.input-clear-wrapper {
+  position: relative;
+
+  input {
+    padding-right: 2rem; // espacio para la X
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    color: #999;
+    cursor: pointer;
+
+    &:hover {
+      color: #e74c3c;
+    }
   }
 }

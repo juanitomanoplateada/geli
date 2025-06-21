@@ -5,17 +5,37 @@
   <form [formGroup]="labForm" (ngSubmit)="submitForm()">
     <!-- Nombre -->
     <div class="form-group">
-      <label for="labName"
-        >Nombre del Laboratorio <span class="required">*</span></label
-      >
-      <input
-        id="labName"
-        type="text"
-        class="form-control"
-        formControlName="labName"
-        appUppercase
-        placeholder="Ej: Laboratorio de Física"
-      />
+      <label for="labName">
+        Nombre del Laboratorio <span class="required">*</span>
+      </label>
+
+      <!-- Wrapper con clase para posicionamiento -->
+      <div class="input-clear-wrapper">
+        <input
+          id="labName"
+          type="text"
+          class="form-control"
+          formControlName="labName"
+          placeholder="Ej: Laboratorio de Física"
+          appInputRules
+          [maxLength]="30"
+          [brandSafeCharacters]="true"
+          [uppercase]="true"
+        />
+
+        <!-- Botón limpiar solo si hay texto -->
+        <button
+          type="button"
+          *ngIf="labForm.get('labName')?.value"
+          class="clear-btn"
+          (click)="clearLabName()"
+          aria-label="Limpiar campo"
+        >
+          ✖
+        </button>
+      </div>
+
+      <!-- Validaciones -->
       <div
         *ngIf="
           labForm.get('labName')?.invalid && labForm.get('labName')?.touched
@@ -29,46 +49,18 @@
       </div>
     </div>
 
-    <!-- Descripción -->
-    <div class="form-group">
-      <label for="description"
-        >Descripción del Laboratorio<span class="required">*</span></label
-      >
-      <textarea
-        id="description"
-        class="form-control auto-expand"
-        formControlName="description"
-        rows="1"
-        appUppercase
-        placeholder="Describa brevemente el laboratorio"
-        (input)="autoResize($event)"
-      ></textarea>
-      <div
-        *ngIf="
-          labForm.get('description')?.invalid &&
-          labForm.get('description')?.touched
-        "
-        class="error-message"
-      >
-        Debe ingresar la descripción del laboratorio.
-      </div>
-    </div>
-
     <!-- Lugar -->
     <div class="form-group">
       <label for="locationName"
         >Ubicación del Laboratorio<span class="required">*</span></label
       >
-      <p class="field-hint">
-        Busque primero la ubicación. Si no la encuentra, escriba una nueva para
-        agregarla.
-      </p>
       <app-dropdown-search-entity
         [options]="availableLocations"
         [selectedValue]="selectedLocationOrProposed"
         (select)="onSelectLocation($event)"
         (addNew)="onProposedLocation($event)"
-        placeholder="Seleccione o cree una ubicación"
+        placeholder="Seleccione o agregue una ubicación"
+        displayKey="locationName"
       ></app-dropdown-search-entity>
 
       <div
@@ -113,7 +105,10 @@
         class="form-control auto-expand"
         formControlName="notes"
         rows="2"
-        appUppercase
+        appInputRules
+        [maxLength]="250"
+        [brandSafeCharacters]="true"
+        [uppercase]="true"
         placeholder="Indique las razones por las que el laboratorio está inactivo"
         (input)="autoResize($event)"
       ></textarea>
@@ -166,7 +161,6 @@
         <li>
           <strong>Nombre del Laboratorio:</strong> {{ labForm.value.labName }}
         </li>
-        <li><strong>Descripción:</strong> {{ labForm.value.description }}</li>
         <li><strong>Ubicación:</strong> {{ labForm.value.locationName }}</li>
         <li><strong>Estado Actual:</strong> {{ labForm.value.status }}</li>
         <li *ngIf="labForm.value.status === 'INACTIVO'">
