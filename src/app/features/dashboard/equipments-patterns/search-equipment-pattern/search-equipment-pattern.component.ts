@@ -3,24 +3,19 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { EquipmentService } from '../../../../core/equipment/services/equipment.service';
-import { EquipmentDto } from '../../../../core/equipment/models/equipment-response.dto';
-import {
-  BrandService,
-  BrandDto,
-} from '../../../../core/brand/services/brand.service';
-import {
-  FunctionService,
-  FunctionDto,
-} from '../../../../core/function/services/function.service';
-import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
+import { LaboratoryService } from '../../../../core/services/laboratory/laboratory.service';
 
 import { SearchAdvancedComponent } from '../../../../shared/components/search-advanced/search-advanced.component';
 import { ResultsTableComponent } from '../../../../shared/components/results-table/results-table.component';
-import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 
 import { ColumnConfig } from '../../../../shared/model/column-config.model';
 import { FieldConfig } from '../../../../shared/model/field-config.model';
+import { BrandService } from '../../../../core/services/brand/brand.service';
+import { FunctionService } from '../../../../core/services/function/function.service';
+import { EquipmentService } from '../../../../core/services/equipment/equipment.service';
+import { FunctionDto } from '../../../../core/dto/function/function-response.dto';
+import { BrandDto } from '../../../../core/dto/brand/brand-response.dto';
+import { EquipmentDto } from '../../../../core/dto/equipments-patterns/equipment-response.dto';
 
 interface EquipmentRecord {
   id: number;
@@ -34,7 +29,7 @@ interface EquipmentRecord {
 }
 
 interface Filters {
-  availability: '' | 'Activo' | 'Inactivo';
+  availability: '' | 'ACTIVO' | 'INACTIVO';
   function?: number;
   laboratory?: number;
   brand?: number;
@@ -48,7 +43,6 @@ interface Filters {
     FormsModule,
     SearchAdvancedComponent,
     ResultsTableComponent,
-    ConfirmModalComponent,
   ],
   templateUrl: './search-equipment-pattern.component.html',
   styleUrls: ['./search-equipment-pattern.component.scss'],
@@ -76,32 +70,27 @@ export class SearchEquipmentPatternComponent implements OnInit {
       key: 'brand',
       label: 'Marca',
       type: 'dropdown',
-      allowEmptyOption: 'Todas',
-    },
-    {
-      key: 'function',
-      label: 'Función',
-      type: 'dropdown',
-      allowEmptyOption: 'Todas',
+      allowEmptyOption: 'TODAS',
     },
     {
       key: 'laboratory',
       label: 'Laboratorio',
       type: 'dropdown',
-      allowEmptyOption: 'Todos',
+      allowEmptyOption: 'TODOS',
     },
     {
       key: 'availability',
       label: 'Estado',
       type: 'select',
-      options: ['Activo', 'Inactivo'],
-      allowEmptyOption: 'Todas',
+      options: ['ACTIVO', 'INACTIVO'],
+      allowEmptyOption: 'TODOS',
     },
   ];
 
   columns: ColumnConfig[] = [
     { key: 'inventoryCode', label: 'N° Inventario', type: 'text' },
     { key: 'name', label: 'Nombre', type: 'text' },
+    { key: 'brand', label: 'Marca', type: 'text' },
     { key: 'laboratory', label: 'Laboratorio', type: 'text' },
     { key: 'availability', label: 'Estado', type: 'status' },
     { key: 'actions', label: 'Acciones', type: 'actions' },
@@ -109,7 +98,6 @@ export class SearchEquipmentPatternComponent implements OnInit {
 
   availableFilterKeys = [
     { key: 'brand', label: 'Marca' },
-    { key: 'function', label: 'Función' },
     { key: 'laboratory', label: 'Laboratorio' },
     { key: 'availability', label: 'Disponibilidad' },
   ];
@@ -120,6 +108,14 @@ export class SearchEquipmentPatternComponent implements OnInit {
     function: [],
     laboratory: [],
   };
+
+  noResults = false;
+
+  // Variables de paginación
+  currentPage = 0;
+  totalPages = 0;
+  pageSize = 5;
+  pageSizeOptions = [5, 15, 30, 50, 100];
 
   constructor(
     private router: Router,
@@ -172,8 +168,20 @@ export class SearchEquipmentPatternComponent implements OnInit {
     });
   }
 
+  changePage(page: number) {
+    this.currentPage = page;
+    this.performSearch();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.currentPage = 0;
+    this.performSearch();
+  }
+
   onFiltersChange(updated: Partial<Filters>) {
     this.filters = { ...this.filters, ...updated };
+    this.currentPage = 0;
     this.performSearch();
   }
 
@@ -187,43 +195,52 @@ export class SearchEquipmentPatternComponent implements OnInit {
 
     const payload = {
       equipmentName: this.searchQuery.trim() || undefined,
-      brandId: this.filters.brand, // ← ID numérico de marca
-      laboratoryId: this.filters.laboratory, // ← ID de laboratorio
+      brandId: this.filters.brand,
+      laboratoryId: this.filters.laboratory,
       availability:
-        this.filters.availability === 'Activo'
+        this.filters.availability === 'ACTIVO'
           ? true
-          : this.filters.availability === 'Inactivo'
+          : this.filters.availability === 'INACTIVO'
           ? false
           : undefined,
       functionId: this.filters.function,
     };
 
-    this.equipmentService.filter(payload).subscribe({
-      next: (res: EquipmentDto[]) => {
-        this.lastQuery = this.searchQuery.trim();
-        this.lastFilters = { ...this.filters };
-        this.hasSearched = true;
+    this.equipmentService
+      .filterEquipments(payload, this.currentPage, this.pageSize)
+      .subscribe({
+        next: (res) => {
+          this.lastQuery = this.searchQuery.trim();
+          this.lastFilters = { ...this.filters };
+          this.hasSearched = true;
 
-        this.equipmentResults = (res || []).map((eq) => ({
-          id: eq.id,
-          name: eq.equipmentName,
-          inventoryCode: eq.inventoryNumber,
-          brand: eq.brand?.brandName || '—',
-          function: eq.functions?.map((f) => f.functionName).join(', ') || '—',
-          laboratory: eq.laboratory?.laboratoryName || '—',
-          availability: eq.availability ? 'Activo' : 'Inactivo',
-          notes: eq.equipmentObservations || '—',
-        }));
+          this.equipmentResults = (res.content || []).map(
+            (eq: EquipmentDto) => ({
+              id: eq.id,
+              name: eq.equipmentName,
+              inventoryCode: eq.inventoryNumber,
+              brand: eq.brand?.brandName || '—',
+              function:
+                eq.functions?.map((f) => f.functionName).join(', ') || '—',
+              laboratory: eq.laboratory?.laboratoryName || '—',
+              availability: eq.availability ? 'ACTIVO' : 'INACTIVO',
+              notes: eq.equipmentObservations || '—',
+            })
+          );
 
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error al buscar equipos:', err);
-        this.equipmentResults = [];
-        this.hasSearched = true;
-        this.isLoading = false;
-      },
-    });
+          this.totalPages = res.totalPages || 0;
+          this.noResults = !res.content?.length;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error al buscar equipos:', err);
+          this.equipmentResults = [];
+          this.hasSearched = true;
+          this.isLoading = false;
+          this.totalPages = 0;
+          this.noResults = true;
+        },
+      });
   }
 
   resetSearch(): void {

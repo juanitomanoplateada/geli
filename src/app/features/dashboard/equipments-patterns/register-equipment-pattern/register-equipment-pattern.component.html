@@ -1,6 +1,6 @@
 <div class="register-container">
-  <h1>Registro de Equipo / Patrón</h1>
-  <p class="subtitle">Ingrese los datos del nuevo equipo o patrón.</p>
+  <h1>Registro de Equipo</h1>
+  <p class="subtitle">Ingrese los datos del nuevo equipo.</p>
 
   <form [formGroup]="equipmentForm" (ngSubmit)="submitForm()">
     <!-- Código -->
@@ -33,7 +33,7 @@
     <!-- Nombre -->
     <div class="form-group">
       <label for="name"
-        >Nombre del Equipo / Patrón <span class="required">*</span></label
+        >Nombre del Equipo <span class="required">*</span></label
       >
       <input
         id="name"
@@ -50,41 +50,30 @@
         "
         class="error-message"
       >
-        Debe ingresar el nombre del equipo / patrón.
-      </div>
-      <div *ngIf="isNameTaken" class="error-message">
-        Este nombre del equipo / patrón ya esta registrado en el sistema.
+        Debe ingresar el nombre del equipo.
       </div>
     </div>
 
     <!-- Marca -->
     <div class="form-group">
       <label for="brand">Marca <span class="required">*</span></label>
-      <p class="field-hint">
-        Busque primero la marca a seleccionar. Si no la encuentra, escriba una nueva para
-        agregarla.
-      </p>
       <app-dropdown-search-entity
         [options]="brandOptions"
         [selectedValue]="selectedBrandOrProposed"
         (select)="onSelectBrand($event)"
         (addNew)="onProposeBrand($event)"
-        placeholder="Seleccione o cree la marca del equipo"
+        placeholder="Seleccione o agregue la marca del equipo"
       ></app-dropdown-search-entity>
     </div>
 
     <!-- Funciones utilizadas -->
     <div class="form-group">
       <label for="functionId">Funciones <span class="required">*</span></label>
-      <p class="field-hint">
-        Busque primero la función a seleccionar. Si no la encuentra, escriba una nueva para
-        agregarla.
-      </p>
       <app-tag-multiselect
         [availableOptions]="availableFunctions"
         [selected]="selectedFunctions"
         (selectedChange)="onFunctionChange($event)"
-        placeholder="Seleccione o cree las funciones del equipo / patrón"
+        placeholder="Seleccione o agregue las funciones del equipo"
       ></app-tag-multiselect>
     </div>
 
@@ -95,7 +84,7 @@
         [options]="labOptions"
         [selectedValue]="selectedLab"
         (select)="onSelectLab($event)"
-        placeholder="Seleccione el laboratorio para el equipo / patrón"
+        placeholder="Seleccione el laboratorio para el equipo"
       ></app-dropdown-search-entity-obj>
     </div>
 
@@ -109,7 +98,7 @@
         (change)="onAvailabilityChange()"
       >
         <option value="" disabled selected>
-          Seleccione el estado actual del equipo / patrón
+          Seleccione el estado actual del equipo
         </option>
         <option value="ACTIVO">ACTIVO</option>
         <option value="INACTIVO">INACTIVO</option>

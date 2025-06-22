@@ -1,4 +1,4 @@
-import { EquipmentDto } from "../equipment/equipment-response.dto";
+import { EquipmentDto } from "../equipments-patterns/equipment-response.dto";
 import { PositionDto } from "../position/position-response.dto";
 
 export interface UserRecordResponse {

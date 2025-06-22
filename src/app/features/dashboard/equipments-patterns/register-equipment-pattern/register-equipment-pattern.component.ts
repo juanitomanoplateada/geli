@@ -113,17 +113,6 @@ export class RegisterEquipmentPatternComponent implements OnInit {
       }
     });
 
-    this.equipmentForm.get('name')?.valueChanges.subscribe((value) => {
-      const trimmed = value?.trim();
-      if (trimmed) {
-        this.equipmentService.existsByName(trimmed).subscribe((exists) => {
-          this.isNameTaken = exists;
-        });
-      } else {
-        this.isNameTaken = false;
-      }
-    });
-
     this.equipmentForm.get('inventoryCode')?.valueChanges.subscribe((value) => {
       const trimmed = value?.trim();
       if (trimmed) {
