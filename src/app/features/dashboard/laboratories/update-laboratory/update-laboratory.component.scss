@@ -223,3 +223,27 @@
     transform: rotate(360deg);
   }
 }
+
+.input-clear-wrapper {
+  position: relative;
+
+  input {
+    padding-right: 2rem; // espacio para la X
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    color: #999;
+    cursor: pointer;
+
+    &:hover {
+      color: #e74c3c;
+    }
+  }
+}

@@ -7,46 +7,52 @@
   <p class="subtitle">Modifique los datos del laboratorio seleccionado.</p>
 
   <form [formGroup]="labForm" (ngSubmit)="submitForm()">
-    <!-- Nombre (Deshabilitado) -->
+    <!-- Nombre -->
     <div class="form-group">
-      <label for="labName"
-        >Nombre del Laboratorio<span class="required">*</span></label
-      >
-      <input
-        id="labName"
-        type="text"
-        class="form-control"
-        formControlName="labName"
-        appUppercase
-      />
-    </div>
+      <label for="labName">
+        Nombre del Laboratorio <span class="required">*</span>
+      </label>
 
-    <!-- Descripción -->
-    <div class="form-group">
-      <label for="description"
-        >Descripción <span class="required">*</span></label
-      >
-      <textarea
-        id="description"
-        class="form-control auto-expand"
-        formControlName="description"
-        rows="1"
-        appUppercase
-        placeholder="Describa brevemente el laboratorio"
-        (input)="autoResize($event)"
-      ></textarea>
+      <!-- Wrapper con clase para posicionamiento -->
+      <div class="input-clear-wrapper">
+        <input
+          id="labName"
+          type="text"
+          class="form-control"
+          formControlName="labName"
+          placeholder="Ej: Laboratorio de Física"
+          appInputRules
+          [maxLength]="30"
+          [brandSafeCharacters]="true"
+          [uppercase]="true"
+        />
+
+        <!-- Botón limpiar solo si hay texto -->
+        <button
+          type="button"
+          *ngIf="labForm.get('labName')?.value"
+          class="clear-btn"
+          (click)="clearLabName()"
+          aria-label="Limpiar campo"
+        >
+          ✖
+        </button>
+      </div>
+
+      <!-- Validaciones -->
       <div
         *ngIf="
-          labForm.get('description')?.invalid &&
-          labForm.get('description')?.touched
+          labForm.get('labName')?.invalid && labForm.get('labName')?.touched
         "
         class="error-message"
       >
-        La descripción es obligatoria
+        El nombre del laboratorio es obligatorio.
+      </div>
+      <div *ngIf="labNameAlreadyExists" class="error-message">
+        Este nombre del laboratorio ya está registrado en el sistema.
       </div>
     </div>
 
-    <!-- Lugar -->
     <!-- Lugar -->
     <div class="form-group">
       <label for="locationName">Lugar <span class="required">*</span></label>
@@ -56,6 +62,7 @@
         (select)="onSelectLocation($event)"
         (addNew)="onProposedLocation($event)"
         placeholder="Busque o agregue un lugar"
+        displayKey="locationName"
       ></app-dropdown-search-entity>
 
       <div
@@ -130,7 +137,8 @@
         [disabled]="
           labForm.invalid ||
           (labForm.get('status')?.value === 'INACTIVO' &&
-            !labForm.get('notes')?.value?.trim())
+            !labForm.get('notes')?.value?.trim()) ||
+          labNameAlreadyExists
         "
       >
         Guardar Cambios
@@ -155,9 +163,6 @@
         <li>
           <strong>Nombre del Laboratorio:</strong>
           {{ labForm.get("labName")?.value }}
-        </li>
-        <li>
-          <strong>Descripción:</strong> {{ labForm.get("description")?.value }}
         </li>
         <li>
           <strong>Ubicación:</strong> {{ labForm.get("locationName")?.value }}

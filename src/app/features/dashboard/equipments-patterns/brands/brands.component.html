@@ -1,0 +1,110 @@
+<div class="update-container">
+  <h1>Actualizar Nombre de Marca</h1>
+  <p class="subtitle">Seleccione la marca que desea modificar.</p>
+
+  <form [formGroup]="updateForm" (ngSubmit)="openConfirmationModal()">
+    <!-- Dropdown -->
+    <div class="form-group">
+      <label for="currentPosition"
+        >Marca Actual <span class="required">*</span></label
+      >
+      <app-dropdown-search-select
+        [options]="availableBrands"
+        [selectedValue]="selectedBrand"
+        (select)="onSelectBrand($event)"
+        placeholder="Buscar y seleccionar una marca"
+        displayKey="brandName"
+      ></app-dropdown-search-select>
+    </div>
+
+    <!-- Input nuevo nombre -->
+    <div class="form-group">
+      <label for="newLocationName">
+        Nuevo Nombre <span class="required">*</span>
+      </label>
+
+      <div class="input-clear-wrapper">
+        <input
+          type="text"
+          class="form-control"
+          formControlName="newBrandName"
+          placeholder="Ej: Arasaka"
+          appInputRules
+          [uppercase]="true"
+          [maxLength]="50"
+          [onlyLettersWithSpaces]="true"
+        />
+
+        <button
+          type="button"
+          class="clear-btn"
+          *ngIf="updateForm.get('newBrandName')?.value"
+          (click)="updateForm.get('newBrandName')?.setValue('')"
+        >
+          ✖
+        </button>
+
+        <div class="spinner" *ngIf="checkingName" title="Verificando..."></div>
+      </div>
+
+      <!-- Mensajes de validación -->
+      <div class="error-message" *ngIf="isSameAsCurrent">
+        El nuevo nombre no puede ser igual al actual.
+      </div>
+      <div class="error-message" *ngIf="!isSameAsCurrent && nameExists">
+        Ya existe una marca con ese nombre.
+      </div>
+    </div>
+
+    <!-- Botón de acción -->
+    <div class="button-group">
+      <button
+        type="submit"
+        class="btn submit-btn"
+        [disabled]="
+          !updateForm.valid ||
+          isSubmitting ||
+          nameExists ||
+          isSameAsCurrent ||
+          checkingName
+        "
+      >
+        Guardar Cambios
+      </button>
+    </div>
+
+    <!-- Confirmación -->
+    <div class="modal-backdrop" *ngIf="showConfirmationModal">
+      <app-confirm-modal
+        [title]="'Confirmar Actualización de Marca'"
+        [show]="showConfirmationModal"
+        [confirmLabel]="'Actualizar Marca'"
+        [cancelLabel]="'Cancelar'"
+        [isLoading]="isSubmitting"
+        (confirm)="submitUpdate()"
+        (cancel)="cancelConfirmation()"
+      >
+        <p>Está a punto de actualizar el siguiente cargo:</p>
+        <ul class="summary-list">
+          <li>
+            <strong>Marca actual:</strong> {{ selectedBrand?.brandName }}
+          </li>
+          <li>
+            <strong>Nuevo nombre:</strong>
+            {{ updateForm.value.newBrandName }}
+          </li>
+        </ul>
+
+        <div
+          *ngIf="showModalFeedback"
+          [ngClass]="
+            modalFeedbackSuccess ? 'feedback success' : 'feedback error'
+          "
+          class="modal-feedback-message"
+        >
+          {{ modalFeedbackMessage }}
+        </div>
+      </app-confirm-modal>
+    </div>
+  </form>
+</div>

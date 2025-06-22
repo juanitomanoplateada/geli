@@ -1,0 +1,111 @@
+<div class="update-container">
+  <h1>Actualizar Nombre de Función</h1>
+  <p class="subtitle">Seleccione la función que desea modificar.</p>
+
+  <form [formGroup]="updateForm" (ngSubmit)="openConfirmationModal()">
+    <!-- Dropdown -->
+    <div class="form-group">
+      <label for="currentPosition"
+        >Función Actual <span class="required">*</span></label
+      >
+      <app-dropdown-search-select
+        [options]="availableFunctions"
+        [selectedValue]="selectedFunction"
+        (select)="onSelectFunction($event)"
+        placeholder="Buscar y seleccionar una función"
+        displayKey="functionName"
+      ></app-dropdown-search-select>
+    </div>
+
+    <!-- Input nuevo nombre -->
+    <div class="form-group">
+      <label for="newLocationName">
+        Nuevo Nombre <span class="required">*</span>
+      </label>
+
+      <div class="input-clear-wrapper">
+        <input
+          type="text"
+          class="form-control"
+          formControlName="newFunctionName"
+          placeholder="Ej: Farmear"
+          appInputRules
+          [uppercase]="true"
+          [maxLength]="50"
+          [onlyLettersWithSpaces]="true"
+        />
+
+        <button
+          type="button"
+          class="clear-btn"
+          *ngIf="updateForm.get('newFunctionName')?.value"
+          (click)="updateForm.get('newFunctionName')?.setValue('')"
+        >
+          ✖
+        </button>
+
+        <div class="spinner" *ngIf="checkingName" title="Verificando..."></div>
+      </div>
+
+      <!-- Mensajes de validación -->
+      <div class="error-message" *ngIf="isSameAsCurrent">
+        El nuevo nombre no puede ser igual al actual.
+      </div>
+      <div class="error-message" *ngIf="!isSameAsCurrent && nameExists">
+        Ya existe una función con ese nombre.
+      </div>
+    </div>
+
+    <!-- Botón de acción -->
+    <div class="button-group">
+      <button
+        type="submit"
+        class="btn submit-btn"
+        [disabled]="
+          !updateForm.valid ||
+          isSubmitting ||
+          nameExists ||
+          isSameAsCurrent ||
+          checkingName
+        "
+      >
+        Guardar Cambios
+      </button>
+    </div>
+
+    <!-- Confirmación -->
+    <div class="modal-backdrop" *ngIf="showConfirmationModal">
+      <app-confirm-modal
+        [title]="'Confirmar Actualización de Función'"
+        [show]="showConfirmationModal"
+        [confirmLabel]="'Actualizar Función'"
+        [cancelLabel]="'Cancelar'"
+        [isLoading]="isSubmitting"
+        (confirm)="submitUpdate()"
+        (cancel)="cancelConfirmation()"
+      >
+        <p>Está a punto de actualizar el siguiente función:</p>
+        <ul class="summary-list">
+          <li>
+            <strong>Función actual:</strong>
+            {{ selectedFunction?.functionName }}
+          </li>
+          <li>
+            <strong>Nuevo nombre:</strong>
+            {{ updateForm.value.newFunctionName }}
+          </li>
+        </ul>
+
+        <div
+          *ngIf="showModalFeedback"
+          [ngClass]="
+            modalFeedbackSuccess ? 'feedback success' : 'feedback error'
+          "
+          class="modal-feedback-message"
+        >
+          {{ modalFeedbackMessage }}
+        </div>
+      </app-confirm-modal>
+    </div>
+  </form>
+</div>

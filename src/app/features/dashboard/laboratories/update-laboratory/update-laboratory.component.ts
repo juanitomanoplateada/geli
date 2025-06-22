@@ -13,13 +13,13 @@ import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppe
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { DropdownSearchEntityComponent } from '../../../../shared/components/dropdown-search-entity/dropdown-search-entity.component';
 
-import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
-import {
-  LocationService,
-  LocationDto,
-} from '../../../../core/location/services/location.service';
-import { Laboratory } from '../../../../core/laboratory/models/laboratory.model';
+import { LaboratoryResponseDto } from '../../../../core/dto/laboratory/laboratory-response.dto';
+import { LaboratoryService } from '../../../../core/services/laboratory/laboratory.service';
+import { LocationService } from '../../../../core/services/location/location.service';
+import { LocationDto } from '../../../../core/dto/location/location-response.dto';
+
 import { forkJoin } from 'rxjs';
+import { InputRulesDirective } from '../../../../shared/directives/input-rules/input-rules';
 
 @Component({
   selector: 'app-update-laboratory',
@@ -28,7 +28,7 @@ import { forkJoin } from 'rxjs';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    UppercaseDirective,
+    InputRulesDirective,
     ConfirmModalComponent,
     DropdownSearchEntityComponent,
   ],
@@ -50,6 +50,9 @@ export class UpdateLaboratoryComponent implements OnInit {
 
   isLoading = true;
 
+  labNameAlreadyExists = false;
+  labNameChecking = false;
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -58,8 +61,7 @@ export class UpdateLaboratoryComponent implements OnInit {
     private router: Router
   ) {
     this.labForm = this.fb.group({
-      labName: [{ value: '', disabled: true }],
-      description: ['', Validators.required],
+      labName: ['', Validators.required],
       locationName: ['', Validators.required],
       status: ['', Validators.required],
       notes: [''],
@@ -69,7 +71,42 @@ export class UpdateLaboratoryComponent implements OnInit {
   ngOnInit(): void {
     this.labId = Number(this.route.snapshot.paramMap.get('id'));
     this.loadData();
+    this.labForm.get('labName')?.valueChanges.subscribe((value) => {
+      this.checkIfLabNameExists(value);
+    });
   }
+
+  clearLabName(): void {
+    this.labForm.get('labName')?.setValue('');
+  }
+
+  private checkIfLabNameExists(name: string | null): void {
+    if (!name || typeof name !== 'string') {
+      this.labNameAlreadyExists = false;
+      return;
+    }
+
+    const trimmed = name.trim().toUpperCase();
+    if (!trimmed) {
+      this.labNameAlreadyExists = false;
+      return;
+    }
+
+    this.labNameChecking = true;
+
+    this.laboratoryService.existsByName(trimmed).subscribe({
+      next: (exists: boolean) => {
+        this.labNameAlreadyExists = exists;
+        this.labNameChecking = false;
+      },
+      error: () => {
+        this.labNameAlreadyExists = false;
+        this.labNameChecking = false;
+      },
+    });
+  }
+
+
 
   private loadData(): void {
     this.isLoading = true;
@@ -200,7 +237,7 @@ export class UpdateLaboratoryComponent implements OnInit {
     );
 
     const finalizeUpdate = (location: LocationDto) => {
-      const payload: Laboratory = {
+      const payload: LaboratoryResponseDto = {
         laboratoryName: form.labName,
         laboratoryDescription: form.description,
         location: {

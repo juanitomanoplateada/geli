@@ -84,7 +84,7 @@
           routerLink="/dashboard/users/positions"
           [class.active]="isActive('/dashboard/users/positions')"
           (click)="onNavigate()"
-          >Actualizar Nombre de Cargo</a
+          >Actualizar Cargo</a
         >
       </div>
     </div>
@@ -122,7 +122,7 @@
           routerLink="/dashboard/laboratories/locations"
           [class.active]="isActive('/dashboard/laboratories/locations')"
           (click)="onNavigate()"
-          >Actualizar Nombre de Ubicación</a
+          >Actualizar Ubicación</a
         >
       </div>
     </div>
@@ -151,7 +151,7 @@
             isActive('/dashboard/equipments-patterns/search-equipment-pattern')
           "
           (click)="onNavigate()"
-          >Buscar Equipo / Patrón</a
+          >Buscar Equipo</a
         >
         <a
           routerLink="/dashboard/equipments-patterns/register-equipment-pattern"
@@ -161,7 +161,19 @@
             )
           "
           (click)="onNavigate()"
-          >Registrar Equipo / Patrón</a
+          >Registrar Equipo</a
+        >
+        <a
+          routerLink="/dashboard/equipments-patterns/brands"
+          [class.active]="isActive('/equipments-patterns/brands')"
+          (click)="onNavigate()"
+          >Actualizar Marca</a
+        >
+        <a
+          routerLink="/dashboard/equipments-patterns/functions"
+          [class.active]="isActive('/dashboard/equipments-patterns/functions')"
+          (click)="onNavigate()"
+          >Actualizar Función</a
         >
       </div>
     </div>
