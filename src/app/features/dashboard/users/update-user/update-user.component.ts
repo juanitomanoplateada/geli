@@ -57,6 +57,9 @@ export class UpdateUserComponent implements OnInit {
   isSubmitting = false;
   isLoading = true;
 
+  modalFeedbackMessage = '';
+  modalSuccessType: 'success' | 'error' | '' = '';
+
   userForm = this.fb.group({
     email: [
       { value: '', disabled: true },
@@ -169,19 +172,25 @@ export class UpdateUserComponent implements OnInit {
       next: (updated) => {
         this.feedbackSuccess = true;
         this.feedbackMessage = '✅ Usuario actualizado exitosamente.';
+        this.modalFeedbackMessage = '✅ Usuario actualizado exitosamente.';
         this.creationDate = updated.creationDate;
         this.modificationDate = updated.modificationStatusDate;
+        this.modalSuccessType = 'success';
 
         setTimeout(() => {
           this.feedbackMessage = null;
           this.showConfirmationModal = false;
           this.isSubmitting = false;
           this.loadUser();
+          this.modalSuccessType = '';
         }, 4000);
       },
       error: () => {
         this.feedbackSuccess = false;
         this.feedbackMessage = '❌ Error al actualizar usuario.';
+        this.feedbackMessage = '❌ Error al actualizar usuario.';
+        this.modalSuccessType = 'error';
+
         setTimeout(() => {
           this.feedbackMessage = null;
           this.isSubmitting = false;

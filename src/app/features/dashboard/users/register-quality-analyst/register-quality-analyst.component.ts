@@ -61,10 +61,14 @@ export class RegisterQualityAnalystComponent {
   feedbackMessage: string | null = null;
   feedbackSuccess = false;
   emailAlreadyExists = false;
+  identificationAlreadyExists = false;
+
   isSubmitting = false;
   showModalFeedback = false;
   modalFeedbackMessage = '';
   modalFeedbackSuccess = false;
+
+  modalSuccessType: 'success' | 'error' | '' = '';
 
   constructor(
     private fb: FormBuilder,
@@ -137,15 +141,27 @@ export class RegisterQualityAnalystComponent {
       this.userService.createUser(payload).subscribe({
         next: () => {
           this.modalFeedback('✅ Usuario registrado exitosamente.', true);
+          this.modalSuccessType = 'success';
+
           setTimeout(() => {
             this.resetForm();
             this.showConfirmationModal = false;
             this.isSubmitting = false;
-          }, 2000);
+            this.modalSuccessType = '';
+            this.modalFeedbackMessage = '';
+          }, 3000);
         },
         error: () => {
           this.modalFeedback('❌ Error al registrar usuario.', false);
           this.isSubmitting = false;
+          this.modalSuccessType = 'error';
+
+          setTimeout(() => {
+            this.showConfirmationModal = false;
+            this.isSubmitting = false;
+            this.modalSuccessType = '';
+            this.modalFeedbackMessage = '';
+          }, 3000);
         },
       });
     };
@@ -245,5 +261,13 @@ export class RegisterQualityAnalystComponent {
     setTimeout(() => {
       this.showModalFeedback = false;
     }, 5000);
+  }
+
+  checkIdentificationExists(): void {
+    const identification = this.userForm.get('identification')?.value ?? '';
+    this.userService.checkIdentificationExists(identification).subscribe({
+      next: (exists) => (this.identificationAlreadyExists = exists),
+      error: () => (this.identificationAlreadyExists = false),
+    });
   }
 }

@@ -95,6 +95,13 @@ export class UserService {
     });
   }
 
+  // Métodos de verificación
+  checkIdentificationExists(identification: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.baseUrl}/exists-by-identification`, {
+      params: { identification: identification.toUpperCase() },
+    });
+  }
+
   // Métodos de estado
   toggleUserStatus(userId: number, isActive: boolean): Observable<any> {
     return this.http.put(`${this.baseUrl}/${userId}`, { isActive });

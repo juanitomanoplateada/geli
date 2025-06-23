@@ -105,6 +105,7 @@
   }
 
   select.form-control {
+    appearance: none;
     background-image: url('data:image/svg+xml;charset=US-ASCII,<svg fill="%233498db" height="24" viewBox="0 0 24 24" width="24"><path d="M7 10l5 5 5-5z"/></svg>');
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
@@ -275,20 +276,22 @@
   }
 }
 
-.feedback {
-  margin-top: 1rem;
+.modal-feedback {
+  font-weight: bold;
+  text-align: center;
   padding: 0.75rem;
   border-radius: 6px;
-  font-weight: 500;
-  text-align: center;
+  margin-top: 1rem;
 
   &.success {
-    background-color: #d4edda;
-    color: #155724;
+    background-color: #e0f7e9;
+    color: #1b5e20;
+    border: 1px solid #66bb6a;
   }
 
   &.error {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: #fdecea;
+    color: #b71c1c;
+    border: 1px solid #ef9a9a;
   }
 }

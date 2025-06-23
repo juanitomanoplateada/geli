@@ -18,7 +18,7 @@
           id="email"
           type="text"
           formControlName="email"
-          placeholder="Ej: juan.perez123"
+          placeholder="Ej: jhon.marston123"
           class="form-control"
           (input)="checkEmailExists()"
           appInputRules
@@ -55,7 +55,7 @@
         <input
           type="text"
           formControlName="firstName"
-          placeholder="Ej: Juan Sebastián"
+          placeholder="Ej: John"
           class="form-control"
           appInputRules
           [uppercase]="true"
@@ -89,7 +89,7 @@
         <input
           type="text"
           formControlName="lastName"
-          placeholder="Ej: Pérez Gómez"
+          placeholder="Ej: Marston"
           class="form-control"
           appInputRules
           [uppercase]="true"
@@ -125,6 +125,7 @@
           id="identification"
           type="text"
           formControlName="identification"
+          (input)="checkIdentificationExists()"
           placeholder="Ej: 1234567890"
           class="form-control"
           appInputRules
@@ -148,6 +149,9 @@
         class="error-message"
       >
         Debe ingresar una identificación.
+      </div>
+      <div *ngIf="identificationAlreadyExists" class="error-message">
+        Esta identificación ya está registrada en el sistema.
       </div>
     </div>
 
@@ -194,7 +198,12 @@
       <button
         type="submit"
         class="btn btn-submit"
-        [disabled]="!userForm.valid || emailAlreadyExists || isSubmitting"
+        [disabled]="
+          !userForm.valid ||
+          emailAlreadyExists ||
+          identificationAlreadyExists ||
+          isSubmitting
+        "
       >
         Registrar Persona
       </button>
@@ -230,14 +239,17 @@
           <li><strong>Cargo:</strong> {{ userForm.value.positionName }}</li>
         </ul>
 
-        <div
-          *ngIf="showModalFeedback"
-          [ngClass]="
-            modalFeedbackSuccess ? 'feedback success' : 'feedback error'
-          "
-        >
-          {{ modalFeedbackMessage }}
-        </div>
+        <ng-container *ngIf="modalFeedbackMessage">
+          <p
+            class="modal-feedback"
+            [ngClass]="{
+              success: modalSuccessType === 'success',
+              error: modalSuccessType === 'error'
+            }"
+          >
+            {{ modalFeedbackMessage }}
+          </p>
+        </ng-container>
       </app-confirm-modal>
     </div>
   </form>

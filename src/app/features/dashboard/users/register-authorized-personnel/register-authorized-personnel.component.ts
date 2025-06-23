@@ -57,10 +57,12 @@ export class RegisterAuthorizedPersonnelComponent {
   feedbackMessage: string | null = null;
   feedbackSuccess = false;
   emailAlreadyExists = false;
+  identificationAlreadyExists = false;
   isSubmitting = false;
   showModalFeedback = false;
   modalFeedbackMessage = '';
   modalFeedbackSuccess = false;
+  modalSuccessType: 'success' | 'error' | '' = '';
 
   constructor(
     private fb: FormBuilder,
@@ -89,6 +91,8 @@ export class RegisterAuthorizedPersonnelComponent {
     }
 
     const email = this.institutionalEmail;
+    const identification = this.userForm.get('identification')?.value ?? '';
+
     this.isSubmitting = true;
 
     this.userService.checkEmailExists(email).subscribe({
@@ -105,6 +109,22 @@ export class RegisterAuthorizedPersonnelComponent {
       },
       error: () => {
         this.showFeedback('Error validando el correo.', false);
+        this.isSubmitting = false;
+      },
+    });
+
+    this.userService.checkIdentificationExists(identification).subscribe({
+      next: (exists) => {
+        this.identificationAlreadyExists = exists;
+        if (exists) {
+        } else if (this.userForm.valid) {
+          this.showConfirmationModal = true;
+        } else {
+        }
+        this.isSubmitting = false;
+      },
+      error: () => {
+        this.showFeedback('Error validando la identificación.', false);
         this.isSubmitting = false;
       },
     });
@@ -133,15 +153,27 @@ export class RegisterAuthorizedPersonnelComponent {
       this.userService.createUser(payload).subscribe({
         next: () => {
           this.modalFeedback('✅ Usuario registrado exitosamente.', true);
+          this.modalSuccessType = 'success';
+
           setTimeout(() => {
             this.resetForm();
             this.showConfirmationModal = false;
             this.isSubmitting = false;
-          }, 2000);
+            this.modalSuccessType = '';
+            this.modalFeedbackMessage = '';
+          }, 3000);
         },
         error: () => {
           this.modalFeedback('❌ Error al registrar usuario.', false);
           this.isSubmitting = false;
+          this.modalSuccessType = 'error';
+
+          setTimeout(() => {
+            this.showConfirmationModal = false;
+            this.isSubmitting = false;
+            this.modalSuccessType = '';
+            this.modalFeedbackMessage = '';
+          }, 3000);
         },
       });
     };
@@ -197,6 +229,14 @@ export class RegisterAuthorizedPersonnelComponent {
     this.userService.checkEmailExists(email).subscribe({
       next: (exists) => (this.emailAlreadyExists = exists),
       error: () => (this.emailAlreadyExists = false),
+    });
+  }
+
+  checkIdentificationExists(): void {
+    const identification = this.userForm.get('identification')?.value ?? '';
+    this.userService.checkIdentificationExists(identification).subscribe({
+      next: (exists) => (this.identificationAlreadyExists = exists),
+      error: () => (this.identificationAlreadyExists = false),
     });
   }
 

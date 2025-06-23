@@ -224,3 +224,23 @@
     }
   }
 }
+
+.modal-feedback {
+  font-weight: bold;
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-top: 1rem;
+
+  &.success {
+    background-color: #e0f7e9;
+    color: #1b5e20;
+    border: 1px solid #66bb6a;
+  }
+
+  &.error {
+    background-color: #fdecea;
+    color: #b71c1c;
+    border: 1px solid #ef9a9a;
+  }
+}

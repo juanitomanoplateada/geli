@@ -125,13 +125,17 @@
         <li><strong>Estado Actual:</strong> {{ userForm.value.status }}</li>
       </ul>
 
-      <div
-        *ngIf="feedbackMessage"
-        [ngClass]="feedbackSuccess ? 'feedback success' : 'feedback error'"
-        class="feedback"
-      >
-        {{ feedbackMessage }}
-      </div>
+      <ng-container *ngIf="modalFeedbackMessage">
+          <p
+            class="modal-feedback"
+            [ngClass]="{
+              success: modalSuccessType === 'success',
+              error: modalSuccessType === 'error'
+            }"
+          >
+            {{ modalFeedbackMessage }}
+          </p>
+        </ng-container>
     </app-confirm-modal>
   </div>
 </div>

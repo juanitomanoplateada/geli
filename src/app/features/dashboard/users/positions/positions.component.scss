@@ -1,3 +1,15 @@
+/* ==================== VARIABLES Y ESTILOS BASE ==================== */
+$primary-color: #2c3e50;
+$secondary-color: #7f8c8d;
+$error-color: #e74c3c;
+$success-color: #27ae60;
+$border-color: #ddd;
+$hover-color: darkgreen;
+$disabled-color: #bdc3c7;
+$modal-primary: #3498db;
+$modal-dark: #1d3557;
+
+/* ==================== CONTENEDOR PRINCIPAL ==================== */
 .update-container {
   max-width: 600px;
   margin: 2rem auto;
@@ -9,19 +21,23 @@
   user-select: none;
 }
 
-h1 {
+/* ==================== ENCABEZADO ==================== */
+.form-header {
   text-align: center;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  text-align: center;
-  font-size: 0.95rem;
-  color: #7f8c8d;
   margin-bottom: 2rem;
+
+  h1 {
+    color: $primary-color;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+    color: $secondary-color;
+  }
 }
 
+/* ==================== FORMULARIO ==================== */
 .form-group {
   margin-bottom: 1.5rem;
 
@@ -29,35 +45,83 @@ h1 {
     display: block;
     font-weight: 500;
     margin-bottom: 0.5rem;
-    color: #2c3e50;
+    color: $primary-color;
   }
 
   .form-control {
     width: 100%;
     padding: 0.75rem;
     font-size: 1rem;
-    border: 1px solid #ddd;
+    border: 1px solid $border-color;
     border-radius: 6px;
     transition: border-color 0.3s ease;
 
     &:focus {
-      border-color: #3498db;
+      border-color: $modal-primary;
       outline: none;
     }
   }
-  .error-message {
-    margin-top: 0.4rem;
-    color: #e74c3c;
-    font-size: 0.875rem;
+
+  .validation-messages {
+    .error-message {
+      margin-top: 0.4rem;
+      color: $error-color;
+      font-size: 0.875rem;
+    }
   }
 }
 
 .required {
-  color: red;
+  color: $error-color;
   margin-left: 4px;
   font-weight: bold;
 }
 
+/* ==================== INPUT CON BOTÓN DE LIMPIEZA ==================== */
+.input-clear-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    flex: 1;
+    padding-right: 2.2rem;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 0.75rem;
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #888;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #000;
+    }
+  }
+
+  .spinner {
+    position: absolute;
+    right: 2.2rem;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ccc;
+    border-top-color: $modal-primary;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==================== BOTONES ==================== */
 .button-group {
   display: flex;
   justify-content: center;
@@ -68,57 +132,58 @@ h1 {
     font-size: 1rem;
     border: none;
     border-radius: 6px;
-    background-color: green;
+    background-color: $success-color;
     color: white;
     cursor: pointer;
     transition: background-color 0.3s ease;
 
     &:hover {
-      background-color: darkgreen;
+      background-color: $hover-color;
     }
 
     &:disabled {
-      background-color: #bdc3c7;
+      background-color: $disabled-color;
       cursor: not-allowed;
     }
   }
 }
 
-/* ========== Confirm Modal Styles ========== */
-
+/* ==================== MODAL ==================== */
 ::ng-deep app-confirm-modal {
-  .summary-list {
-    list-style: none;
-    padding: 0;
-    margin: 1rem 0 2rem;
-    font-size: 0.95rem;
-    color: #2c3e50;
+  .modal-content {
+    p {
+      text-align: center;
+      color: #555;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
 
-    li {
-      margin: 0.5rem 0;
-      display: flex;
-      align-items: flex-start;
+    .summary-list {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0 2rem;
+      font-size: 0.95rem;
+      color: $primary-color;
 
-      &::before {
-        content: "•";
-        color: #3498db;
-        font-size: 1.2rem;
-        margin-right: 0.5rem;
-      }
+      li {
+        margin: 0.5rem 0;
+        display: flex;
+        align-items: flex-start;
 
-      strong {
-        font-weight: 600;
-        color: #1d3557;
-        margin-right: 0.25rem;
+        &::before {
+          content: "•";
+          color: $modal-primary;
+          font-size: 1.2rem;
+          margin-right: 0.5rem;
+        }
+
+        strong {
+          font-weight: 600;
+          color: $modal-dark;
+          margin-right: 0.25rem;
+        }
       }
     }
-  }
-
-  p {
-    text-align: center;
-    color: #555;
-    margin-bottom: 1rem;
-    font-size: 1rem;
   }
 
   .modal-buttons {
@@ -137,82 +202,42 @@ h1 {
     }
 
     .submit-btn {
-      background-color: #27ae60;
+      background-color: $success-color;
       color: white;
 
       &:hover {
-        background-color: #1e874b;
+        background-color: darken($success-color, 10%);
       }
     }
 
     .cancel-btn {
-      background-color: #e74c3c;
+      background-color: $error-color;
       color: white;
 
       &:hover {
-        background-color: #c0392b;
+        background-color: darken($error-color, 10%);
       }
     }
   }
 }
 
-.input-clear-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-
-  input {
-    flex: 1;
-    padding-right: 2.2rem;
-  }
-
-  .clear-btn {
-    position: absolute;
-    right: 1rem;
-    background: transparent;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    color: #888;
-
-    &:hover {
-      color: #000;
-    }
-  }
-
-  .spinner {
-    position: absolute;
-    right: 2.2rem;
-    width: 18px;
-    height: 18px;
-    border: 2px solid #ccc;
-    border-top-color: #3498db;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-  }
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.feedback {
-  margin-top: 1rem;
+/* ==================== FEEDBACK ==================== */
+.modal-feedback {
+  font-weight: bold;
+  text-align: center;
   padding: 0.75rem;
   border-radius: 6px;
-  font-weight: 500;
-  text-align: center;
-  transition: all 0.3s ease;
+  margin-top: 1rem;
 
   &.success {
-    background-color: #d4edda;
-    color: #155724;
+    background-color: #e0f7e9;
+    color: #1b5e20;
+    border: 1px solid #66bb6a;
   }
 
   &.error {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: #fdecea;
+    color: #b71c1c;
+    border: 1px solid #ef9a9a;
   }
 }

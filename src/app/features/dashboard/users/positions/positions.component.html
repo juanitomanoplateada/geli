@@ -1,23 +1,25 @@
 <div class="update-container">
-  <h1>Actualizar Nombre de Cargo</h1>
-  <p class="subtitle">Seleccione el cargo que desea modificar.</p>
+  <header class="form-header">
+    <h1>Actualizar Nombre de Cargo</h1>
+    <p class="subtitle">Seleccione el cargo que desea modificar.</p>
+  </header>
 
   <form [formGroup]="updateForm" (ngSubmit)="openConfirmationModal()">
-    <!-- Dropdown -->
+    <!-- ==================== SELECTOR DE CARGO ==================== -->
     <div class="form-group">
-      <label for="currentPosition"
-        >Cargo Actual <span class="required">*</span></label
-      >
+      <label for="currentPosition">
+        Cargo Actual <span class="required">*</span>
+      </label>
       <app-dropdown-search-select
-        [options]="availableCargos"
-        [selectedValue]="selectedCargo"
+        [options]="availablePositionsList"
+        [selectedValue]="selectedPosition"
         (select)="onSelectCargo($event)"
         placeholder="Buscar y seleccionar un cargo"
         displayKey="positionName"
       ></app-dropdown-search-select>
     </div>
 
-    <!-- Input nuevo nombre -->
+    <!-- ==================== NUEVO NOMBRE ==================== -->
     <div class="form-group">
       <label for="newPositionName">
         Nuevo Nombre <span class="required">*</span>
@@ -28,13 +30,14 @@
           type="text"
           class="form-control"
           formControlName="newPositionName"
-          placeholder="Ej: Coordinador de Procesos"
+          placeholder="Ej: Fixer"
           appInputRules
           [uppercase]="true"
           [maxLength]="50"
           [onlyLettersWithSpaces]="true"
         />
 
+        <!-- Botón para limpiar input -->
         <button
           type="button"
           class="clear-btn"
@@ -44,19 +47,22 @@
           ✖
         </button>
 
+        <!-- Spinner de validación -->
         <div class="spinner" *ngIf="checkingName" title="Verificando..."></div>
       </div>
 
       <!-- Mensajes de validación -->
-      <div class="error-message" *ngIf="isSameAsCurrent">
-        El nuevo nombre no puede ser igual al actual.
-      </div>
-      <div class="error-message" *ngIf="!isSameAsCurrent && nameExists">
-        Ya existe un cargo con ese nombre.
+      <div class="validation-messages">
+        <div class="error-message" *ngIf="isSameAsCurrent">
+          El nuevo nombre no puede ser igual al actual.
+        </div>
+        <div class="error-message" *ngIf="!isSameAsCurrent && nameExists">
+          Ya existe un cargo con ese nombre.
+        </div>
       </div>
     </div>
 
-    <!-- Botón de acción -->
+    <!-- ==================== BOTÓN DE ACCIÓN ==================== -->
     <div class="button-group">
       <button
         type="submit"
@@ -73,7 +79,7 @@
       </button>
     </div>
 
-    <!-- Confirmación -->
+    <!-- ==================== MODAL DE CONFIRMACIÓN ==================== -->
     <div class="modal-backdrop" *ngIf="showConfirmationModal">
       <app-confirm-modal
         [title]="'Confirmar Actualización de Cargo'"
@@ -84,26 +90,33 @@
         (confirm)="submitUpdate()"
         (cancel)="cancelConfirmation()"
       >
-        <p>Está a punto de actualizar el siguiente cargo:</p>
-        <ul class="summary-list">
-          <li>
-            <strong>Cargo actual:</strong> {{ selectedCargo?.positionName }}
-          </li>
-          <li>
-            <strong>Nuevo nombre:</strong>
-            {{ updateForm.value.newPositionName }}
-          </li>
-        </ul>
+        <!-- Contenido del modal -->
+        <section class="modal-content">
+          <p>Está a punto de actualizar el siguiente cargo:</p>
 
-        <div
-          *ngIf="showModalFeedback"
-          [ngClass]="
-            modalFeedbackSuccess ? 'feedback success' : 'feedback error'
-          "
-          class="modal-feedback-message"
-        >
-          {{ modalFeedbackMessage }}
-        </div>
+          <ul class="summary-list">
+            <li>
+              <strong>Cargo actual:</strong>
+              {{ selectedPosition?.positionName }}
+            </li>
+            <li>
+              <strong>Nuevo nombre:</strong>
+              {{ updateForm.value.newPositionName }}
+            </li>
+          </ul>
+        </section>
+
+        <ng-container *ngIf="modalFeedbackMessage">
+          <p
+            class="modal-feedback"
+            [ngClass]="{
+              success: modalSuccessType === 'success',
+              error: modalSuccessType === 'error'
+            }"
+          >
+            {{ modalFeedbackMessage }}
+          </p>
+        </ng-container>
       </app-confirm-modal>
     </div>
   </form>
