@@ -235,3 +235,27 @@
   }
 }
 
+.input-clear-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    width: 100%;
+    padding-right: 2rem;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 0.5rem;
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #888;
+
+    &:hover {
+      color: #000;
+    }
+  }
+}

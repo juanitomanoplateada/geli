@@ -72,4 +72,14 @@ export class EquipmentService {
       { params }
     );
   }
+
+  existsByInventoryNumberUpdate(name: string, excludeId?: number): Observable<boolean> {
+    const params: any = { inventoryNumber: name };
+    if (excludeId !== undefined) {
+      params.excludeId = excludeId;
+    }
+    return this.http.get<boolean>(`${this.baseUrl}/exists-by-update-inventory-number`, {
+      params,
+    });
+  }
 }

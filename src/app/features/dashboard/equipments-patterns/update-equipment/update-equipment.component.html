@@ -1,9 +1,8 @@
-<div class="register-container">
-  <h1>Registro de Equipo</h1>
-  <p class="subtitle">Ingrese los datos del nuevo equipo.</p>
+<div class="update-container">
+  <h1>Actualizar Equipo</h1>
+  <p class="subtitle">Modifique los datos del equipo y guarde los cambios.</p>
 
   <form [formGroup]="equipmentForm" (ngSubmit)="submitForm()">
-    <!-- Código -->
     <div class="form-group">
       <label for="inventoryCode"
         >Código de Inventario <span class="required">*</span></label
@@ -86,14 +85,14 @@
       ></app-dropdown-search-entity>
     </div>
 
-    <!-- Funciones utilizadas -->
+    <!-- Funciones -->
     <div class="form-group">
       <label for="functionId">Funciones <span class="required">*</span></label>
       <app-tag-multiselect
         [availableOptions]="availableFunctions"
         [selected]="selectedFunctions"
         (selectedChange)="onFunctionChange($event)"
-        placeholder="Seleccione o agregue las funciones del equipo"
+        placeholder="Seleccione o agregue funciones"
       ></app-tag-multiselect>
     </div>
 
@@ -104,7 +103,7 @@
         [options]="labOptions"
         [selectedValue]="selectedLab"
         (select)="onSelectLab($event)"
-        placeholder="Seleccione el laboratorio para el equipo"
+        placeholder="Seleccione el laboratorio del equipo"
       ></app-dropdown-search-entity-obj>
     </div>
 
@@ -117,9 +116,7 @@
         formControlName="availability"
         (change)="onAvailabilityChange()"
       >
-        <option value="" disabled selected>
-          Seleccione el estado actual del equipo
-        </option>
+        <option value="" disabled>Seleccione el estado actual</option>
         <option value="ACTIVO">ACTIVO</option>
         <option value="INACTIVO">INACTIVO</option>
       </select>
@@ -136,7 +133,7 @@
         class="form-control auto-expand"
         formControlName="notes"
         rows="2"
-        placeholder="Explique las razones del por qué el equipo está inactivo"
+        placeholder="Explique por qué el equipo está inactivo"
         appUppercase
         (input)="autoResize($event)"
       ></textarea>
@@ -152,15 +149,15 @@
       </div>
     </div>
 
-    <!-- Botones de acción -->
+    <!-- Botones -->
     <div class="button-group">
       <button
         type="button"
         class="btn cancel-btn"
-        (click)="resetForm()"
+        (click)="cancelConfirmation()"
         [disabled]="isSubmitting"
       >
-        Limpiar Campos
+        Cancelar
       </button>
 
       <button
@@ -169,29 +166,28 @@
         [disabled]="
           !equipmentForm.valid ||
           isInventoryCodeTaken ||
-          isNameTaken ||
           selectedFunctions.length === 0 ||
           (equipmentForm.get('availability')?.value === 'INACTIVO' &&
             equipmentForm.get('notes')?.invalid)
         "
       >
-        Registrar Equipo
+        Actualizar Equipo
       </button>
     </div>
 
     <!-- Modal de confirmación -->
     <app-confirm-modal
-      [title]="'Confirmar Registro de Equipo o Patrón'"
+      [title]="'Confirmar Actualización de Equipo'"
       [show]="showConfirmationModal"
-      [confirmLabel]="'Registrar Equipo'"
+      [confirmLabel]="'Actualizar'"
       [cancelLabel]="'Cancelar'"
       [isLoading]="isSubmitting"
       (confirm)="confirmSubmit()"
       (cancel)="cancelConfirmation()"
     >
       <p>
-        Está a punto de registrar un nuevo equipo o patrón en el sistema. Por
-        favor, revise la información antes de confirmar:
+        Está a punto de actualizar la información de este equipo. Por favor,
+        confirme los cambios:
       </p>
       <ul class="summary-list">
         <li>
@@ -201,7 +197,7 @@
         <li><strong>Marca:</strong> {{ formSummary.brand }}</li>
         <li><strong>Funciones:</strong> {{ formSummary.functions }}</li>
         <li><strong>Laboratorio:</strong> {{ formSummary.lab }}</li>
-        <li><strong>Estado Actual:</strong> {{ formSummary.availability }}</li>
+        <li><strong>Estado:</strong> {{ formSummary.availability }}</li>
         <li *ngIf="formSummary.availability === 'INACTIVO'">
           <strong>Observaciones:</strong> {{ formSummary.notes }}
         </li>

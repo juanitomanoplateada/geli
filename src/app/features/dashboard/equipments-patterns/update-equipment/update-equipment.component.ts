@@ -6,26 +6,26 @@ import {
   ReactiveFormsModule,
   FormsModule,
 } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
 
 import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
 import { UppercaseNospaceDirective } from '../../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { DropdownSearchEntityComponent } from '../../../../shared/components/dropdown-search-entity/dropdown-search-entity.component';
-import { DropdownSearchEntityObjComponent } from './../../../../shared/components/dropdown-search-entity-obj/dropdown-search-entity-obj.component';
+import { DropdownSearchEntityObjComponent } from '../../../../shared/components/dropdown-search-entity-obj/dropdown-search-entity-obj.component';
 import { TagMultiselectComponent } from '../../../../shared/components/tag-multiselect/tag-multiselect.component';
 
-import { EquipmentService } from '../../../../core/equipment/services/equipment.service';
+import { EquipmentService } from '../../../../core/services/equipment/equipment.service';
 import { BrandService } from '../../../../core/brand/services/brand.service';
-import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
+import { LaboratoryService } from '../../../../core/services/laboratory/laboratory.service';
 import {
   FunctionService,
   FunctionDto,
 } from '../../../../core/function/services/function.service';
 
 @Component({
-  selector: 'app-update-equipment-pattern',
+  selector: 'app-update-equipment',
   standalone: true,
   imports: [
     CommonModule,
@@ -34,14 +34,17 @@ import {
     UppercaseDirective,
     UppercaseNospaceDirective,
     ConfirmModalComponent,
+    DropdownSearchEntityComponent,
     DropdownSearchEntityObjComponent,
+    TagMultiselectComponent,
   ],
-  templateUrl: './update-equipment-pattern.component.html',
-  styleUrls: ['./update-equipment-pattern.component.scss'],
+  templateUrl: './update-equipment.component.html',
+  styleUrls: ['./update-equipment.component.scss'],
 })
-export class UpdateEquipmentPatternComponent implements OnInit {
+export class UpdateEquipmentComponent implements OnInit {
   equipmentForm: FormGroup;
-  id!: number;
+
+  isInventoryCodeTaken = false;
 
   isSubmitting = false;
   showConfirmationModal = false;
@@ -50,6 +53,8 @@ export class UpdateEquipmentPatternComponent implements OnInit {
   modalFeedbackSuccess = false;
   notesRequired = false;
 
+  equipmentId: number | null = null;
+
   brandOptions: { label: string; value: string }[] = [];
   labOptions: { label: string; value: string }[] = [];
   availableFunctions: FunctionDto[] = [];
@@ -57,7 +62,6 @@ export class UpdateEquipmentPatternComponent implements OnInit {
 
   selectedBrandOrProposed: string | null = null;
   selectedLab: string | null = null;
-  isLoading = true; // ← bandera inicial de carga
 
   constructor(
     private fb: FormBuilder,
@@ -65,28 +69,51 @@ export class UpdateEquipmentPatternComponent implements OnInit {
     private equipmentService: EquipmentService,
     private brandService: BrandService,
     private laboratoryService: LaboratoryService,
-    private functionService: FunctionService,
-    private router: Router
+    private functionService: FunctionService
   ) {
     this.equipmentForm = this.fb.group({
-      inventoryCode: [{ value: '', disabled: true }],
-      name: [{ value: '', disabled: true }],
-      brand: [{ value: '', disabled: true }],
+      inventoryCode: ['', Validators.required],
+      name: ['', Validators.required],
+      brand: ['', Validators.required],
       lab: ['', Validators.required],
       availability: ['', Validators.required],
       notes: [''],
-      functionId: [{ value: '', disabled: true }],
+      functionId: ['', Validators.required],
     });
   }
 
   ngOnInit(): void {
-    this.id = Number(this.route.snapshot.paramMap.get('id'));
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('id');
+      if (id) {
+        this.equipmentId = +id;
+        this.loadEquipmentData(this.equipmentId);
 
+        // Mueve aquí la suscripción al cambio del código inventario
+        this.equipmentForm
+          .get('inventoryCode')
+          ?.valueChanges.subscribe((value) => {
+            const trimmed = value?.trim();
+            if (trimmed) {
+              this.equipmentService
+                .existsByInventoryNumberUpdate(trimmed, this.equipmentId!) // ✅ usa el id correctamente
+                .subscribe((exists) => {
+                  this.isInventoryCodeTaken = exists;
+                });
+            } else {
+              this.isInventoryCodeTaken = false;
+            }
+          });
+      }
+    });
+
+    // Carga catálogos
     this.brandService.getAll().subscribe((brands) => {
-      this.brandOptions = brands.map((b) => ({
-        label: b.brandName,
-        value: b.id.toString(),
-      }));
+      this.brandOptions =
+        brands?.map((b) => ({
+          label: b.brandName,
+          value: b.id.toString(),
+        })) || [];
     });
 
     this.laboratoryService.getLaboratories().subscribe((labs) => {
@@ -103,35 +130,25 @@ export class UpdateEquipmentPatternComponent implements OnInit {
         ? functions
         : [...functions, { id: 0, functionName: 'N/A' }];
     });
-
-    this.loadEquipment();
   }
 
-  loadEquipment(): void {
-    this.isLoading = true;
-    this.equipmentService.getById(this.id).subscribe({
-      next: (equipment) => {
-        this.selectedBrandOrProposed = equipment.brand.brandName;
-        this.selectedLab = equipment.laboratory.id.toString();
-        this.selectedFunctions = equipment.functions;
+  loadEquipmentData(id: number): void {
+    this.equipmentService.getById(id).subscribe((data) => {
+      if (!data) return;
 
-        this.equipmentForm.patchValue({
-          inventoryCode: equipment.inventoryNumber,
-          name: equipment.equipmentName,
-          brand: equipment.brand.id.toString(),
-          lab: equipment.laboratory.id.toString(),
-          availability: equipment.availability ? 'ACTIVO' : 'INACTIVO',
-          notes: equipment.equipmentObservations || '',
-          functionId: 'valid',
-        });
+      this.equipmentForm.patchValue({
+        inventoryCode: data.inventoryNumber,
+        name: data.equipmentName,
+        brand: data.brand.id.toString(),
+        lab: data.laboratory.id.toString(),
+        availability: data.availability ? 'ACTIVO' : 'INACTIVO',
+        notes: data.equipmentObservations,
+        functionId: 'valid',
+      });
 
-        this.notesRequired = !equipment.availability;
-        this.isLoading = false;
-      },
-      error: () => {
-        this.isLoading = false;
-        // Manejo de error opcional
-      },
+      this.selectedBrandOrProposed = data.brand.brandName;
+      this.selectedLab = data.laboratory.id.toString();
+      this.selectedFunctions = data.functions;
     });
   }
 
@@ -156,7 +173,14 @@ export class UpdateEquipmentPatternComponent implements OnInit {
     if (selected) {
       this.selectedLab = labId;
       this.equipmentForm.get('lab')?.setValue(labId);
+      this.equipmentForm.get('lab')?.markAsTouched();
+      this.equipmentForm.get('lab')?.updateValueAndValidity();
     }
+  }
+
+  selectedIdLab(labName: string): number {
+    const selected = this.labOptions.find((l) => l.label === labName);
+    return Number(selected?.value);
   }
 
   onFunctionChange(selected: FunctionDto[]): void {
@@ -170,14 +194,11 @@ export class UpdateEquipmentPatternComponent implements OnInit {
     const status = this.equipmentForm.get('availability')?.value;
     this.notesRequired = status === 'INACTIVO';
     const notesControl = this.equipmentForm.get('notes');
-
     if (this.notesRequired) {
       notesControl?.setValidators([Validators.required]);
     } else {
       notesControl?.clearValidators();
-      notesControl?.setValue(''); // ← limpiar el campo si es ACTIVO
     }
-
     notesControl?.updateValueAndValidity();
   }
 
@@ -199,17 +220,58 @@ export class UpdateEquipmentPatternComponent implements OnInit {
     this.isSubmitting = true;
 
     try {
+      let brandId: number;
+      const selectedBrand = this.brandOptions.find(
+        (b) => b.label === this.selectedBrandOrProposed
+      );
+
+      if (selectedBrand && isNaN(Number(selectedBrand.value))) {
+        const createdBrand = await this.brandService
+          .create({ brandName: selectedBrand.label })
+          .toPromise();
+        brandId = createdBrand!.id;
+      } else {
+        brandId = Number(selectedBrand?.value);
+      }
+
+      const newFunctions = this.selectedFunctions.filter((f) => f.id === 0);
+      const existingFunctions = this.selectedFunctions.filter(
+        (f) => f.id !== 0
+      );
+      const createdFunctions: FunctionDto[] = [];
+
+      for (const func of newFunctions) {
+        const created = await this.functionService
+          .create({ functionName: func.functionName })
+          .toPromise();
+        createdFunctions.push(created!);
+      }
+
+      const allFunctions = [...existingFunctions, ...createdFunctions];
+
       const payload = {
+        equipmentName: this.equipmentForm.get('name')?.value,
+        inventoryNumber: this.equipmentForm.get('inventoryCode')?.value,
+        brand: {
+          id: brandId,
+          brandName: this.selectedBrandOrProposed ?? '',
+        },
         laboratoryId: Number(this.equipmentForm.get('lab')?.value),
         availability:
           this.equipmentForm.get('availability')?.value === 'ACTIVO',
         equipmentObservations: this.equipmentForm.get('notes')?.value || '',
+        authorizedUsersIds: [],
+        functions: allFunctions.map((f) => f.id),
       };
 
-      await this.equipmentService.update(this.id, payload).toPromise();
+      if (this.equipmentId) {
+        await this.equipmentService
+          .update(this.equipmentId, payload)
+          .toPromise();
+        this.modalFeedbackSuccess = true;
+        this.modalFeedbackMessage = '✅ Equipo actualizado exitosamente.';
+      }
 
-      this.modalFeedbackSuccess = true;
-      this.modalFeedbackMessage = '✅ Equipo actualizado exitosamente.';
       this.showModalFeedback = true;
 
       setTimeout(() => {
@@ -225,32 +287,20 @@ export class UpdateEquipmentPatternComponent implements OnInit {
     }
   }
 
-  get formSummary() {
-    const rawValues = this.equipmentForm.getRawValue(); // <-- cambio clave
-    return {
-      inventoryCode: rawValues.inventoryCode || '(Sin código)',
-      name: rawValues.name || '(Sin nombre)',
-      brand: this.selectedBrandOrProposed,
-      functions:
-        this.selectedFunctions.map((f) => f.functionName).join(', ') ||
-        '(Sin funciones)',
-      lab:
-        this.labOptions.find((l) => l.value === this.selectedLab)?.label ||
-        '(Sin laboratorio)',
-      availability: rawValues.availability || '(Sin estado)',
-      notes: rawValues.notes || '(Sin observaciones)',
-    };
-  }
-
   autoResize(event: Event): void {
     const el = event.target as HTMLTextAreaElement;
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
   }
 
-  goBack(): void {
-    this.router.navigate([
-      '/dashboard/equipments-patterns/search-equipment-pattern',
-    ]);
+  get formSummary() {
+    const values = this.equipmentForm.value;
+    return {
+      ...values,
+      brand: this.selectedBrandOrProposed,
+      lab:
+        this.labOptions.find((l) => l.value === this.selectedLab)?.label || '',
+      functions: this.selectedFunctions.map((f) => f.functionName).join(', '),
+    };
   }
 }

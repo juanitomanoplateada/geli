@@ -290,7 +290,7 @@ export class SearchEquipmentPatternComponent implements OnInit {
 
   navigateToEdit(id: number): void {
     this.router.navigate([
-      '/dashboard/equipments-patterns/update-equipment-pattern',
+      '/dashboard/equipments-patterns/update-equipment',
       id,
     ]);
   }

@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
 import { SearchEquipmentPatternComponent } from './search-equipment-pattern/search-equipment-pattern.component';
 import { RegisterEquipmentPatternComponent } from './register-equipment-pattern/register-equipment-pattern.component';
-import { UpdateEquipmentPatternComponent } from './update-equipment-pattern/update-equipment-pattern.component';
 import { BrandsComponent } from './brands/brands.component';
 import { FunctionsComponent } from './functions/functions.component';
+import { UpdateEquipmentComponent } from './update-equipment/update-equipment.component';
 
 export const equipmentsPatternsRoutes: Routes = [
   {
@@ -15,8 +15,8 @@ export const equipmentsPatternsRoutes: Routes = [
     component: RegisterEquipmentPatternComponent,
   },
   {
-    path: 'update-equipment-pattern/:id',
-    component: UpdateEquipmentPatternComponent,
+    path: 'update-equipment/:id',
+    component: UpdateEquipmentComponent,
   },
   {
     path: 'brands',

@@ -59,4 +59,14 @@ export class LaboratoryService {
       params: { laboratoryName: name },
     });
   }
+
+  existsByNameUpdate(name: string, excludeId?: number): Observable<boolean> {
+    const params: any = { laboratoryName: name };
+    if (excludeId !== undefined) {
+      params.excludeId = excludeId;
+    }
+    return this.http.get<boolean>(`${this.apiUrl}/exists-by-update-name`, {
+      params,
+    });
+  }
 }

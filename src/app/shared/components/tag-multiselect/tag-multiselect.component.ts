@@ -22,6 +22,7 @@ export class TagMultiselectComponent {
   @Input() placeholder: string = 'Seleccionar opciones';
   @Input() availableOptions: FunctionDto[] = [{ id: 0, functionName: 'N/A' }];
   @Input() selected: FunctionDto[] = [];
+  @Input() disabled: boolean = false;
 
   @Output() selectedChange = new EventEmitter<FunctionDto[]>();
 

@@ -1,6 +1,6 @@
 <div class="tag-selector" appClickOutside (appClickOutside)="closeDropdown()">
   <!-- Selector visible -->
-  <div class="selector-box" (click)="toggleDropdown()">
+  <div class="selector-box" *ngIf="!disabled" (click)="toggleDropdown()">
     {{ placeholder }}
   </div>
 
@@ -32,7 +32,9 @@
   <div class="tags">
     <span class="tag" *ngFor="let opt of selected">
       {{ opt.functionName }}
-      <button type="button" (click)="removeOption(opt)">×</button>
+      <button *ngIf="!disabled" type="button" (click)="removeOption(opt)">
+        ×
+      </button>
     </span>
   </div>
 </div>

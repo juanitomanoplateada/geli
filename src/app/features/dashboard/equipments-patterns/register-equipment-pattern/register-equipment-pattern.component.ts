@@ -245,19 +245,15 @@ export class RegisterEquipmentPatternComponent implements OnInit {
       const createdFunctions: FunctionDto[] = [];
 
       for (const func of newFunctions) {
-        for (const func of newFunctions) {
-          const created = await this.functionService
-            .create({ functionName: func.functionName })
-            .toPromise();
+        const created = await this.functionService
+          .create({ functionName: func.functionName })
+          .toPromise();
 
-          if (!created) {
-            throw new Error(
-              `No se pudo crear la función: ${func.functionName}`
-            );
-          }
-
-          createdFunctions.push(created);
+        if (!created) {
+          throw new Error(`No se pudo crear la función: ${func.functionName}`);
         }
+
+        createdFunctions.push(created);
       }
 
       const allFunctions = [...existingFunctions, ...createdFunctions];

@@ -94,7 +94,7 @@ export class UpdateLaboratoryComponent implements OnInit {
 
     this.labNameChecking = true;
 
-    this.laboratoryService.existsByName(trimmed).subscribe({
+    this.laboratoryService.existsByNameUpdate(trimmed, this.labId).subscribe({
       next: (exists: boolean) => {
         this.labNameAlreadyExists = exists;
         this.labNameChecking = false;
@@ -105,8 +105,6 @@ export class UpdateLaboratoryComponent implements OnInit {
       },
     });
   }
-
-
 
   private loadData(): void {
     this.isLoading = true;
