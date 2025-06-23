@@ -4,17 +4,12 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment.prod';
 import { UserRecordResponse } from '../../dto/user/record-user-response.dto';
-import { CreateUserRequest } from '../../dto/user/create-user-request.dto';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private readonly baseUrl = `${environment.apiBaseUrl}/v1/users`;
 
   constructor(private http: HttpClient) {}
-
-  createUser(userData: CreateUserRequest): Observable<any> {
-    return this.http.post(`${this.baseUrl}`, userData);
-  }
 
   getUsers(): Observable<UserRecordResponse[]> {
     return this.http.get<UserRecordResponse[]>(this.baseUrl).pipe(

@@ -1,29 +1,40 @@
 <div class="register-container">
-  <h1>Registro de Analista de Calidad</h1>
-  <p class="subtitle">
-    Ingrese los datos de la persona a registrar en el sistema.
-  </p>
+  <header class="form-header">
+    <h1>Registro de Analista de Calidad</h1>
+    <p class="subtitle">
+      Ingrese los datos de la persona a registrar en el sistema.
+    </p>
+  </header>
 
   <form [formGroup]="userForm" (ngSubmit)="submitForm()">
-    <!-- Grupo: Correo Institucional -->
+    <!-- Correo Institucional -->
     <div class="form-group">
       <label for="email"
         >Correo Institucional <span class="required">*</span></label
       >
-      <div class="email-input-group">
+
+      <div class="input-clear-wrapper email-domain-group">
         <input
           id="email"
           type="text"
           formControlName="email"
           placeholder="Ej: juan.perez123"
-          class="form-control email-input"
+          class="form-control"
           (input)="checkEmailExists()"
           appInputRules
           [lettersNumbersDotNoSpaces]="true"
           [uppercase]="true"
-          [maxLength]="15"
+          [maxLength]="25"
         />
-        <span class="domain-display">&#64;uptc.edu.co</span>
+        <button
+          type="button"
+          *ngIf="userForm.get('email')?.value"
+          class="clear-btn"
+          (click)="userForm.get('email')?.setValue('')"
+        >
+          ✖
+        </button>
+        <span class="email-domain">&#64;uptc.edu.co</span>
       </div>
 
       <div
@@ -37,8 +48,7 @@
       </div>
     </div>
 
-    <!-- Grupo: Nombre Completo -->
-
+    <!-- Nombre -->
     <div class="form-group">
       <label>Nombres <span class="required">*</span></label>
       <div class="input-clear-wrapper">
@@ -61,7 +71,6 @@
           ✖
         </button>
       </div>
-
       <div
         *ngIf="
           userForm.get('firstName')?.invalid &&
@@ -73,6 +82,7 @@
       </div>
     </div>
 
+    <!-- Apellidos -->
     <div class="form-group">
       <label>Apellidos <span class="required">*</span></label>
       <div class="input-clear-wrapper">
@@ -95,7 +105,6 @@
           ✖
         </button>
       </div>
-
       <div
         *ngIf="
           userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched
@@ -106,11 +115,11 @@
       </div>
     </div>
 
-    <!-- Grupo: Identificación -->
+    <!-- Identificación -->
     <div class="form-group">
-      <label for="identification">
-        Identificación <span class="required">*</span>
-      </label>
+      <label for="identification"
+        >Identificación <span class="required">*</span></label
+      >
       <div class="input-clear-wrapper">
         <input
           id="identification"
@@ -131,7 +140,6 @@
           ✖
         </button>
       </div>
-
       <div
         *ngIf="
           userForm.get('identification')?.invalid &&
@@ -154,7 +162,6 @@
         placeholder="Seleccione o agregue un cargo"
         displayKey="positionName"
       ></app-dropdown-search-entity>
-
       <div
         *ngIf="
           userForm.get('positionName')?.invalid &&
@@ -166,29 +173,27 @@
       </div>
     </div>
 
-    <!-- Mensaje de Retroalimentación -->
+    <!-- Feedback -->
     <div
       *ngIf="feedbackMessage"
       [ngClass]="feedbackSuccess ? 'feedback success' : 'feedback error'"
-      class="feedback"
     >
       {{ feedbackMessage }}
     </div>
 
-    <!-- Botones de Acción -->
-    <div class="button-group">
+    <!-- Botones -->
+    <div class="form-actions">
       <button
         type="button"
-        class="btn cancel-btn"
+        class="btn btn-cancel"
         (click)="resetForm()"
         [disabled]="isSubmitting"
       >
         Limpiar Campos
       </button>
-
       <button
         type="submit"
-        class="btn submit-btn"
+        class="btn btn-submit"
         [disabled]="!userForm.valid || emailAlreadyExists || isSubmitting"
       >
         Registrar Persona
@@ -215,8 +220,8 @@
             <strong>Correo Institucional:</strong> {{ institutionalEmail }}
           </li>
           <li>
-            <strong>Nombre Completo:</strong>
-            {{ userForm.value.firstName }} {{ userForm.value.lastName }}
+            <strong>Nombre Completo:</strong> {{ userForm.value.firstName }}
+            {{ userForm.value.lastName }}
           </li>
           <li>
             <strong>Identificación:</strong> {{ userForm.value.identification }}
@@ -225,13 +230,11 @@
           <li><strong>Cargo:</strong> {{ userForm.value.positionName }}</li>
         </ul>
 
-        <!-- Feedback Modal -->
         <div
           *ngIf="showModalFeedback"
           [ngClass]="
             modalFeedbackSuccess ? 'feedback success' : 'feedback error'
           "
-          class="modal-feedback-message"
         >
           {{ modalFeedbackMessage }}
         </div>

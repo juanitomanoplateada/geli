@@ -1,8 +1,7 @@
 import { EquipmentDto } from "../equipments-patterns/equipment-response.dto";
 import { PositionDto } from "../position/position-response.dto";
 
-
-export interface UserRecordResponse {
+export interface UserResponseDTO {
   id: number;
   keycloakId: string;
   firstName: string;

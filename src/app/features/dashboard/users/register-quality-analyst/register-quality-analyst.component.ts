@@ -7,14 +7,21 @@ import {
   Validators,
 } from '@angular/forms';
 
-import { UserService } from '../../../../core/services/user/user.service';
-import { PositionService } from './../../../../core/services/position/position.service';
-import { CreateUserRequest } from '../../../../core/dto/user/create-user-request.dto';
-import { PositionDto } from '../../../../core/dto/position/position-response.dto';
-
+// Components
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { DropdownSearchEntityComponent } from '../../../../shared/components/dropdown-search-entity/dropdown-search-entity.component';
+
+// Directives
 import { InputRulesDirective } from '../../../../shared/directives/input-rules/input-rules';
+
+// Services
+import { UserService } from '../../../../core/services/user/user.service';
+import { PositionService } from './../../../../core/services/position/position.service';
+import { PositionHelperService } from '../../../../core/services/position/position-helper.service';
+
+// DTOs
+import { PositionDto } from '../../../../core/dto/position/position-response.dto';
+import { UserCreationDTO } from '../../../../core/dto/user/user-creation.dto';
 
 @Component({
   selector: 'app-register-quality-analyst',
@@ -31,6 +38,7 @@ import { InputRulesDirective } from '../../../../shared/directives/input-rules/i
   styleUrl: './register-quality-analyst.component.scss',
 })
 export class RegisterQualityAnalystComponent {
+  // Properties
   availablePositionsList: {
     label: string;
     value: { id: number; positionName: string };
@@ -39,16 +47,7 @@ export class RegisterQualityAnalystComponent {
   selectedPosition: { id: number; positionName: string } | null = null;
   proposedPositionName: string | null = null;
 
-  showConfirmationModal = false;
-  feedbackMessage: string | null = null;
-  feedbackSuccess = false;
-  emailAlreadyExists = false;
-  isSubmitting = false;
-
-  showModalFeedback = false;
-  modalFeedbackMessage = '';
-  modalFeedbackSuccess = false;
-
+  // Form state
   userForm = this.fb.group({
     email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._-]+$/)]],
     firstName: ['', Validators.required],
@@ -57,34 +56,29 @@ export class RegisterQualityAnalystComponent {
     positionName: ['', Validators.required],
   });
 
+  // UI state
+  showConfirmationModal = false;
+  feedbackMessage: string | null = null;
+  feedbackSuccess = false;
+  emailAlreadyExists = false;
+  isSubmitting = false;
+  showModalFeedback = false;
+  modalFeedbackMessage = '';
+  modalFeedbackSuccess = false;
+
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
-    private positionService: PositionService
+    private positionService: PositionService,
+    private positionHelperService: PositionHelperService
   ) {}
 
+  // Lifecycle hooks
   ngOnInit(): void {
     this.loadPositions();
   }
 
-  private loadPositions(): void {
-    this.positionService.getAll().subscribe({
-      next: (positions) => {
-        if (!positions) {
-          this.availablePositionsList = [];
-          return;
-        }
-        this.availablePositionsList = positions.map((p) => ({
-          label: p.positionName,
-          value: { id: p.id, positionName: p.positionName },
-        }));
-      },
-      error: (err) => {
-        console.error('Error cargando posiciones:', err);
-      },
-    });
-  }
-
+  // Public methods
   get institutionalEmail(): string {
     const prefix = this.userForm.get('email')?.value || '';
     return `${prefix}@uptc.edu.co`.toLowerCase();
@@ -130,7 +124,7 @@ export class RegisterQualityAnalystComponent {
       (opt) => opt.label.toUpperCase() === positionName
     );
 
-    const payload: CreateUserRequest = {
+    const payload: UserCreationDTO = {
       email: this.institutionalEmail.toUpperCase(),
       firstName: this.userForm.value.firstName!.trim(),
       lastName: this.userForm.value.lastName!.trim(),
@@ -159,15 +153,18 @@ export class RegisterQualityAnalystComponent {
     if (!existing) {
       this.positionService.create({ positionName }).subscribe({
         next: (newPosition) => {
-          this.availablePositionsList.push({
-            label: newPosition.positionName,
-            value: {
-              id: newPosition.id,
-              positionName: newPosition.positionName,
-            },
-          });
-          payload.positionId = newPosition.id;
-          createUser();
+          if (newPosition) {
+            this.availablePositionsList.push({
+              label: newPosition.positionName,
+              value: {
+                id: newPosition.id,
+                positionName: newPosition.positionName,
+              },
+            });
+
+            payload.positionId = newPosition.id;
+            createUser();
+          }
         },
         error: () => {
           this.modalFeedback('❌ Error al crear el cargo.', false);
@@ -181,11 +178,8 @@ export class RegisterQualityAnalystComponent {
 
   resetForm(): void {
     this.userForm.reset({ positionName: '' });
-
-    // Limpieza adicional para el dropdown
     this.selectedPosition = null;
     this.proposedPositionName = null;
-
     this.feedbackMessage = null;
     this.emailAlreadyExists = false;
     this.showConfirmationModal = false;
@@ -210,21 +204,6 @@ export class RegisterQualityAnalystComponent {
     });
   }
 
-  private showFeedback(msg: string, success: boolean): void {
-    this.feedbackMessage = msg;
-    this.feedbackSuccess = success;
-    setTimeout(() => (this.feedbackMessage = null), 5000);
-  }
-
-  private modalFeedback(message: string, success: boolean): void {
-    this.modalFeedbackMessage = message;
-    this.modalFeedbackSuccess = success;
-    this.showModalFeedback = true;
-    setTimeout(() => {
-      this.showModalFeedback = false;
-    }, 5000);
-  }
-
   onSelectPosition(position: { id: number; positionName: string }): void {
     this.selectedPosition = position;
     this.proposedPositionName = null;
@@ -242,5 +221,29 @@ export class RegisterQualityAnalystComponent {
     if (this.proposedPositionName)
       return { id: 0, positionName: this.proposedPositionName };
     return null;
+  }
+
+  // Private methods
+  private loadPositions(): void {
+    this.positionHelperService.getFormattedPositionOptions().subscribe({
+      next: (options) => {
+        this.availablePositionsList = options;
+      },
+    });
+  }
+
+  private showFeedback(msg: string, success: boolean): void {
+    this.feedbackMessage = msg;
+    this.feedbackSuccess = success;
+    setTimeout(() => (this.feedbackMessage = null), 5000);
+  }
+
+  private modalFeedback(message: string, success: boolean): void {
+    this.modalFeedbackMessage = message;
+    this.modalFeedbackSuccess = success;
+    this.showModalFeedback = true;
+    setTimeout(() => {
+      this.showModalFeedback = false;
+    }, 5000);
   }
 }

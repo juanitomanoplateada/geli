@@ -10,19 +10,33 @@
       {{ getSelectedLabel() }}
     </ng-container>
     <ng-template #showPlaceholder>{{ placeholder }}</ng-template>
+
+    <!-- Flecha -->
+    <span class="arrow" [class.open]="showDropdown()">&#9660;</span>
   </div>
 
   <!-- Lista desplegable -->
   <div class="dropdown-list" *ngIf="showDropdown()">
-    <input
-      type="text"
-      [ngModel]="searchTerm()"
-      (ngModelChange)="searchTerm.set($event)"
-      placeholder="Buscar..."
-      title="Buscar opción en lista"
-      aria-label="Buscar opción en lista"
-      appUppercase
-    />
+    <div class="search-wrapper">
+      <input
+        type="text"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        placeholder="Buscar..."
+        title="Buscar opción en lista"
+        aria-label="Buscar opción en lista"
+        appUppercase
+      />
+
+      <!-- Botón para limpiar -->
+      <span
+        class="clear-btn"
+        *ngIf="searchTerm()"
+        (click)="searchTerm.set('')"
+        title="Limpiar"
+        >&#10006;</span
+      >
+    </div>
 
     <div
       class="option"

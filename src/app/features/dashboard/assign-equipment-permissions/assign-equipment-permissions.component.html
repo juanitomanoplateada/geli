@@ -8,12 +8,11 @@
 
   <!-- Selección de usuario -->
   <div *ngIf="!isInitialLoading" class="user-select-section">
-    <label for="user">Seleccione un usuario</label>
     <app-dropdown-search
       [options]="userOptions"
       [selectedValue]="selectedUser ? getUserLabel(selectedUser) : null"
       (select)="onUserSelect($event)"
-      placeholder="Buscar usuario..."
+      placeholder="Buscar y seleccionar un usuario..."
     ></app-dropdown-search>
   </div>
 
@@ -36,6 +35,8 @@
     </button>
   </div>
 
+  <h1 *ngIf="selectedUser">Búsqueda de Equipos</h1>
+
   <!-- Filtros y búsqueda -->
   <app-search-advanced
     *ngIf="selectedUser"
@@ -53,25 +54,39 @@
     (triggerSearch)="performSearch()"
     (clearFilters)="resetSearch()"
     (toggleAdvanced)="toggleAdvancedSearch()"
+    [placeholder]="'Buscar por N° inventario o nombre'"
+    [currentPage]="currentPage"
+    [totalPages]="totalPages"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="pageSizeOptions"
+    [isLoading]="isLoading"
+    [hasData]="equipmentResults.length > 0"
+    (pageChange)="changePage($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
   ></app-search-advanced>
 
   <!-- Toggle para cambiar entre vista agrupada y plana -->
   <div *ngIf="!isLoading && equipmentResults.length > 0" class="view-toggle">
     <button (click)="toggleGroupedView()" class="toggle-btn">
-      {{ showGroupedView ? 'Mostrar vista plana' : 'Mostrar vista agrupada' }}
+      {{ showGroupedView ? "Mostrar vista plana" : "Mostrar vista agrupada" }}
     </button>
   </div>
-  
+
   <!-- Vista agrupada por laboratorio -->
-  <div *ngIf="!isLoading && equipmentResults.length > 0 && showGroupedView" class="lab-groups">
+  <div
+    *ngIf="!isLoading && equipmentResults.length > 0 && showGroupedView"
+    class="lab-groups"
+  >
     <div *ngFor="let group of laboratoryGroups" class="lab-group">
       <div class="lab-header" (click)="toggleGroupExpansion(group)">
-        <span class="toggle-icon">{{ group.expanded ? '▼' : '►' }}</span>
+        <span class="toggle-icon">{{ group.expanded ? "▼" : "►" }}</span>
         <h3>{{ group.name }}</h3>
-        <span class="equipment-count">({{ group.equipments.length }} equipos)</span>
+        <span class="equipment-count"
+          >({{ group.equipments.length }} equipos)</span
+        >
         <label class="select-all">
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             [checked]="group.allSelected"
             (change)="toggleGroupSelection(group)"
             (click)="$event.stopPropagation()"
@@ -92,6 +107,7 @@
               <td>
                 <label>
                   <input
+                    title="Seleccione"
                     type="checkbox"
                     [checked]="isChecked(item)"
                     (change)="onItemCheckChange(item)"
@@ -104,8 +120,12 @@
                 </span>
                 <span *ngIf="col.type === 'status'">
                   <span
-                    [class.available]="resolveNestedValue(item, col.key) === 'Disponible'"
-                    [class.unavailable]="resolveNestedValue(item, col.key) === 'No disponible'"
+                    [class.available]="
+                      resolveNestedValue(item, col.key) === 'Disponible'
+                    "
+                    [class.unavailable]="
+                      resolveNestedValue(item, col.key) === 'No disponible'
+                    "
                   >
                     {{ resolveNestedValue(item, col.key) }}
                   </span>
@@ -117,7 +137,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Vista plana (tabla original) -->
   <app-results-table-checkbox
     *ngIf="!isLoading && equipmentResults.length > 0 && !showGroupedView"

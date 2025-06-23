@@ -5,135 +5,156 @@
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  -webkit-user-select: none;
-  user-select: none;
 
-  h1 {
-    color: #2c3e50;
-    margin-bottom: 0.5rem;
+  .form-header {
     text-align: center;
-  }
-
-  .subtitle {
-    color: #7f8c8d;
     margin-bottom: 2rem;
-    font-size: 1rem;
-    text-align: center;
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #7f8c8d;
+      font-size: 1rem;
+    }
   }
-}
 
-.form-group {
-  margin-bottom: 1.5rem;
+  .form-group {
+    margin-bottom: 1.5rem;
 
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #2c3e50;
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #2c3e50;
+      font-weight: 500;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      transition: border-color 0.3s ease;
+
+      &:focus {
+        border-color: #3498db;
+        outline: none;
+      }
+    }
+
+    .error-message {
+      color: #e74c3c;
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+  }
+
+  .input-clear-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    input {
+      padding-right: 2rem;
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: 0.5rem;
+      background: transparent;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #888;
+
+      &:hover {
+        color: #000;
+      }
+    }
+
+    &.email-domain-group {
+      .form-control {
+        padding-right: 9rem;
+      }
+
+      .email-domain {
+        position: absolute;
+        right: 2.5rem;
+        color: #555;
+        font-size: 0.95rem;
+        pointer-events: none;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &-cancel {
+        background-color: #e74c3c;
+        color: white;
+
+        &:hover {
+          background-color: #c0392b;
+        }
+      }
+
+      &-submit {
+        background-color: green;
+        color: white;
+
+        &:hover {
+          background-color: darkgreen;
+        }
+
+        &:disabled {
+          background-color: #bdc3c7;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  .feedback {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 6px;
     font-weight: 500;
-  }
+    text-align: center;
 
-  .form-control {
-    width: 100%;
-    padding: 0.75rem;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    transition: border-color 0.3s ease;
-
-    &:focus {
-      border-color: #3498db;
-      outline: none;
-    }
-  }
-}
-
-.email-input-group {
-  display: flex;
-  align-items: center;
-
-  .email-input {
-    flex-grow: 1;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-right: none;
-  }
-
-  .domain-display {
-    padding: 0.75rem;
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
-    border-left: none;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-    color: #495057;
-    font-size: 0.95rem;
-  }
-}
-
-.error-message {
-  color: #e74c3c;
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
-}
-
-.button-group {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
-
-  .btn {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-
-    &.cancel-btn {
-      background-color: #e74c3c;
-      color: white;
-
-      &:hover {
-        background-color: #c0392b;
-      }
+    &.success {
+      background-color: #d4edda;
+      color: #155724;
     }
 
-    &.submit-btn {
-      background-color: green;
-      color: white;
-
-      &:hover {
-        background-color: darkgreen;
-      }
-
-      &:disabled {
-        background-color: #bdc3c7;
-        cursor: not-allowed;
-      }
+    &.error {
+      background-color: #f8d7da;
+      color: #721c24;
     }
   }
-}
 
-.feedback {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  border-radius: 6px;
-  font-weight: 500;
-  text-align: center;
-  transition: all 0.3s ease;
-
-  &.success {
-    background-color: #d4edda;
-    color: #155724;
-  }
-
-  &.error {
-    background-color: #f8d7da;
-    color: #721c24;
+  .required {
+    color: red;
+    margin-left: 4px;
+    font-weight: bold;
   }
 }
 
+// Estilos para el modal de confirmación
 ::ng-deep app-confirm-modal {
   .summary-list {
     list-style: none;
@@ -182,94 +203,24 @@
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
-    }
 
-    .submit-btn {
-      background-color: #27ae60;
-      color: white;
+      &.submit-btn {
+        background-color: #27ae60;
+        color: white;
 
-      &:hover {
-        background-color: #1e874b;
+        &:hover {
+          background-color: #1e874b;
+        }
       }
-    }
 
-    .cancel-btn {
-      background-color: #e74c3c;
-      color: white;
+      &.cancel-btn {
+        background-color: #e74c3c;
+        color: white;
 
-      &:hover {
-        background-color: #c0392b;
+        &:hover {
+          background-color: #c0392b;
+        }
       }
-    }
-  }
-}
-
-.spinner {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid #ffffff;
-  border-top: 2px solid transparent;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-  margin-right: 0.5rem;
-  vertical-align: middle;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.required {
-  color: red;
-  margin-left: 4px;
-  font-weight: bold;
-}
-
-.helper-text {
-  margin: 0.25rem 0 0.75rem 0;
-  font-size: 0.85rem;
-  color: #555;
-}
-
-.field-hint {
-  font-size: 0.85rem;
-  color: #666;
-  margin: 4px 0 8px 0;
-  display: flex;
-  align-items: center;
-
-  &::before {
-    content: "ℹ️";
-    margin-right: 6px;
-  }
-}
-
-.input-clear-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-
-  input {
-    padding-right: 2rem;
-  }
-
-  .clear-btn {
-    position: absolute;
-    right: 0.5rem;
-    background: transparent;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    color: #888;
-
-    &:hover {
-      color: #000;
     }
   }
 }

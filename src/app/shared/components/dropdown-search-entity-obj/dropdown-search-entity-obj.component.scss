@@ -97,3 +97,43 @@
     }
   }
 }
+
+.selected {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .arrow {
+    margin-left: 10px;
+    transition: transform 0.3s ease;
+    font-size: 0.9rem;
+
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.search-wrapper {
+  position: relative;
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: 30px;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1rem;
+    color: #888;
+
+    &:hover {
+      color: #333;
+    }
+  }
+}

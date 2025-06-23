@@ -14,6 +14,7 @@ import { DropdownSearchEntityComponent } from '../../../../shared/components/dro
 import { UserService } from '../../../../core/services/user/user.service';
 import { PositionService } from '../../../../core/services/position/position.service';
 import { PositionDto } from '../../../../core/dto/position/position-response.dto';
+import { PositionHelperService } from '../../../../core/services/position/position-helper.service';
 
 interface UpdateUserRequest {
   isActive: boolean;
@@ -29,8 +30,8 @@ interface UpdateUserRequest {
     FormsModule,
     ReactiveFormsModule,
     ConfirmModalComponent,
-    DropdownSearchEntityComponent
-],
+    DropdownSearchEntityComponent,
+  ],
   templateUrl: './update-user.component.html',
   styleUrls: ['./update-user.component.scss'],
 })
@@ -74,29 +75,20 @@ export class UpdateUserComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private userService: UserService,
-    private positionService: PositionService
+    private positionService: PositionService,
+    private positionHelperService: PositionHelperService
   ) {}
 
   ngOnInit() {
     this.userId = Number(this.route.snapshot.paramMap.get('id'));
     this.loadPositions();
+    this.loadUser();
   }
 
   private loadPositions(): void {
-    this.positionService.getAll().subscribe({
-      next: (positions) => {
-        if (!positions) {
-          this.availablePositionsList = [];
-          return;
-        }
-        this.availablePositionsList = positions.map((p) => ({
-          label: p.positionName,
-          value: { id: p.id, positionName: p.positionName },
-        }));
-        this.loadUser();
-      },
-      error: (err) => {
-        console.error('Error cargando posiciones:', err);
+    this.positionHelperService.getFormattedPositionOptions().subscribe({
+      next: (options) => {
+        this.availablePositionsList = options;
       },
     });
   }
