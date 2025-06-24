@@ -1,15 +1,13 @@
 import {
   EquipmentUseFilterRequest,
   EquipmentUseResponse,
-  EquipmentUseService,
 } from './../../../../core/session/services/equipment-use.service';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SearchAdvancedComponent } from '../../../../shared/components/search-advanced/search-advanced.component';
 import { FieldConfig } from '../../../../shared/model/field-config.model';
 import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
-import { EquipmentService } from '../../../../core/equipment/services/equipment.service';
+import { EquipmentService } from '../../../../core/services/equipment/equipment.service';
 import {
   FunctionDto,
   FunctionService,
@@ -18,6 +16,8 @@ import { UserRecordResponse } from '../../../../core/dto/user/record-user-respon
 import { UserService } from '../../../../core/services/user/user.service';
 import { Laboratory } from '../../../../core/laboratory/models/laboratory.model';
 import { EquipmentDto } from '../../../../core/equipment/models/equipment-response.dto';
+import { EquipmentUseService } from '../../../../core/services/session/equipment-use.service';
+import { SearchFilterOnlyComponent } from '../../../../shared/components/search-filter-only/search-filter-only.component';
 
 interface SessionRecord {
   id: number;
@@ -41,7 +41,7 @@ interface SessionRecord {
 @Component({
   selector: 'app-session-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchAdvancedComponent],
+  imports: [CommonModule, FormsModule, SearchFilterOnlyComponent],
   templateUrl: './session-history.component.html',
   styleUrls: ['./session-history.component.scss'],
 })
@@ -90,34 +90,34 @@ export class SessionHistoryComponent implements OnInit {
     { key: 'dateTo', label: 'Fecha hasta' },
     { key: 'timeFrom', label: 'Hora desde' },
     { key: 'timeTo', label: 'Hora hasta' },
-    { key: 'verifiedStatus', label: 'Verificado' },
-    { key: 'usageStatus', label: 'Para uso' },
+    { key: 'verifiedStatus', label: 'Estado - Verificado' },
+    { key: 'usageStatus', label: 'Estado - Uso' },
     { key: 'sampleCountMin', label: 'Muestras desde' },
     { key: 'sampleCountMax', label: 'Muestras hasta' },
     { key: 'function', label: 'Función' },
     { key: 'user', label: 'Responsable' },
   ];
-  activeFilterKeys = this.availableFilterKeys.map((f) => f.key);
+  activeFilterKeys: string[] = [];
 
   fieldsConfig: FieldConfig[] = [
     {
       key: 'sessionStatus',
       label: 'Estado de la sesión',
       type: 'select',
-      options: ['En curso', 'Finalizada'],
-      allowEmptyOption: 'Todas',
+      options: ['EN CURSO', 'FINALIZADA'],
+      allowEmptyOption: 'TODAS',
     },
     {
       key: 'equipment',
       label: 'Equipo / Patrón',
       type: 'dropdown',
-      allowEmptyOption: 'Todos',
+      allowEmptyOption: 'TODOS',
     },
     {
       key: 'lab',
       label: 'Laboratorio',
       type: 'dropdown',
-      allowEmptyOption: 'Todos',
+      allowEmptyOption: 'TODOS',
     },
     {
       key: 'dateFrom',
@@ -148,14 +148,14 @@ export class SessionHistoryComponent implements OnInit {
       label: 'Estado - Verificado',
       type: 'select',
       options: ['SI', 'NO'],
-      allowEmptyOption: 'Todos',
+      allowEmptyOption: 'TODOS',
     },
     {
       key: 'usageStatus',
       label: 'Estado - Para uso',
       type: 'select',
       options: ['SI', 'NO'],
-      allowEmptyOption: 'Todos',
+      allowEmptyOption: 'TODOS',
     },
     {
       key: 'sampleCountMin',
@@ -173,15 +173,21 @@ export class SessionHistoryComponent implements OnInit {
       key: 'function',
       label: 'Función utilizada',
       type: 'dropdown',
-      allowEmptyOption: 'Todas',
+      allowEmptyOption: 'TODAS',
     },
     {
       key: 'user',
       label: 'Responsable',
       type: 'dropdown',
-      allowEmptyOption: 'Todos',
+      allowEmptyOption: 'TODOS',
     },
   ];
+
+  // Variables de paginación
+  currentPage = 0;
+  totalPages = 0;
+  pageSize = 5;
+  pageSizeOptions = [5, 15, 30, 50, 100];
 
   constructor(
     private equipmentUseService: EquipmentUseService,
@@ -227,11 +233,19 @@ export class SessionHistoryComponent implements OnInit {
     });
 
     this.equipmentService.getAll().subscribe({
-      next: (equipments) => {
-        this.equipmentsFull = equipments;
-        this.availableEquipments = equipments.map(
+      next: (response) => {
+        const safeEquipments = Array.isArray(response.content)
+          ? response.content
+          : [];
+
+        this.equipmentsFull = safeEquipments;
+        this.availableEquipments = safeEquipments.map(
           (e) => `${e.equipmentName} - ${e.inventoryNumber}`
         );
+      },
+      error: () => {
+        this.equipmentsFull = [];
+        this.availableEquipments = [];
       },
     });
 
@@ -253,9 +267,9 @@ export class SessionHistoryComponent implements OnInit {
   onSearch(): void {
     const request: EquipmentUseFilterRequest = {
       isInUse:
-        this.filters.sessionStatus === 'En curso'
+        this.filters.sessionStatus === 'EN CURSO'
           ? true
-          : this.filters.sessionStatus === 'Finalizada'
+          : this.filters.sessionStatus === 'FINALIZADA'
           ? false
           : null,
       isVerified:
@@ -293,27 +307,41 @@ export class SessionHistoryComponent implements OnInit {
       laboratoryId: this.getLabIdByName(this.filters.lab),
     };
 
-    console.log(request);
-
     this.isLoading = true;
-    this.equipmentUseService.filter(request).subscribe({
-      next: (response) => {
-        const safeResponse = response ?? [];
-        this.sessionRecords = this.mapSessions(safeResponse);
-        this.selectedSession =
-          this.sessionRecords.length > 0 ? this.sessionRecords[0] : null;
-        this.isLoading = false;
-      },
-      error: () => {
-        this.sessionRecords = [];
-        this.selectedSession = null;
-        this.isLoading = false;
-      },
-    });
+    this.equipmentUseService
+      .filter(request, this.currentPage, this.pageSize)
+      .subscribe({
+        next: (response) => {
+          const content = response?.content ?? [];
+          this.sessionRecords = this.mapSessions(content);
+          this.selectedSession =
+            this.sessionRecords.length > 0 ? this.sessionRecords[0] : null;
+          this.isLoading = false;
+          this.totalPages = response.totalPages || 0;
+        },
+        error: () => {
+          this.sessionRecords = [];
+          this.selectedSession = null;
+          this.totalPages = 0;
+          this.isLoading = false;
+        },
+      });
+  }
+
+  changePage(page: number) {
+    this.currentPage = page;
+    this.onSearch();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.currentPage = 0;
+    this.onSearch();
   }
 
   onFiltersChange(updated: Partial<typeof this.filters>): void {
     this.filters = { ...this.filters, ...updated };
+    this.currentPage = 0;
     this.onSearch();
   }
 
@@ -364,7 +392,7 @@ export class SessionHistoryComponent implements OnInit {
         time: this.formatTime(session.startUseTime),
         verifiedStatus: session.isVerified ? 'SI' : 'NO',
         usageStatus: session.isAvailable ? 'SI' : 'NO',
-        usageDuration: inProgress ? 'En curso' : usageDuration,
+        usageDuration: inProgress ? 'EN CURSO' : usageDuration,
         sampleCount: inProgress ? undefined : session.samplesNumber,
         functionsUsed: inProgress
           ? undefined
@@ -406,7 +434,7 @@ export class SessionHistoryComponent implements OnInit {
   }
 
   calculateDuration(start: string, end: string | null): string {
-    if (!start || !end) return 'En curso';
+    if (!start || !end) return 'EN CURSO';
 
     const diff = new Date(end).getTime() - new Date(start).getTime();
     if (diff <= 0) return '00s';

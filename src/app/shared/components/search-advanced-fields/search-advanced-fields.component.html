@@ -1,4 +1,4 @@
-<div class="advanced-search">
+<div *ngIf="activeFilters.length > 0" class="advanced-search">
   <div class="filter-group" *ngFor="let field of fieldsConfig">
     <label>{{ field.label }}:</label>
 

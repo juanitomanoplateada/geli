@@ -27,6 +27,7 @@ export class SearchFilterOnlyComponent {
   @Input() filters: Filters = {};
   @Input() availableFilterKeys: { key: string; label: string }[] = [];
   @Input() activeFilterKeys: string[] = [];
+  @Input() buttonCleanFilters: boolean = false;
 
   @Output() filtersChange = new EventEmitter<Filters>();
   @Output() activeFilterKeysChange = new EventEmitter<string[]>();

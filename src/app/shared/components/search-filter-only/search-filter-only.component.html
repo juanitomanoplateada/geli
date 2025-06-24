@@ -7,6 +7,7 @@
 
 <!-- Campos dinámicos de filtros -->
 <app-search-advanced-fields
+  [activeFilters]="activeFilterKeys"
   [filters]="filters"
   [options]="options"
   [fieldsConfig]="activeFieldsConfig"
@@ -15,7 +16,7 @@
 ></app-search-advanced-fields>
 
 <!-- Botón limpiar -->
-<div class="filter-actions">
+<div *ngIf="buttonCleanFilters" class="filter-actions">
   <button class="clear-filters-btn" (click)="onClear()" [disabled]="isLoading">
     Limpiar filtros
   </button>

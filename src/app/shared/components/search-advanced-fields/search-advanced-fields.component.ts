@@ -16,6 +16,7 @@ import { FieldConfig } from '../../model/field-config.model';
   styleUrls: ['./search-advanced-fields.component.scss'],
 })
 export class SearchAdvancedFieldsComponent {
+  @Input() activeFilters: string[] = [];
   @Input() filters: { [key: string]: any } = {};
   @Input() options: { [key: string]: any } = {};
   @Input() fieldsConfig: FieldConfig[] = [];

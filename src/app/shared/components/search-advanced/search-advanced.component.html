@@ -51,8 +51,10 @@
       ◀ Anterior
     </button>
 
-    <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
-
+    <span
+      >Página <strong>{{ currentPage + 1 }}</strong> de
+      <strong>{{ totalPages }}</strong></span
+    >
     <button
       (click)="onPageChange(currentPage + 1)"
       [disabled]="currentPage + 1 >= totalPages"

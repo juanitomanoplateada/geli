@@ -1,7 +1,6 @@
 .session-history-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
   padding: 1rem;
   max-width: 1750px;
   width: 100%;
@@ -41,34 +40,140 @@ app-search-advanced {
   }
 }
 
-// 🧾 Contenido principal (lista lateral + detalle)
+// 📦 Contenedor general
 .history-content {
   display: flex;
+  flex-direction: column;
   gap: 1.5rem;
   max-width: 1750px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+}
 
-  @media (max-width: 768px) {
-    flex-direction: column;
+// 📐 Layout de dos columnas
+.history-layout {
+  display: grid;
+  grid-template-columns: 25% 1fr;
+  gap: 1.5rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
   }
 }
 
-// 📋 Lista lateral de sesiones
-.history-sidebar {
-  width: 30%;
-  max-height: 650px;
-  overflow-y: auto;
-  padding-right: 1rem;
-  border-right: 1px solid #ccc;
+// 📌 Encabezado fijo con botón
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  position: sticky;
+  top: 0;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+  gap: 1rem;
 
-  @media (max-width: 768px) {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #ccc;
-    padding-right: 0;
+  .left-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
+  .sort-button {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 0.45rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #1d4ed8;
+    }
+  }
+
+  .refresh-button {
+    background-color: #e2e8f0;
+    border: 1px solid #cbd5e1;
+    padding: 0.45rem 0.9rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #cbd5e1;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+
+    button {
+      padding: 0.4rem 0.9rem;
+      background-color: #16a34a;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #15803d;
+      }
+
+      &:disabled {
+        background-color: #d1d5db;
+        cursor: not-allowed;
+      }
+    }
+
+    .clear-filters-btn {
+      background-color: red;
+      &:hover {
+        background-color: darkred;
+      }
+    }
+
+    span {
+      font-size: 0.9rem;
+      color: #374151;
+    }
+
+    select {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.9rem;
+      border-radius: 5px;
+      border: 1px solid #cbd5e1;
+      background-color: white;
+      color: #1f2937;
+    }
+  }
+}
+
+// 📋 Sidebar de sesiones
+.history-sidebar {
+  max-height: 650px;
+  overflow-y: auto;
+  border-right: 1px solid #ccc;
+  padding-right: 0.5rem;
+
   .session-preview {
-    padding: 1rem;
+    padding: 0.9rem;
     border-bottom: 1px solid #eee;
     border-radius: 6px;
     cursor: pointer;
@@ -84,168 +189,132 @@ app-search-advanced {
     }
 
     h4 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1rem;
+      margin: 0;
+      font-size: 0.95rem;
+      color: #2c3e50;
+    }
+
+    .preview-meta {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 0.25rem;
+      display: block;
     }
 
     p {
-      margin: 0;
-      font-size: 0.95rem;
+      margin: 0.25rem 0;
+      font-size: 0.85rem;
       color: #333;
     }
+  }
 
-    span {
-      font-size: 0.8rem;
-      color: #666;
-    }
+  .preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .preview-status {
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .in-progress {
+    background-color: #fff4cc;
+    color: #b36b00;
+  }
+
+  .completed {
+    background-color: #e0f8e0;
+    color: #006400;
   }
 }
 
-// 📝 Detalle de la sesión seleccionada
+// 🧾 Detalle de sesión
 .history-detail {
-  background: #fff;
-  border-radius: 8px;
-  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
   h2 {
-    font-size: 1.4rem;
-    margin-bottom: 1.2rem;
+    text-align: center;
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+  }
+
+  .detail-status-badge {
+    font-size: 0.95rem;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    width: fit-content;
+    margin: 0 auto 1.2rem auto;
+    text-transform: uppercase;
+
+    &.in-progress {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    &.completed {
+      background-color: #d4edda;
+      color: #155724;
+    }
   }
 
   .detail-grid {
     display: grid;
-    grid-template-columns: max-content 1fr;
-    row-gap: 0.8rem;
-    column-gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.2rem;
 
     div {
-      font-size: 1rem;
-      word-wrap: break-word;
+      background-color: #f9f9f9;
+      padding: 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #333;
+
+      strong {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #555;
+      }
+
+      span {
+        display: block;
+        word-break: break-word;
+      }
     }
   }
 }
 
-// ❌ Mensaje sin resultados
+// ❌ Estado sin resultados
 .no-results {
-  padding: 2rem;
+  padding: 3rem;
   text-align: center;
   font-style: italic;
-  color: #888;
+  color: #777;
+  font-size: 1.2rem;
 }
 
-// 📱 Responsive adicional
-@media (max-width: 480px) {
-  .history-container {
-    padding: 0.5rem;
+// 📱 Responsivo
+@media (max-width: 768px) {
+  .history-layout {
+    display: block;
   }
 
   .history-sidebar {
-    max-height: 300px;
-  }
-
-  .history-detail {
-    padding: 1rem;
-  }
-
-  p {
-    font-size: 0.95rem;
-  }
-}
-
-.preview-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.preview-status {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 0.5rem;
-  text-transform: uppercase;
-}
-
-.in-progress {
-  background-color: #fff4cc;
-  color: #b36b00;
-}
-
-.completed {
-  background-color: #e0f8e0;
-  color: #006400;
-}
-
-.detail-status-badge {
-  text-align: center;
-  margin-bottom: 1rem;
-  font-size: 0.95rem;
-  font-weight: bold;
-  border-radius: 0.5rem;
-  padding: 0.4rem 0.8rem;
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
-  text-transform: uppercase;
-}
-
-.detail-status-badge.in-progress {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.detail-status-badge.completed {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding: 0 0.5rem;
-
-  h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    color: #2c3e50;
-  }
-
-  .sort-button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.3s;
-
-    &:hover {
-      background-color: #2980b9;
-    }
-  }
-}
-
-// Agrega esto al final de tu archivo SCSS para mantener la organización
-
-@media (max-width: 1024px) {
-  .session-history-container {
-    padding: 1rem;
-  }
-
-  .history-content {
-    flex-direction: column;
-  }
-
-  .history-sidebar {
-    width: 100%;
-    max-height: 300px;
     border-right: none;
     border-bottom: 1px solid #ccc;
-    overflow-y: auto;
+    max-height: 500px;
+    margin-bottom: 1rem;
   }
 
   .sidebar-header {
@@ -259,16 +328,14 @@ app-search-advanced {
   }
 
   .history-detail {
-    padding: 1rem;
+    padding: 1.2rem;
   }
 
   .detail-grid {
     grid-template-columns: 1fr;
-    row-gap: 0.6rem;
-    column-gap: 0;
 
     div {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
   }
 
@@ -280,17 +347,12 @@ app-search-advanced {
 
 @media (max-width: 480px) {
   .preview-header h4 {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .preview-status {
     font-size: 0.65rem;
     padding: 0.15rem 0.4rem;
-  }
-
-  .sort-button {
-    font-size: 0.85rem;
-    padding: 0.3rem 0.6rem;
   }
 
   .detail-grid div {
@@ -306,29 +368,8 @@ app-search-advanced {
     font-size: 0.8rem;
     padding: 0.2rem 0.5rem;
   }
-}
 
-// Ajuste específico para móviles
-@media (max-width: 480px) {
-  .detail-grid {
-    grid-template-columns: 1fr !important;
-    row-gap: 1rem;
-
-    div {
-      word-break: break-word;
-      white-space: normal;
-      font-size: 0.9rem;
-    }
+  .session-preview {
+    padding: 0.7rem 0.8rem;
   }
-
-  .history-detail {
-    padding: 1rem !important;
-  }
-}
-
-.no-results {
-  text-align: center;
-  color: #777;
-  font-size: 1.2rem;
-  padding: 3rem;
 }

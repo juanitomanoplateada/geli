@@ -10,6 +10,14 @@ import {
 } from '../../dto/equipments-patterns/equipment-request.dto';
 import { EquipmentDto } from '../../dto/equipments-patterns/equipment-response.dto';
 
+interface PagedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -19,8 +27,8 @@ export class EquipmentService {
   constructor(private http: HttpClient) {}
 
   /** GET all equipments */
-  getAll(): Observable<EquipmentDto[]> {
-    return this.http.get<EquipmentDto[]>(this.baseUrl);
+  getAll(): Observable<PagedResponse<EquipmentDto>> {
+    return this.http.get<PagedResponse<EquipmentDto>>(this.baseUrl);
   }
 
   /** GET one equipment by ID */
@@ -73,13 +81,19 @@ export class EquipmentService {
     );
   }
 
-  existsByInventoryNumberUpdate(name: string, excludeId?: number): Observable<boolean> {
+  existsByInventoryNumberUpdate(
+    name: string,
+    excludeId?: number
+  ): Observable<boolean> {
     const params: any = { inventoryNumber: name };
     if (excludeId !== undefined) {
       params.excludeId = excludeId;
     }
-    return this.http.get<boolean>(`${this.baseUrl}/exists-by-update-inventory-number`, {
-      params,
-    });
+    return this.http.get<boolean>(
+      `${this.baseUrl}/exists-by-update-inventory-number`,
+      {
+        params,
+      }
+    );
   }
 }
