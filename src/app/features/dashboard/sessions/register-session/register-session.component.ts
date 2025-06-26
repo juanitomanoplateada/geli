@@ -417,6 +417,8 @@ export class RegisterSessionComponent implements AfterViewInit {
           userId: user.id,
         };
 
+        console.log(payload);
+
         this.equipmentUseService.startEquipmentUse(payload).subscribe({
           next: () => {
             this.startSessionSuccess = true;

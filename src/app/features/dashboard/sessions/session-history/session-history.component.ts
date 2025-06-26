@@ -1,21 +1,19 @@
 import {
   EquipmentUseFilterRequest,
   EquipmentUseResponse,
-} from './../../../../core/session/services/equipment-use.service';
+} from './../../../../core/services/session/equipment-use.service';
+import { FunctionService } from './../../../../core/services/function/function.service';
+import { FunctionDto } from '../../../../core/dto/function/function-response.dto';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FieldConfig } from '../../../../shared/model/field-config.model';
-import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
+import { LaboratoryService } from '../../../../core/services/laboratory/laboratory.service';
 import { EquipmentService } from '../../../../core/services/equipment/equipment.service';
-import {
-  FunctionDto,
-  FunctionService,
-} from '../../../../core/function/services/function.service';
 import { UserRecordResponse } from '../../../../core/dto/user/record-user-response.dto';
 import { UserService } from '../../../../core/services/user/user.service';
-import { Laboratory } from '../../../../core/laboratory/models/laboratory.model';
-import { EquipmentDto } from '../../../../core/equipment/models/equipment-response.dto';
+import { LaboratoryResponseDto } from '../../../../core/dto/laboratory/laboratory-response.dto';
+import { EquipmentDto } from '../../../../core/dto/equipments-patterns/equipment-response.dto';
 import { EquipmentUseService } from '../../../../core/services/session/equipment-use.service';
 import { SearchFilterOnlyComponent } from '../../../../shared/components/search-filter-only/search-filter-only.component';
 
@@ -77,7 +75,7 @@ export class SessionHistoryComponent implements OnInit {
   availableFunctions: string[] = [];
   availableUsers: string[] = [];
 
-  labsFull: Laboratory[] = [];
+  labsFull: LaboratoryResponseDto[] = [];
   equipmentsFull: EquipmentDto[] = [];
   functionsFull: FunctionDto[] = [];
   usersFull: UserRecordResponse[] = [];
@@ -365,6 +363,7 @@ export class SessionHistoryComponent implements OnInit {
     };
     this.searchQuery = '';
     this.onSearch();
+    this.currentPage = 0;
   }
 
   combineDateTime(date: string, time: string): string | null {
