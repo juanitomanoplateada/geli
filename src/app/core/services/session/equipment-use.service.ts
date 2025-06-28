@@ -3,11 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../../environments/environment.prod';
 import { EquipmentAvailabilityStatusDto } from '../../dto/session/equipment-availability-status.dto';
-
-export interface EquipmentStartUseRequest {
-  equipmentId: number;
-  userId: number;
-}
+import { EquipmentStartUseRequest } from '../../dto/session/start-session-request.dto';
 
 export interface EquipmentEndUseRequest {
   isVerified: boolean;
@@ -124,9 +120,11 @@ export class EquipmentUseService {
     return this.http
       .post<any>(`${this.baseUrl}/filter`, payload, { params })
       .pipe(
-        map((res) =>
-          res && res.content ? res : { content: [], totalPages: 0 }
-        )
+        map((res) => (res?.content ? res : { content: [], totalPages: 0 })),
+        catchError((error) => {
+          console.error('Error en la consulta de sesiones:', error);
+          return of({ content: [], totalPages: 0 });
+        })
       );
   }
 
@@ -134,9 +132,26 @@ export class EquipmentUseService {
     equipmentId: number
   ): Observable<EquipmentAvailabilityStatusDto> {
     const params = new HttpParams().set('equipmentId', equipmentId.toString());
-    return this.http.get<EquipmentAvailabilityStatusDto>(
-      `${this.baseUrl}/availability`,
-      { params }
-    );
+
+    return this.http
+      .get<EquipmentAvailabilityStatusDto>(`${this.baseUrl}/availability`, {
+        params,
+      })
+      .pipe(
+        map(
+          (res) =>
+            res ?? {
+              status: 'AVAILABLE', // valor por defecto
+              message: 'Sin información de disponibilidad.',
+            }
+        ),
+        catchError((error) => {
+          console.error('Error al consultar disponibilidad del equipo:', error);
+          return of({
+            status: 'AVAILABLE', // valor por defecto en caso de error
+            message: 'Error al verificar disponibilidad del equipo.',
+          } as EquipmentAvailabilityStatusDto);
+        })
+      );
   }
 }

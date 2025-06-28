@@ -8,6 +8,11 @@
   <section class="header-section">
     <h1>Registrar Uso de Equipo / Patrón</h1>
 
+    <div *ngIf="noAuthorizedLabs" class="no-labs-warning">
+      ⚠️ No tienes permisos para usar ningún equipo actualmente. Contacta al
+      administrador si consideras que es un error.
+    </div>
+
     <div class="dropdown-wrapper">
       <!-- Laboratorio -->
       <div class="dropdown-block">
@@ -67,6 +72,10 @@
           ⚠️ Este equipo ya está en uso por otro usuario. Espera a que liberen
           la sesión.
         </div>
+        <div *ngIf="isCheckingAvailability" class="spinner-mini">
+          <div class="spinner"></div>
+          <p>Verificando disponibilidad del equipo...</p>
+        </div>
       </div>
     </div>
 
@@ -90,28 +99,33 @@
       Iniciar Sesión
     </button>
 
-    <!-- Modal Confirmar Inicio -->
     <app-confirm-modal
-      [title]="'¿Iniciar sesión con este equipo?'"
+      [title]="'¿Deseas iniciar sesión con este equipo?'"
       [show]="showConfirmationModal"
-      [confirmLabel]="'Confirmar'"
+      [confirmLabel]="'Iniciar sesión'"
       [isLoading]="isStartingSession"
       (confirm)="confirmStartSession()"
       (cancel)="cancelStartSession()"
     >
       <div class="summary-section">
-        <p><strong>Laboratorio:</strong> {{ getLabLabel(selectedLabId) }}</p>
-        <p>
-          <strong>Equipo:</strong> {{ getEquipmentLabel(selectedEquipment) }}
-        </p>
-        <p><strong>Responsable:</strong> {{ currentUserName }}</p>
+        <h3>Detalles de la sesión</h3>
+        <div class="summary-grid">
+          <div class="label">🏢 Laboratorio:</div>
+          <div class="value">{{ getLabLabel(selectedLabId) }}</div>
+
+          <div class="label">🖥️ Equipo:</div>
+          <div class="value">{{ getEquipmentLabel(selectedEquipment) }}</div>
+
+          <div class="label">👤 Responsable:</div>
+          <div class="value">{{ currentUserName }}</div>
+        </div>
       </div>
 
       <div *ngIf="startSessionSuccess" class="feedback success">
         ✅ Sesión iniciada exitosamente.
       </div>
       <div *ngIf="startSessionError" class="feedback error">
-        ❌ Error al iniciar la sesión. Intenta nuevamente.
+        ❌ Hubo un error al iniciar la sesión. Por favor, intenta nuevamente.
       </div>
     </app-confirm-modal>
   </section>

@@ -1,26 +1,23 @@
-import { Component, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
+import {
+  Component,
+  AfterViewInit,
+  Inject,
+  PLATFORM_ID,
+  OnDestroy,
+} from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 
-import { DropdownSearchEntityObjComponent } from '../../../../shared/components/dropdown-search-entity-obj/dropdown-search-entity-obj.component';
 import { TagSelectorComponent } from '../../../../shared/components/tag-selector/tag-selector.component';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
 
-import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
-import { EquipmentService } from '../../../../core/equipment/services/equipment.service';
+import { EquipmentUseService } from '../../../../core/services/session/equipment-use.service';
 import { UserService } from '../../../../core/user/services/user.service';
-import {
-  EquipmentEndUseRequest,
-  EquipmentStartUseRequest,
-  EquipmentUseService,
-} from '../../../../core/session/services/equipment-use.service';
-
-import { Laboratory } from '../../../../core/laboratory/models/laboratory.model';
-import { EquipmentDto } from '../../../../core/equipment/models/equipment-response.dto';
-import { LabeledOption } from '../../../../shared/components/dropdown-search-entity-obj/dropdown-search-entity-obj.component';
 
 import { Router } from '@angular/router';
+import { Session } from '../../../../core/dto/session/session.dto';
 
 @Component({
   selector: 'app-active-sessions',
@@ -28,38 +25,22 @@ import { Router } from '@angular/router';
   imports: [
     CommonModule,
     FormsModule,
-    DropdownSearchEntityObjComponent,
     TagSelectorComponent,
     ConfirmModalComponent,
     IntegerOnlyDirective,
   ],
   templateUrl: './active-sessions.component.html',
-  styleUrl: './active-sessions.component.scss',
+  styleUrls: ['./active-sessions.component.scss'],
 })
-export class ActiveSessionsComponent implements AfterViewInit {
+export class ActiveSessionsComponent implements AfterViewInit, OnDestroy {
   private isBrowser = false;
+  private destroy$ = new Subject<void>();
+  private intervalId: any;
 
-  labs: Laboratory[] = [];
-  labOptions: LabeledOption[] = [];
-  equipmentOptions: LabeledOption[] = [];
-
-  selectedLabId: string | null = null;
-  selectedEquipment: string | null = null;
-
-  selectedLabStatus: { active: boolean; remarks: string } | null = null;
-  selectedEquipmentStatus: { active: boolean; remarks: string } | null = null;
-
-  activeSessions: any[] = [];
+  activeSessions: Session[] = [];
   selectedSessionId: number | null = null;
 
-  showConfirmationModal = false;
   showSummaryModal = false;
-  isStartingSession = false;
-  startSessionSuccess = false;
-  startSessionError = false;
-
-  hasActiveSessionWithEquipment: boolean = false;
-
   currentUserName: string = '';
 
   isFinishingSession = false;
@@ -67,17 +48,11 @@ export class ActiveSessionsComponent implements AfterViewInit {
   finishSessionError = false;
 
   sessionSortDescending: boolean = true;
-
   equipmentIdsInUse: Set<string> = new Set();
-  isEquipmentInUseByAnotherUser: boolean = false;
-
   isLoading: boolean = true;
-  isLoadingEquipments: boolean = false;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private labService: LaboratoryService,
-    private equipmentService: EquipmentService,
     private userService: UserService,
     private equipmentUseService: EquipmentUseService,
     private router: Router
@@ -88,205 +63,143 @@ export class ActiveSessionsComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     if (this.isBrowser) {
-      setInterval(() => this.updateUsageTime(), 1000);
+      this.intervalId = setInterval(() => this.updateUsageTime(), 1000);
     }
+  }
+
+  ngOnDestroy(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   toggleSortOrder() {
     this.sessionSortDescending = !this.sessionSortDescending;
-    this.loadActiveSessions();
+    this.sortSessions();
   }
 
-  loadLabs() {
-    this.labService.getLaboratories().subscribe((labs) => {
-      this.labs = labs;
-      this.labOptions = labs.map((lab) => ({
-        label: `${lab.laboratoryName} - ${lab.location.locationName}`,
-        value: String(lab.id),
-      }));
-    });
+  sortSessions() {
+    const sorted = this.activeSessions.sort(
+      (a, b) =>
+        new Date(b.checkIn.date + 'T' + b.checkIn.time).getTime() -
+        new Date(a.checkIn.date + 'T' + a.checkIn.time).getTime()
+    );
+
+    if (!this.sessionSortDescending) {
+      sorted.reverse();
+    }
+
+    this.activeSessions = [...sorted];
   }
 
   loadActiveSessions() {
+    this.isLoading = true;
     const token = localStorage.getItem('auth_token');
-    if (!token) return;
+    if (!token) {
+      this.isLoading = false;
+      return;
+    }
 
-    const username = JSON.parse(atob(token.split('.')[1]))[
-      'preferred_username'
-    ];
+    try {
+      const username = JSON.parse(atob(token.split('.')[1]))[
+        'preferred_username'
+      ];
 
-    this.userService
-      .getUserByEmail(`${username}@uptc.edu.co`)
-      .subscribe((user) => {
-        this.equipmentUseService.getAllEquipmentUses().subscribe((uses) => {
-          this.equipmentIdsInUse.clear();
-          this.currentUserName = `${user.firstName} ${user.lastName}`;
-          const userUses = uses.filter(
-            (use: any) => use.user.id === user.id && use.isInUse === true
-          );
-
-          const sorted = userUses.sort(
-            (a: any, b: any) =>
-              new Date(b.startUseTime).getTime() -
-              new Date(a.startUseTime).getTime()
-          );
-
-          const ordered = this.sessionSortDescending
-            ? sorted
-            : sorted.reverse();
-
-          uses
-            .filter((use: any) => use.isInUse === true)
-            .forEach((use: any) =>
-              this.equipmentIdsInUse.add(String(use.equipment.id))
-            );
-
-          this.activeSessions = ordered.map((use: any) => {
-            const [date, timeWithMs] = use.startUseTime.split('T');
-            const time = timeWithMs.split('.')[0]; // Recorta milisegundos
-
-            return {
-              id: use.id,
-              equipmentId: use.equipment.id,
-              lab: use.equipment.laboratory.laboratoryName,
-              labLocation: use.equipment.laboratory.location.locationName,
-              labLabel: `${use.equipment.laboratory.laboratoryName} - ${use.equipment.laboratory.location.locationName}`,
-
-              equipment: use.equipment.equipmentName,
-              equipmentInventoryNumber: use.equipment.inventoryNumber,
-              equipmentLabel: `${use.equipment.equipmentName} - ${use.equipment.inventoryNumber}`,
-
-              useDate: date,
-              startUseTime: time,
-
-              checkIn: {
-                date: date,
-                time: time,
-                user: `${use.user.firstName} ${use.user.lastName}`,
-              },
-
-              checkOut: {
-                verifiedStatus: '',
-                usageStatus: '',
-                usageDuration: '',
-                sampleCount: use.samplesNumber ?? null,
-                selectedFunctions: use.usedFunctions.map(
-                  (f: any) => f.functionName
-                ),
-                remarks: use.observations ?? '',
-              },
-
-              availableFunctions: this.ensureNAFunction(
-                use.equipment.functions
-              ),
+      this.userService
+        .getUserByEmail(`${username}@uptc.edu.co`)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (user) => {
+            const filterPayload = {
+              isInUse: true,
+              userId: user.id,
             };
-          });
+
+            this.equipmentUseService
+              .filter(filterPayload, 0, 9999)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: (response) => {
+                  this.processSessionData(response.content, user);
+                  this.isLoading = false;
+                },
+                error: (err) => {
+                  console.error('Error loading sessions:', err);
+                  this.isLoading = false;
+                },
+              });
+          },
+          error: (err) => {
+            console.error('Error getting user:', err);
+            this.isLoading = false;
+          },
         });
-      });
+    } catch (e) {
+      console.error('Error parsing token:', e);
+      this.isLoading = false;
+    }
+  }
+
+  private processSessionData(uses: any[], user: any) {
+    this.equipmentIdsInUse.clear();
+    this.currentUserName = `${user.firstName} ${user.lastName}`;
+
+    this.activeSessions = uses.map((use) => {
+      const [date, timeWithMs] = use.startUseTime.split('T');
+      const time = timeWithMs.split('.')[0];
+
+      this.equipmentIdsInUse.add(String(use.equipment.id));
+
+      return {
+        id: use.id,
+        equipmentId: use.equipment.id,
+        lab: use.equipment.laboratory.laboratoryName,
+        labLocation: use.equipment.laboratory.location.locationName,
+        labLabel: `${use.equipment.laboratory.laboratoryName} - ${use.equipment.laboratory.location.locationName}`,
+        equipment: use.equipment.equipmentName,
+        equipmentInventoryNumber: use.equipment.inventoryNumber,
+        equipmentLabel: `${use.equipment.equipmentName} - ${use.equipment.inventoryNumber}`,
+        useDate: date,
+        startUseTime: time,
+        checkIn: {
+          date: date,
+          time: time,
+          user: `${use.user.firstName} ${use.user.lastName}`,
+        },
+        checkOut: {
+          verifiedStatus: '',
+          usageStatus: '',
+          usageDuration: '',
+          sampleCount: use.samplesNumber ?? null,
+          selectedFunctions: (use.usedFunctions ?? []).map(
+            (f: any) => f.functionName
+          ),
+          remarks: use.observations ?? '',
+        },
+        availableFunctions: this.ensureNAFunction(use.equipment.functions),
+      };
+    });
+
+    this.sortSessions(); // ordenar después de mapear
+    if (this.activeSessions.length > 0 && !this.selectedSessionId) {
+      this.selectedSessionId = this.activeSessions[0].id;
+    }
   }
 
   loadInitialData() {
-    this.isLoading = true;
-    const token = localStorage.getItem('auth_token');
-    if (!token) return;
-
-    const username = JSON.parse(atob(token.split('.')[1]))[
-      'preferred_username'
-    ];
-
-    this.userService
-      .getUserByEmail(`${username}@uptc.edu.co`)
-      .subscribe((user) => {
-        this.currentUserName = `${user.firstName} ${user.lastName}`;
-        const authorizedEquipments = user.authorizedUserEquipments || [];
-
-        // Obtener los IDs únicos de laboratorios donde el usuario tiene equipos autorizados
-        const authorizedLabIds = new Set<number>();
-        authorizedEquipments.forEach((eq: EquipmentDto) => {
-          if (eq.laboratory && eq.laboratory.id !== undefined) {
-            authorizedLabIds.add(eq.laboratory.id);
-          }
-        });
-
-        this.labService.getLaboratories().subscribe((labs) => {
-          // Filtrar laboratorios para mostrar solo aquellos donde el usuario tiene equipos autorizados
-          this.labs = labs.filter(
-            (lab) => lab.id !== undefined && authorizedLabIds.has(lab.id)
-          );
-          this.labOptions = this.labs.map((lab) => ({
-            label: `${lab.laboratoryName} - ${lab.location.locationName}`,
-            value: String(lab.id),
-          }));
-
-          this.equipmentUseService.getAllEquipmentUses().subscribe((uses) => {
-            this.equipmentIdsInUse.clear();
-
-            const userUses = uses.filter(
-              (use: any) => use.user.id === user.id && use.isInUse === true
-            );
-
-            const sorted = userUses.sort(
-              (a: any, b: any) =>
-                new Date(b.startUseTime).getTime() -
-                new Date(a.startUseTime).getTime()
-            );
-
-            const ordered = this.sessionSortDescending
-              ? sorted
-              : sorted.reverse();
-
-            uses
-              .filter((use: any) => use.isInUse === true)
-              .forEach((use: any) =>
-                this.equipmentIdsInUse.add(String(use.equipment.id))
-              );
-
-            this.activeSessions = ordered.map((use: any) => {
-              const [date, timeWithMs] = use.startUseTime.split('T');
-              const time = timeWithMs.split('.')[0];
-
-              return {
-                id: use.id,
-                equipmentId: use.equipment.id,
-                lab: use.equipment.laboratory.laboratoryName,
-                labLocation: use.equipment.laboratory.location.locationName,
-                labLabel: `${use.equipment.laboratory.laboratoryName} - ${use.equipment.laboratory.location.locationName}`,
-                equipment: use.equipment.equipmentName,
-                equipmentInventoryNumber: use.equipment.inventoryNumber,
-                equipmentLabel: `${use.equipment.equipmentName} - ${use.equipment.inventoryNumber}`,
-                useDate: date,
-                startUseTime: time,
-                checkIn: {
-                  date: date,
-                  time: time,
-                  user: `${use.user.firstName} ${use.user.lastName}`,
-                },
-                checkOut: {
-                  verifiedStatus: '',
-                  usageStatus: '',
-                  usageDuration: '',
-                  sampleCount: use.samplesNumber ?? null,
-                  selectedFunctions: use.usedFunctions.map(
-                    (f: any) => f.functionName
-                  ),
-                  remarks: use.observations ?? '',
-                },
-                availableFunctions: this.ensureNAFunction(
-                  use.equipment.functions
-                ),
-              };
-            });
-
-            this.isLoading = false;
-          });
-        });
-      });
+    this.loadActiveSessions();
   }
 
   private ensureNAFunction(functions: any[]): any[] {
+    if (!functions || functions.length === 0) {
+      return [{ id: -1, functionName: 'N/A' }];
+    }
+
     const normalized = functions.map((f) => ({
       ...f,
-      functionName: f.functionName.trim(),
+      functionName: f.functionName?.trim() || 'N/A',
     }));
 
     const hasOnlyNA =
@@ -294,18 +207,16 @@ export class ActiveSessionsComponent implements AfterViewInit {
       normalized[0].functionName.toUpperCase() === 'N/A';
 
     if (hasOnlyNA) {
-      return normalized; // ✅ dejar solo N/A si es la única
+      return normalized;
     }
 
     const hasNA = normalized.some(
       (f) => f.functionName.toUpperCase() === 'N/A'
     );
-
     const cleaned = normalized.filter(
       (f) => f.functionName.toUpperCase() !== 'N/A'
     );
 
-    // ✅ Si no tenía N/A, lo agregamos
     if (!hasNA) {
       cleaned.unshift({ id: -1, functionName: 'N/A' });
     }
@@ -313,161 +224,19 @@ export class ActiveSessionsComponent implements AfterViewInit {
     return cleaned;
   }
 
-  onSelectLab(labId: string) {
-    this.selectedLabId = labId;
-    this.selectedEquipment = null;
-    this.selectedEquipmentStatus = null;
-    this.equipmentOptions = [];
-    this.isLoadingEquipments = true; // ⏳ Empieza carga
-
-    const selectedLab = this.labs.find((lab) => String(lab.id) === labId);
-    this.selectedLabStatus = {
-      active: selectedLab?.laboratoryAvailability ?? true,
-      remarks:
-        selectedLab?.laboratoryObservations || 'Sin observaciones registradas.',
-    };
-
-    if (!this.selectedLabStatus.active) {
-      this.isLoadingEquipments = false;
-      return;
-    }
-
-    const token = localStorage.getItem('auth_token');
-    if (!token) return;
-    const username = JSON.parse(atob(token.split('.')[1]))[
-      'preferred_username'
-    ];
-
-    this.userService
-      .getUserByEmail(`${username}@uptc.edu.co`)
-      .subscribe((user) => {
-        const authorizedEquipments = user.authorizedUserEquipments || [];
-        const filtered = authorizedEquipments.filter(
-          (eq: EquipmentDto) => String(eq.laboratory.id) === labId
-        );
-        this.equipmentOptions = filtered.map((eq) => ({
-          label: `${eq.equipmentName} - ${eq.inventoryNumber}`,
-          value: String(eq.id),
-        }));
-
-        this.isLoadingEquipments = false; // ✅ Fin carga
-      });
-  }
-
-  onSelectEquipment(equipmentId: string) {
-    this.selectedEquipment = equipmentId;
-
-    // Verifica si el usuario ya tiene una sesión activa con este equipo
-    this.hasActiveSessionWithEquipment = this.activeSessions.some(
-      (s) => String(s.equipmentId) === equipmentId
-    );
-
-    // Si ya hay sesión activa, salimos sin marcar como inactivo
-    if (this.hasActiveSessionWithEquipment) {
-      return;
-    }
-
-    const token = localStorage.getItem('auth_token');
-    if (!token) return;
-
-    const username = JSON.parse(atob(token.split('.')[1]))[
-      'preferred_username'
-    ];
-
-    this.userService
-      .getUserByEmail(`${username}@uptc.edu.co`)
-      .subscribe((user) => {
-        const authorizedEquipments = user.authorizedUserEquipments || [];
-
-        const selected = authorizedEquipments.find(
-          (eq: EquipmentDto) => String(eq.id) === equipmentId
-        );
-
-        this.selectedEquipmentStatus = {
-          active: selected?.availability ?? true,
-          remarks: selected?.observations || 'Sin observaciones registradas.',
-        };
-      });
-    this.isEquipmentInUseByAnotherUser =
-      this.equipmentIdsInUse.has(equipmentId) &&
-      !this.hasActiveSessionWithEquipment;
-  }
-
-  onStartSessionClick() {
-    this.showConfirmationModal = true;
-  }
-
-  confirmStartSession() {
-    if (!this.selectedLabId || !this.selectedEquipment) return;
-
-    this.isStartingSession = true;
-
-    const token = localStorage.getItem('auth_token');
-    if (!token) return;
-
-    const username = JSON.parse(atob(token.split('.')[1]))[
-      'preferred_username'
-    ];
-
-    this.userService
-      .getUserByEmail(`${username}@uptc.edu.co`)
-      .subscribe((user) => {
-        const payload: EquipmentStartUseRequest = {
-          equipmentId: Number(this.selectedEquipment),
-          userId: user.id,
-        };
-
-        console.log(payload);
-
-        this.equipmentUseService.startEquipmentUse(payload).subscribe({
-          next: () => {
-            this.startSessionSuccess = true;
-            this.startSessionError = false;
-
-            this.loadActiveSessions();
-
-            setTimeout(() => {
-              // Solo después de 4 segundos se permite volver a usar el botón
-              this.isStartingSession = false;
-              this.showConfirmationModal = false;
-              this.startSessionSuccess = false;
-
-              // Reset fields
-              this.selectedLabId = null;
-              this.selectedEquipment = null;
-              this.selectedLabStatus = null;
-              this.selectedEquipmentStatus = null;
-              this.hasActiveSessionWithEquipment = false;
-              this.equipmentOptions = [];
-            }, 4000);
-          },
-          error: () => {
-            this.startSessionSuccess = false;
-            this.startSessionError = true;
-            this.isStartingSession = false; // ❗ Solo se reactiva si falló
-          },
-        });
-      });
-  }
-
-  cancelStartSession() {
-    this.showConfirmationModal = false;
-  }
-
   selectSession(sessionId: number) {
     this.selectedSessionId = sessionId;
   }
 
-  resolveFunctionIds(session: any): number[] {
-    // Suponiendo que session.availableFunctions se cargó como { id, functionName }
+  resolveFunctionIds(session: Session): number[] {
     return session.availableFunctions
-      .filter((f: any) =>
+      .filter((f) =>
         session.checkOut.selectedFunctions.includes(f.functionName)
       )
-      .map((f: any) => f.id);
+      .map((f) => f.id);
   }
 
-  get selectedSession() {
+  get selectedSession(): Session | undefined {
     return this.activeSessions.find((s) => s.id === this.selectedSessionId);
   }
 
@@ -483,26 +252,13 @@ export class ActiveSessionsComponent implements AfterViewInit {
       const seconds = Math.floor((diffMs / 1000) % 60);
       const minutes = Math.floor((diffMs / (1000 * 60)) % 60);
       const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-      const days = Math.floor((diffMs / (1000 * 60 * 60 * 24)) % 30); // aproximado
-      const months = Math.floor((diffMs / (1000 * 60 * 60 * 24 * 30)) % 12); // aproximado
-      const years = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 365)); // aproximado
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
       const pad = (n: number) => n.toString().padStart(2, '0');
 
       let duration = '';
-
-      if (years > 0) {
-        duration = `${pad(years)}y:${pad(months)}m:${pad(days)}d ${pad(
-          hours
-        )}h:${pad(minutes)}m:${pad(seconds)}s`;
-      } else if (months > 0) {
-        duration = `${pad(months)}m:${pad(days)}d ${pad(hours)}h:${pad(
-          minutes
-        )}m:${pad(seconds)}s`;
-      } else if (days > 0) {
-        duration = `${pad(days)}d ${pad(hours)}h:${pad(minutes)}m:${pad(
-          seconds
-        )}s`;
+      if (days > 0) {
+        duration = `${days}d ${pad(hours)}h:${pad(minutes)}m:${pad(seconds)}s`;
       } else if (hours > 0) {
         duration = `${pad(hours)}h:${pad(minutes)}m:${pad(seconds)}s`;
       } else if (minutes > 0) {
@@ -513,20 +269,6 @@ export class ActiveSessionsComponent implements AfterViewInit {
 
       session.checkOut.usageDuration = duration;
     }
-  }
-
-  getLabLabel(id: string | null): string {
-    return (
-      this.labOptions.find((opt) => opt.value === id)?.label ||
-      'Laboratorio desconocido'
-    );
-  }
-
-  getEquipmentLabel(id: string | null): string {
-    return (
-      this.equipmentOptions.find((opt) => opt.value === id)?.label ||
-      'Equipo desconocido'
-    );
   }
 
   onUsageStatusChange(): void {}
@@ -540,17 +282,14 @@ export class ActiveSessionsComponent implements AfterViewInit {
   get isFormValid(): boolean {
     const session = this.selectedSession;
     if (!session) return false;
-    const hasVerified = !!session.checkOut.verifiedStatus;
-    const hasUsage = !!session.checkOut.usageStatus;
-    const hasSamples = session.checkOut.sampleCount !== null;
-    const hasFunctions = session.checkOut.selectedFunctions.length > 0;
-    const hasRemarks = session.checkOut.remarks.trim().length > 0;
+
     return (
-      hasVerified &&
-      hasUsage &&
-      hasSamples &&
-      hasFunctions &&
-      (session.checkOut.usageStatus !== 'NO' || hasRemarks)
+      !!session.checkOut.verifiedStatus &&
+      !!session.checkOut.usageStatus &&
+      session.checkOut.sampleCount !== null &&
+      session.checkOut.selectedFunctions.length > 0 &&
+      (session.checkOut.usageStatus !== 'NO' ||
+        session.checkOut.remarks.trim().length > 0)
     );
   }
 
@@ -567,11 +306,9 @@ export class ActiveSessionsComponent implements AfterViewInit {
     this.finishSessionSuccess = false;
     this.finishSessionError = false;
 
-    const usedFunctionIds: number[] = session.checkOut.selectedFunctions.map(
-      (f: any) => f.id
-    );
+    const usedFunctionIds = this.resolveFunctionIds(session);
 
-    const payload: EquipmentEndUseRequest = {
+    const payload: any = {
       isVerified: session.checkOut.verifiedStatus === 'YES',
       isAvailable: session.checkOut.usageStatus === 'YES',
       samplesNumber: session.checkOut.sampleCount || 0,
@@ -579,29 +316,33 @@ export class ActiveSessionsComponent implements AfterViewInit {
       observations: session.checkOut.remarks.trim(),
     };
 
-    this.equipmentUseService.endEquipmentUse(session.id, payload).subscribe({
-      next: () => {
-        this.finishSessionSuccess = true;
-        this.finishSessionError = false;
-
-        setTimeout(() => {
-          this.loadActiveSessions();
-
-          this.selectedSessionId = null;
-          this.showSummaryModal = false;
+    this.equipmentUseService
+      .endEquipmentUse(session.id, payload)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.finishSessionSuccess = true;
+          setTimeout(() => {
+            this.loadActiveSessions();
+            this.resetSessionState();
+            this.router.navigate([
+              '/dashboard/sessions/personal-session-history',
+            ]);
+          }, 2000);
+        },
+        error: () => {
+          this.finishSessionError = true;
           this.isFinishingSession = false;
-          this.finishSessionSuccess = false;
-          this.router.navigate([
-            '/dashboard/sessions/personal-session-history',
-          ]);
-        }, 4000);
-      },
-      error: () => {
-        this.finishSessionSuccess = false;
-        this.finishSessionError = true;
-        this.isFinishingSession = false;
-      },
-    });
+        },
+      });
+  }
+
+  private resetSessionState() {
+    this.selectedSessionId = null;
+    this.showSummaryModal = false;
+    this.isFinishingSession = false;
+    this.finishSessionSuccess = false;
+    this.finishSessionError = false;
   }
 
   cancelFinishSession() {

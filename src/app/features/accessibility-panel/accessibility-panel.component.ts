@@ -33,8 +33,8 @@ export class AccessibilityPanelComponent {
 
   increaseFont() {
     if (this.currentFontSize < 24) {
-    this.currentFontSize += 2;
-    this.applyToDocument('fontSize', `${this.currentFontSize}px`);
+      this.currentFontSize += 2;
+      this.applyToDocument('fontSize', `${this.currentFontSize}px`);
     }
   }
 

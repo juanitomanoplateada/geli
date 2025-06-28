@@ -1,13 +1,17 @@
 <section class="dashboard-layout">
+  <!-- Botón de toggle para el sidebar -->
   <button class="dashboard-toggle" (click)="toggleSidebar()">
     {{ sidebarOpen ? "✖" : "☰" }}
   </button>
 
+  <!-- Sidebar de navegación -->
   <nav class="dashboard-sidebar" [class.open]="sidebarOpen">
+    <!-- Logo -->
     <div class="dashboard-logo">
       <img src="/logo_incitema.png" alt="Logo INCITEMA" />
     </div>
 
+    <!-- Enlace de Inicio -->
     <a
       routerLink="/dashboard/home"
       class="dashboard-link"
@@ -16,6 +20,7 @@
       >Inicio</a
     >
 
+    <!-- Menú de Sesiones (para usuarios autorizados) -->
     <div
       *ngIf="hasRole(['AUTHORIZED-USER'])"
       class="dashboard-group"
@@ -31,7 +36,8 @@
           [class.active]="isActive('/dashboard/sessions/register-session')"
           (click)="onNavigate()"
           >Registrar Uso</a
-        ><a
+        >
+        <a
           routerLink="/dashboard/sessions/active-sessions"
           [class.active]="isActive('/dashboard/sessions/active-sessions')"
           (click)="onNavigate()"
@@ -48,6 +54,7 @@
       </div>
     </div>
 
+    <!-- Menú de Usuarios (para administradores de calidad) -->
     <div
       *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
       class="dashboard-group"
@@ -87,6 +94,7 @@
       </div>
     </div>
 
+    <!-- Menú de Laboratorios (para administradores de calidad) -->
     <div
       *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
       class="dashboard-group"
@@ -125,6 +133,7 @@
       </div>
     </div>
 
+    <!-- Menú de Equipos/Patrones (para administradores de calidad) -->
     <div
       *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
       class="dashboard-group"
@@ -176,6 +185,7 @@
       </div>
     </div>
 
+    <!-- Enlaces individuales para administradores de calidad -->
     <a
       *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
       routerLink="/dashboard/assign-equipment-permissions"
@@ -203,46 +213,7 @@
       >Reporte de Sesiones</a
     >
 
-    <!--<div
-      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
-      class="dashboard-group"
-      [class.active]="isActive('/dashboard/reports')"
-    >
-      <div class="dashboard-link" (click)="toggleSubmenu('reports')">
-        Reportes
-        <span class="arrow" [class.open]="isSubmenuOpen('reports')">▼</span>
-      </div>
-      <div class="dashboard-submenu" [class.open]="isSubmenuOpen('reports')">
-        <a
-          routerLink="/dashboard/reports/user-report"
-          [class.active]="isActive('/dashboard/reports/user-report')"
-          >Reporte de Usuarios</a
-        >
-        <a
-          routerLink="/dashboard/reports/laboratory-report"
-          [class.active]="isActive('/dashboard/reports/laboratory-report')"
-          >Reporte de Laboratorios</a
-        >
-        <a
-          routerLink="/dashboard/reports/lab-equipment-report"
-          [class.active]="isActive('/dashboard/reports/lab-equipment-report')"
-          >Reporte de Equipos / Patrones por Laboratorio</a
-        >
-        <a
-          routerLink="/dashboard/reports/equipment-pattern-report"
-          [class.active]="
-            isActive('/dashboard/reports/equipment-pattern-report')
-          "
-          >Reporte de Equipos / Patrones</a
-        >
-        <a
-          routerLink="/dashboard/reports/session-report"
-          [class.active]="isActive('/dashboard/reports/session-report')"
-          >Reporte de Sesiones</a
-        >
-      </div>
-    </div>-->
-
+    <!-- Enlaces comunes para todos los usuarios -->
     <a
       routerLink="/dashboard/user-profile"
       class="dashboard-link"
@@ -250,9 +221,12 @@
       (click)="onNavigate()"
       >Perfil de Usuario</a
     >
+
+    <!-- Botón de cierre de sesión -->
     <a (click)="logout()" class="dashboard-link">Cerrar Sesión</a>
   </nav>
 
+  <!-- Área principal del dashboard -->
   <main class="dashboard-main">
     <header class="dashboard-header">
       <span class="dashboard-user-info">

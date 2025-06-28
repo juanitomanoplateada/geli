@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 
 import { EquipmentUpdateDto } from '../../dto/equipments-patterns/equipment-update.dto';
 import { environment } from '../../../../environments/environment.prod';
@@ -100,14 +100,34 @@ export class EquipmentService {
   }
 
   getEquipmentsAuthorizeds(labId: number): Observable<EquipmentDTO[]> {
-    return this.http.get<EquipmentFilterDto[]>(
-      `${this.baseUrl}/authorized/by-lab/${labId}`
-    );
+    return this.http
+      .get<EquipmentDTO[]>(`${this.baseUrl}/authorized/by-lab/${labId}`)
+      .pipe(
+        map((equipments) => equipments ?? []), // Si la respuesta es null → []
+        catchError(() => of([])) // Si hay error → []
+      );
   }
 
-  getEquipmentAvailability(equipmentId: number): Observable<EquipmentAvailabilityDto> {
-    return this.http.get<EquipmentAvailabilityDto>(
-      `${this.baseUrl}/${equipmentId}/availability`
-    );
+  getEquipmentAvailability(
+    equipmentId: number
+  ): Observable<EquipmentAvailabilityDto> {
+    return this.http
+      .get<EquipmentAvailabilityDto>(
+        `${this.baseUrl}/${equipmentId}/availability`
+      )
+      .pipe(
+        map(
+          (res) =>
+            res ?? { active: false, message: 'Sin información disponible.' }
+        ), // default si viene null
+        catchError((err) => {
+          console.error('Error al obtener disponibilidad del equipo:', err);
+          // respuesta por defecto en caso de error
+          return of({
+            active: false,
+            message: 'Error de conexión con el servidor.',
+          });
+        })
+      );
   }
 }

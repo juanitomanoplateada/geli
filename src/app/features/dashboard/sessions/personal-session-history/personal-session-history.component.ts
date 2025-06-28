@@ -31,6 +31,7 @@ import {
 } from './equipment-use-filters.const';
 import { EQUIPMENT_USE_FIELDS_CONFIG } from './equipment-use-fields-config.const';
 import { decodeToken } from '../../../../core/auth/services/token.utils';
+import { AuthUserService } from '../../../../core/auth/services/auth-user.service';
 
 @Component({
   selector: 'app-personal-session-history',
@@ -78,27 +79,24 @@ export class PersonalSessionHistoryComponent implements OnInit {
     private labService: LaboratoryService,
     private equipmentService: EquipmentService,
     private functionService: FunctionService,
-    private userService: UserService
+    private userService: UserService,
+    private authUserService: AuthUserService
   ) {}
 
   // Lifecycle Hooks
   ngOnInit(): void {
-    const token = localStorage.getItem('auth_token');
-    if (!token) return;
-    const decoded: any = decodeToken(token);
-    const email = decoded?.email || decoded?.preferred_username;
-    if (!email) return;
-
-    this.userService.getUserByEmail(email).subscribe({
-      next: (user) => {
-        this.userId = user.id;
+    this.authUserService.getAuthenticatedUserId().subscribe({
+      next: (id) => {
+        this.userId = id;
         this.loadFilterOptions();
         this.onSearch();
       },
+      error: (err) => {
+        console.error('No se pudo obtener el ID del usuario autenticado', err);
+      },
     });
 
-    this.loadFilterOptions();
-    this.onSearch(); // Initial load
+    // Duración en tiempo real
     setInterval(() => {
       this.updateRealTimeDurations();
     }, 1000);
@@ -121,7 +119,13 @@ export class PersonalSessionHistoryComponent implements OnInit {
       .filter(request, this.currentPage, this.pageSize)
       .subscribe({
         next: (response) => this.handleSearchSuccess(response),
-        error: () => this.handleSearchError(),
+        error: (err) => {
+          console.error('Error inesperado en onSearch():', err);
+          this.handleSearchError();
+        },
+        complete: () => {
+          this.isLoading = false;
+        },
       });
   }
 
@@ -163,7 +167,6 @@ export class PersonalSessionHistoryComponent implements OnInit {
     this.loadEquipmentInventory();
     this.loadEquipmentNames();
     this.loadFunctions();
-    this.loadAuthorizedUsers();
   }
 
   // Helper Methods

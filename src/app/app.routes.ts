@@ -17,8 +17,8 @@ export const appRoutes: Routes = [
   {
     path: '**',
     loadComponent: () =>
-      import('./shared/components/fallback-redirect/fallback-redirect.component').then(
-        (m) => m.FallbackRedirectComponent
-      ),
+      import(
+        './shared/components/fallback-redirect/fallback-redirect.component'
+      ).then((m) => m.FallbackRedirectComponent),
   },
 ];

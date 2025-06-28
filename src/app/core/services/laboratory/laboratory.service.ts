@@ -1,7 +1,7 @@
 import { LaboratoryResponseDto } from './../../dto/laboratory/laboratory-response.dto';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../../environments/environment.prod';
 import { PageResponse } from '../../dto/page/page-response.dto';
 
@@ -18,7 +18,12 @@ export class LaboratoryService {
 
   /** GET: Obtener todos los laboratorios */
   getLaboratoriesAuthorizeds(): Observable<LaboratoryResponseDto[]> {
-    return this.http.get<LaboratoryResponseDto[]>(`${this.apiUrl}/authorized/by-user`);
+    return this.http
+      .get<LaboratoryResponseDto[]>(`${this.apiUrl}/authorized/by-user`)
+      .pipe(
+        map((labs) => labs ?? []), // <- Esto asegura que sea un arreglo
+        catchError(() => of([])) // <- También aquí, por si hay error
+      );
   }
 
   /** POST: Filtrar laboratorios con paginación */

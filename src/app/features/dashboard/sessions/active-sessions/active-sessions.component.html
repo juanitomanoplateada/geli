@@ -4,11 +4,17 @@
 </div>
 
 <div *ngIf="!isLoading" class="session-wrapper">
+  <!-- Mensaje cuando no hay sesiones -->
+  <div *ngIf="activeSessions.length === 0" class="no-sessions">
+    <h2>No tienes sesiones activas</h2>
+    <p>Actualmente no hay equipos en uso registrados a tu nombre.</p>
+  </div>
+
   <!-- Lista de sesiones y detalle -->
-  <section class="session-section" *ngIf="activeSessions.length">
+  <section class="session-section" *ngIf="activeSessions.length > 0">
     <!-- Lista vertical -->
     <aside class="session-list-vertical">
-      <h2>Sesiones Activas</h2>
+      <h2>Sesiones Activas ({{ activeSessions.length }})</h2>
 
       <button
         class="sort-btn"
@@ -16,8 +22,12 @@
         aria-label="Cambiar orden de sesiones"
       >
         <span class="sort-label">
-          Ordenado por:
-          {{ sessionSortDescending ? "Más recientes" : "Más antiguas" }}
+          Orden:
+          {{
+            sessionSortDescending
+              ? "Más recientes primero"
+              : "Más antiguas primero"
+          }}
           <span class="sort-icon">{{
             sessionSortDescending ? "⬇️" : "⬆️"
           }}</span>
@@ -25,196 +35,281 @@
       </button>
 
       <div
-        *ngFor="let s of activeSessions"
+        *ngFor="let session of activeSessions"
         class="session-card"
-        [class.active]="s.id === selectedSessionId"
-        (click)="selectSession(s.id)"
+        [class.active]="session.id === selectedSessionId"
+        (click)="selectSession(session.id)"
       >
-        <strong>{{ s.equipment }}</strong>
-        <p>{{ s.lab }}</p>
-        <small>{{ s.checkIn.date }} - {{ s.checkIn.time }}</small>
+        <div class="session-card-header">
+          <strong>{{ session.equipment }}</strong>
+          <span class="badge" *ngIf="session.checkOut.usageDuration">
+            {{ session.checkOut.usageDuration }}
+          </span>
+        </div>
+        <p>{{ session.labLabel }}</p>
+        <small
+          >Inició: {{ session.checkIn.date }} a las
+          {{ session.checkIn.time }}</small
+        >
       </div>
     </aside>
 
     <!-- Detalle de la sesión -->
     <div class="session-detail" *ngIf="selectedSession">
+      <!-- Encabezado del detalle -->
+      <div class="detail-header">
+        <h2>Detalle de Sesión</h2>
+        <p class="equipment-name">{{ selectedSession.equipmentLabel }}</p>
+      </div>
+
       <!-- Entrada -->
       <div class="panel entrada">
-        <h2>Entrada</h2>
-        <div class="field-row">
-          <strong>Fecha:</strong> {{ selectedSession.checkIn.date }}
-        </div>
-        <div class="field-row">
-          <strong>Hora:</strong> {{ selectedSession.checkIn.time }}
-        </div>
-        <div class="field-row">
-          <strong>Nombre del Laboratorio:</strong> {{ selectedSession.lab }}
-        </div>
-        <div class="field-row">
-          <strong>Ubicación del Laboratorio:</strong>
-          {{ selectedSession.labLocation }}
-        </div>
-        <div class="field-row">
-          <strong>Código de Inventario:</strong>
-          {{ selectedSession.equipmentInventoryNumber }}
-        </div>
-        <div class="field-row">
-          <strong>Nombre del Equipo / Patrón:</strong>
-          {{ selectedSession.equipment }}
-        </div>
-        <div class="field-row">
-          <strong>Responsable:</strong> {{ selectedSession.checkIn.user }}
+        <h3>Información de Entrada</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Fecha:</span>
+            <span class="detail-value">{{ selectedSession.checkIn.date }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Hora:</span>
+            <span class="detail-value">{{ selectedSession.checkIn.time }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Ubicación:</span>
+            <span class="detail-value">{{ selectedSession.labLabel }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Nombre del equipo/patrón:</span>
+            <span class="detail-value">{{ selectedSession.equipment }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Código inventario:</span>
+            <span class="detail-value">{{
+              selectedSession.equipmentInventoryNumber
+            }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Nombre de quien usa el equipo/patrón:</span>
+            <span class="detail-value">{{ selectedSession.checkIn.user }}</span>
+          </div>
         </div>
       </div>
 
       <!-- Salida -->
       <div class="panel salida">
-        <h2>
-          Salida
+        <div class="salida-header">
+          <h3>Registro de Salida</h3>
           <span
-            *ngIf="selectedSession?.checkOut?.usageDuration"
-            class="live-duration"
+            *ngIf="selectedSession.checkOut.usageDuration"
+            class="duration-badge"
           >
             🕒 {{ selectedSession.checkOut.usageDuration }}
           </span>
-        </h2>
-
-        <label>
-          Estado - Verificado: <span class="required">*</span>
-          <select [(ngModel)]="selectedSession.checkOut.verifiedStatus">
-            <option value="">Seleccione una opción</option>
-            <option value="YES">SI</option>
-            <option value="NO">NO</option>
-          </select>
-        </label>
-
-        <label>
-          Estado - Para uso: <span class="required">*</span>
-          <select
-            [(ngModel)]="selectedSession.checkOut.usageStatus"
-            (change)="onUsageStatusChange()"
-          >
-            <option value="">Seleccione una opción</option>
-            <option value="YES">SI</option>
-            <option value="NO">NO</option>
-          </select>
-        </label>
-
-        <label>
-          Cantidad de muestras: <span class="required">*</span>
-          <input
-            type="number"
-            [(ngModel)]="selectedSession.checkOut.sampleCount"
-            appIntegerOnly
-          />
-        </label>
-
-        <label>Funciones utilizadas: <span class="required">*</span></label>
-        <app-tag-selector
-          [availableOptions]="selectedSession.availableFunctions"
-          [selected]="selectedSession.checkOut.selectedFunctions"
-          (selectedChange)="selectedSession.checkOut.selectedFunctions = $event"
-          [labelField]="'functionName'"
-          [valueField]="'id'"
-        >
-        </app-tag-selector>
-
-        <label>
-          Observaciones:
-          <span
-            *ngIf="selectedSession.checkOut.usageStatus === 'NO'"
-            class="required"
-            >*</span
-          >
-          <textarea
-            [(ngModel)]="selectedSession.checkOut.remarks"
-            (input)="autoResizeTextarea($event)"
-          ></textarea>
-        </label>
-
-        <div
-          *ngIf="selectedSession.checkOut.usageStatus === 'NO'"
-          class="alert"
-        >
-          Por favor incluya en las observaciones los motivos por los cuales el
-          equipo no está disponible para uso.
         </div>
 
-        <button
-          class="finish-btn"
-          [disabled]="!isFormValid"
-          (click)="finishSession()"
-        >
-          Finalizar Sesión
-        </button>
+        <form class="salida-form">
+          <!-- Primera fila con selects -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="verifiedStatus">
+                Estado - Verificado: <span class="required">*</span>
+              </label>
+              <select
+                id="verifiedStatus"
+                [(ngModel)]="selectedSession.checkOut.verifiedStatus"
+                name="verifiedStatus"
+                required
+              >
+                <option value="">Seleccione una opción</option>
+                <option value="YES">SÍ</option>
+                <option value="NO">NO</option>
+              </select>
+            </div>
 
-        <!-- Modal Confirmar Finalizar -->
-        <app-confirm-modal
-          [title]="'¿Finalizar sesión?'"
-          [show]="showSummaryModal"
-          [confirmLabel]="'Finalizar'"
-          [isLoading]="isFinishingSession"
-          (confirm)="confirmFinishSession()"
-          (cancel)="cancelFinishSession()"
-        >
-          <div class="summary-section">
-            <h4>⏱ Detalles de uso</h4>
-            <p><strong>Fecha:</strong> {{ selectedSession.useDate }}</p>
-            <p>
-              <strong>Hora de inicio:</strong>
-              {{ selectedSession.startUseTime }}
-            </p>
-            <p>
-              <strong>Duración:</strong>
-              {{ selectedSession.checkOut.usageDuration }}
-            </p>
-          </div>
+            <div class="form-group">
+              <label for="usageStatus">
+                Estado - Para uso: <span class="required">*</span>
+              </label>
+              <select
+                id="usageStatus"
+                [(ngModel)]="selectedSession.checkOut.usageStatus"
+                name="usageStatus"
+                (change)="onUsageStatusChange()"
+                required
+              >
+                <option value="">Seleccione una opción</option>
+                <option value="YES">SÍ</option>
+                <option value="NO">NO</option>
+              </select>
+            </div>
 
-          <div class="summary-section">
-            <h4>🔬 Equipo utilizado</h4>
-            <p><strong>Laboratorio:</strong> {{ selectedSession.labLabel }}</p>
-            <p>
-              <strong>Equipo / Patrón:</strong>
-              {{ selectedSession.equipmentLabel }}
-            </p>
-          </div>
-
-          <div class="summary-section">
-            <h4>📊 Datos de salida</h4>
-            <p>
-              <strong>Estado - Verificado:</strong>
-              {{
-                selectedSession.checkOut.verifiedStatus === "YES" ? "SI" : "NO"
-              }}
-            </p>
-            <p>
-              <strong>Estado - Para uso:</strong>
-              {{ selectedSession.checkOut.usageStatus === "YES" ? "SI" : "NO" }}
-            </p>
-            <p>
-              <strong>Cantidad de muestras:</strong>
-              {{ selectedSession.checkOut.sampleCount }}
-            </p>
-            <p><strong>Funciones utilizadas:</strong></p>
-            <ul>
-              <li *ngFor="let f of selectedSession.checkOut.selectedFunctions">
-                {{ f.functionName }}
-              </li>
-            </ul>
-            <p>
-              <strong>Observaciones:</strong>
-              {{ selectedSession.checkOut.remarks || "Ninguna" }}
-            </p>
+            <div class="form-group">
+              <label for="sampleCount">
+                Cantidad de muestras analizadas: <span class="required">*</span>
+              </label>
+              <input
+                type="number"
+                id="sampleCount"
+                [(ngModel)]="selectedSession.checkOut.sampleCount"
+                name="sampleCount"
+                appIntegerOnly
+                min="0"
+                required
+              />
+            </div>
           </div>
 
-          <div *ngIf="finishSessionSuccess" class="feedback success">
-            ✅ Sesión finalizada exitosamente.
+          <!-- Segunda fila con tag selector -->
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label
+                >Funciones utilizadas: <span class="required">*</span></label
+              >
+              <app-tag-selector
+                [availableOptions]="selectedSession.availableFunctions"
+                [selected]="selectedSession.checkOut.selectedFunctions"
+                (selectedChange)="
+                  selectedSession.checkOut.selectedFunctions = $event
+                "
+                [labelField]="'functionName'"
+                [valueField]="'id'"
+                required
+              >
+              </app-tag-selector>
+            </div>
           </div>
-          <div *ngIf="finishSessionError" class="feedback error">
-            ❌ Error al finalizar la sesión. Intenta nuevamente.
+
+          <!-- Tercera fila con textarea -->
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label for="remarks">
+                Observaciones:
+                <span
+                  *ngIf="selectedSession.checkOut.usageStatus === 'NO'"
+                  class="required"
+                  >*</span
+                >
+              </label>
+              <textarea
+                id="remarks"
+                [(ngModel)]="selectedSession.checkOut.remarks"
+                name="remarks"
+                (input)="autoResizeTextarea($event)"
+                [required]="selectedSession.checkOut.usageStatus === 'NO'"
+                placeholder="Ingrese observaciones relevantes..."
+              ></textarea>
+            </div>
           </div>
-        </app-confirm-modal>
+
+          <div
+            *ngIf="selectedSession.checkOut.usageStatus === 'NO'"
+            class="alert alert-warning"
+          >
+            <strong>Atención:</strong> Por favor incluya en las observaciones
+            los motivos por los cuales el equipo no está disponible para uso.
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn-finish"
+              [disabled]="!isFormValid"
+              (click)="finishSession()"
+            >
+              Finalizar Sesión
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </section>
+
+  <!-- Modal Confirmar Finalizar -->
+  <app-confirm-modal
+    [title]="'Confirmar Finalización de Sesión'"
+    [show]="showSummaryModal"
+    [confirmLabel]="'Confirmar Finalización'"
+    [cancelLabel]="'Cancelar'"
+    [isLoading]="isFinishingSession"
+    (confirm)="confirmFinishSession()"
+    (cancel)="cancelFinishSession()"
+  >
+    <div class="modal-content">
+      <div *ngIf="finishSessionSuccess" class="alert alert-success">
+        <i class="icon-success"></i>
+        <p>Sesión finalizada exitosamente. Serás redirigido al historial.</p>
+      </div>
+
+      <div *ngIf="finishSessionError" class="alert alert-danger">
+        <i class="icon-error"></i>
+        <p>Error al finalizar la sesión. Por favor intente nuevamente.</p>
+      </div>
+
+      <div *ngIf="!finishSessionSuccess && !finishSessionError">
+        <h4>Resumen de la Sesión</h4>
+
+        <div class="summary-section">
+          <h5>Datos de Uso</h5>
+          <div class="summary-item">
+            <span>Tiempo de uso:</span>
+            <strong>{{
+              selectedSession?.checkOut?.usageDuration || "--"
+            }}</strong>
+          </div>
+          <div class="summary-item">
+            <span>Inicio:</span>
+            <strong
+              >{{ selectedSession?.useDate }} a las
+              {{ selectedSession?.startUseTime }}</strong
+            >
+          </div>
+        </div>
+
+        <div class="summary-section">
+          <h5>Detalles del Equipo</h5>
+          <div class="summary-item">
+            <span>Ubicación:</span>
+            <strong>{{ selectedSession?.labLabel || "--" }}</strong>
+          </div>
+          <div class="summary-item">
+            <span>Nombre del equipo/patrón:</span>
+            <strong>{{ selectedSession?.equipment || "--" }}</strong>
+          </div>
+           <div class="summary-item">
+            <span>Código inventario:</span>
+            <strong>{{ selectedSession?.equipmentInventoryNumber || "--" }}</strong>
+          </div>
+        </div>
+
+        <div class="summary-section">
+          <h5>Datos de Salida</h5>
+          <div class="summary-item">
+            <span>Estado - Verificado:</span>
+            <strong>{{
+              selectedSession?.checkOut?.verifiedStatus === "YES" ? "SÍ" : "NO"
+            }}</strong>
+          </div>
+          <div class="summary-item">
+            <span>Estado - Para uso:</span>
+            <strong>{{
+              selectedSession?.checkOut?.usageStatus === "YES" ? "SÍ" : "NO"
+            }}</strong>
+          </div>
+          <div class="summary-item">
+            <span>Cantidad de muestras analizadas:</span>
+            <strong>{{ selectedSession?.checkOut?.sampleCount || "0" }}</strong>
+          </div>
+          <div class="summary-item">
+            <span>Funciones usadas:</span>
+          </div>
+          <div class="summary-item">
+            <span>Observaciones:</span>
+            <strong>{{
+              selectedSession?.checkOut?.remarks || "Ninguna"
+            }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-confirm-modal>
 </div>
