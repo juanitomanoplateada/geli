@@ -93,6 +93,7 @@
 
   <!-- Renderizado de campos activos -->
   <app-search-advanced-fields
+    [activeFilters]="activeFilterKeys"
     [filters]="filters"
     [options]="options"
     [fieldsConfig]="activeFieldsConfig"

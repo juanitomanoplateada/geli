@@ -31,6 +31,11 @@
           [class.active]="isActive('/dashboard/sessions/register-session')"
           (click)="onNavigate()"
           >Registrar Uso</a
+        ><a
+          routerLink="/dashboard/sessions/active-sessions"
+          [class.active]="isActive('/dashboard/sessions/active-sessions')"
+          (click)="onNavigate()"
+          >Sesiones Activas</a
         >
         <a
           routerLink="/dashboard/sessions/personal-session-history"
@@ -61,7 +66,9 @@
         >
         <a
           routerLink="/dashboard/users/register-authorized-personnel"
-          [class.active]="isActive('/dashboard/users/register-authorized-personnel')"
+          [class.active]="
+            isActive('/dashboard/users/register-authorized-personnel')
+          "
           (click)="onNavigate()"
           >Registrar Personal Autorizado</a
         >

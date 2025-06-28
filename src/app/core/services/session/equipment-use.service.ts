@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../../environments/environment.prod';
+import { EquipmentAvailabilityStatusDto } from '../../dto/session/equipment-availability-status.dto';
 
 export interface EquipmentStartUseRequest {
   equipmentId: number;
@@ -61,7 +62,6 @@ export interface EquipmentUseFilterRequest {
   isInUse?: boolean | null;
   isVerified?: boolean | null;
   isAvailable?: boolean | null;
-  equipmentId?: number;
   userId?: number;
   laboratoryId?: number;
   samplesNumberFrom?: number;
@@ -71,6 +71,10 @@ export interface EquipmentUseFilterRequest {
   useDateTo?: string;
   startUseTimeFrom?: string;
   endUseTimeTo?: string;
+  startTimeFrom?: string;
+  endTimeTo?: string;
+  equipmentName?: string;
+  equipmentInventoryCode?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -124,5 +128,15 @@ export class EquipmentUseService {
           res && res.content ? res : { content: [], totalPages: 0 }
         )
       );
+  }
+
+  getEquipmentAvailability(
+    equipmentId: number
+  ): Observable<EquipmentAvailabilityStatusDto> {
+    const params = new HttpParams().set('equipmentId', equipmentId.toString());
+    return this.http.get<EquipmentAvailabilityStatusDto>(
+      `${this.baseUrl}/availability`,
+      { params }
+    );
   }
 }

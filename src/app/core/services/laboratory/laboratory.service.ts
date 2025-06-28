@@ -16,6 +16,11 @@ export class LaboratoryService {
     return this.http.get<LaboratoryResponseDto[]>(this.apiUrl);
   }
 
+  /** GET: Obtener todos los laboratorios */
+  getLaboratoriesAuthorizeds(): Observable<LaboratoryResponseDto[]> {
+    return this.http.get<LaboratoryResponseDto[]>(`${this.apiUrl}/authorized/by-user`);
+  }
+
   /** POST: Filtrar laboratorios con paginación */
   filterLaboratories(
     filters: any,

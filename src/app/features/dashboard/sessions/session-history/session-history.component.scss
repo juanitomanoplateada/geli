@@ -1,7 +1,7 @@
 .session-history-container {
   display: flex;
   flex-direction: column;
-  padding: 0.5rem 1rem;
+  padding: 0rem 1rem;
   max-width: 1750px;
   width: 100%;
   box-sizing: border-box;
@@ -69,7 +69,6 @@ app-search-advanced {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  position: sticky;
   top: 0;
   background-color: #f9fafb;
   border-bottom: 1px solid #e0e0e0;
@@ -167,15 +166,16 @@ app-search-advanced {
 
 // 📋 Sidebar de sesiones
 .history-sidebar {
-  max-height: 650px;
+  max-height: 595px;
   overflow-y: auto;
   border-right: 1px solid #ccc;
   padding-right: 0.5rem;
 
   .session-preview {
-    padding: 0.9rem;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
     border-bottom: 1px solid #eee;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.2s ease;
 
@@ -188,48 +188,70 @@ app-search-advanced {
       border-left: 4px solid #1976d2;
     }
 
-    h4 {
-      margin: 0;
-      font-size: 0.95rem;
-      color: #2c3e50;
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+
+      .lab-name {
+        font-size: 1rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 0;
+      }
+
+      .preview-status {
+        font-size: 0.7rem;
+        font-weight: bold;
+        padding: 0.2rem 0.6rem;
+        border-radius: 1rem;
+        text-transform: uppercase;
+      }
+
+      .in-progress {
+        background-color: #fff4cc;
+        color: #b36b00;
+      }
+
+      .completed {
+        background-color: #e0f8e0;
+        color: #006400;
+      }
     }
 
-    .preview-meta {
+    .equipment-info {
+      margin-bottom: 0.3rem;
+
+      .equipment-name {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #333;
+        font-weight: 500;
+      }
+
+      .inventory-code {
+        margin: 0;
+        font-size: 0.8rem;
+        color: #555;
+      }
+    }
+
+    .meta-info {
+      display: flex;
+      justify-content: space-between;
       font-size: 0.75rem;
-      color: #888;
-      margin-top: 0.25rem;
-      display: block;
+      color: #777;
+      margin-top: 0.4rem;
+
+      .responsible-user {
+        font-style: italic;
+      }
+
+      .timestamp {
+        white-space: nowrap;
+      }
     }
-
-    p {
-      margin: 0.25rem 0;
-      font-size: 0.85rem;
-      color: #333;
-    }
-  }
-
-  .preview-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .preview-status {
-    font-size: 0.7rem;
-    font-weight: bold;
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.5rem;
-    text-transform: uppercase;
-  }
-
-  .in-progress {
-    background-color: #fff4cc;
-    color: #b36b00;
-  }
-
-  .completed {
-    background-color: #e0f8e0;
-    color: #006400;
   }
 }
 

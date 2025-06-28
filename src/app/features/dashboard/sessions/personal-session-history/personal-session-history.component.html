@@ -7,6 +7,7 @@
     [filters]="filters"
     [options]="{
       lab: availableLabs,
+      codeInventory: codesInventory,
       equipment: availableEquipments,
       function: availableFunctions,
       user: availableUsers
@@ -17,6 +18,7 @@
     (activeFilterKeysChange)="activeFilterKeys = $event"
     (clearFilters)="clearFilters()"
     [buttonCleanFilters]="false"
+    (triggerSearch)="onSearch()"
   ></app-search-filter-only>
 
   <!-- ⏳ Estado de carga -->
@@ -87,14 +89,13 @@
         <!-- 📋 Lista lateral -->
         <aside class="history-sidebar">
           <ng-container *ngFor="let session of filteredSessions">
-            <!-- Aquí puedes agrupar por fecha o laboratorio si deseas -->
             <div
               class="session-preview"
               (click)="selectSession(session)"
               [class.active]="session === selectedSession"
             >
               <div class="preview-header">
-                <h4>{{ session.lab }}</h4>
+                <h4 class="lab-name">{{ session.lab }}</h4>
                 <span
                   class="preview-status"
                   [ngClass]="{
@@ -105,10 +106,19 @@
                   {{ session.inProgress ? "🟡 En curso" : "🟢 Finalizada" }}
                 </span>
               </div>
-              <p>{{ session.equipment }}</p>
-              <span class="preview-meta"
-                >{{ session.date }} • {{ session.time }}</span
-              >
+
+              <div class="equipment-info">
+                <p class="equipment-name">{{ session.equipment }}</p>
+                <p class="inventory-code">
+                  Código: {{ session.inventoryCode }}
+                </p>
+              </div>
+
+              <div class="meta-info">
+                <span class="timestamp"
+                  >🕒 {{ session.date }} • {{ session.time }}</span
+                >
+              </div>
             </div>
           </ng-container>
         </aside>
@@ -133,7 +143,7 @@
 
           <div class="detail-grid">
             <div>
-              <strong>Equipo/Patrón</strong>
+              <strong>Nombre del equipo/patrón</strong>
               <span>{{ selectedSession.equipment | uppercase }}</span>
             </div>
 
@@ -158,7 +168,7 @@
             </div>
 
             <div>
-              <strong>Verificado</strong>
+              <strong>Estado - Verificado</strong>
               <span>
                 {{
                   selectedSession.inProgress
@@ -169,7 +179,7 @@
             </div>
 
             <div>
-              <strong>Para uso</strong>
+              <strong>Estado - Para uso</strong>
               <span>
                 {{
                   selectedSession.inProgress
@@ -185,7 +195,7 @@
             </div>
 
             <div>
-              <strong>Muestras analizadas</strong>
+              <strong>Cantidad de muestras analizadas</strong>
               <span>
                 {{
                   selectedSession.inProgress
@@ -233,7 +243,7 @@
             </div>
 
             <div>
-              <strong>Responsable</strong>
+              <strong>Nombre de quien usa el equipo/patrón</strong>
               <span>{{ selectedSession.responsible | uppercase }}</span>
             </div>
           </div>

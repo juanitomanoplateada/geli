@@ -9,6 +9,8 @@ import {
   EquipmentFilterDto,
 } from '../../dto/equipments-patterns/equipment-request.dto';
 import { EquipmentDto } from '../../dto/equipments-patterns/equipment-response.dto';
+import { EquipmentDTO } from '../../dto/equipments-patterns/equipment.dto';
+import { EquipmentAvailabilityDto } from '../../dto/equipments-patterns/equipment-availability.dto';
 
 interface PagedResponse<T> {
   content: T[];
@@ -94,6 +96,18 @@ export class EquipmentService {
       {
         params,
       }
+    );
+  }
+
+  getEquipmentsAuthorizeds(labId: number): Observable<EquipmentDTO[]> {
+    return this.http.get<EquipmentFilterDto[]>(
+      `${this.baseUrl}/authorized/by-lab/${labId}`
+    );
+  }
+
+  getEquipmentAvailability(equipmentId: number): Observable<EquipmentAvailabilityDto> {
+    return this.http.get<EquipmentAvailabilityDto>(
+      `${this.baseUrl}/${equipmentId}/availability`
     );
   }
 }

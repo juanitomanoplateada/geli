@@ -32,6 +32,8 @@ export class SearchFilterOnlyComponent {
   @Output() filtersChange = new EventEmitter<Filters>();
   @Output() activeFilterKeysChange = new EventEmitter<string[]>();
   @Output() clearFilters = new EventEmitter<void>();
+  /** Ejecutar búsqueda */
+  @Output() triggerSearch = new EventEmitter<void>();
 
   onClear() {
     this.clearFilters.emit();
@@ -47,6 +49,7 @@ export class SearchFilterOnlyComponent {
       }
     }
     this.activeFilterKeysChange.emit(updatedKeys);
+    this.triggerSearch.emit();
   }
 
   get activeFieldsConfig(): FieldConfig[] {

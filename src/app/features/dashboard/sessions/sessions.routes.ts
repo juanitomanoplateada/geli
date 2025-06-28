@@ -3,6 +3,7 @@ import { RegisterSessionComponent } from './register-session/register-session.co
 import { PersonalSessionHistoryComponent } from './personal-session-history/personal-session-history.component';
 import { SessionHistoryComponent } from './session-history/session-history.component';
 import { RoleGuard } from '../../../core/auth/guards/role.guard';
+import { ActiveSessionsComponent } from './active-sessions/active-sessions.component';
 
 export const sessionsRoutes: Routes = [
   {
@@ -10,6 +11,12 @@ export const sessionsRoutes: Routes = [
     canActivate: [RoleGuard],
     data: { roles: ['AUTHORIZED-USER'] },
     component: RegisterSessionComponent,
+  },
+  {
+    path: 'active-sessions',
+    canActivate: [RoleGuard],
+    data: { roles: ['AUTHORIZED-USER'] },
+    component: ActiveSessionsComponent,
   },
   {
     path: 'personal-session-history',

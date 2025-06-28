@@ -2,34 +2,35 @@
   <div class="spinner"></div>
   <p>Cargando datos, por favor espera...</p>
 </div>
+
 <div *ngIf="!isLoading" class="session-wrapper">
-  <!-- Iniciar nueva sesión -->
-  <div class="header-section">
+  <!-- Header: Iniciar nueva sesión -->
+  <section class="header-section">
     <h1>Registrar Uso de Equipo / Patrón</h1>
 
     <div class="dropdown-wrapper">
-      <!-- LABORATORIO -->
+      <!-- Laboratorio -->
       <div class="dropdown-block">
         <app-dropdown-search-entity-obj
-          [placeholder]="'Seleccione un laboratorio'"
+          [placeholder]="'Seleccione el laboratorio en el que se encuentra...'"
           [options]="labOptions"
           [selectedValue]="selectedLabId"
           (select)="onSelectLab($event)"
-        />
+        ></app-dropdown-search-entity-obj>
+
         <div
           *ngIf="selectedLabStatus?.active === false"
           class="inactive-warning"
         >
-          ⚠️ Este laboratorio está inactivo.
-          <br />
+          ⚠️ Este laboratorio está inactivo.<br />
           <strong>Motivo:</strong> {{ selectedLabStatus?.remarks }}
         </div>
       </div>
 
-      <!-- EQUIPO -->
+      <!-- Equipo / Patrón -->
       <div class="dropdown-block">
         <app-dropdown-search-entity-obj
-          [placeholder]="'Seleccione un equipo / patrón'"
+          [placeholder]="'Seleccione el equipo que va a utilizar...'"
           [options]="equipmentOptions"
           [selectedValue]="selectedEquipment"
           [disabled]="
@@ -38,7 +39,7 @@
             isLoadingEquipments
           "
           (select)="onSelectEquipment($event)"
-        />
+        ></app-dropdown-search-entity-obj>
 
         <div
           *ngIf="
@@ -47,8 +48,7 @@
           "
           class="inactive-warning"
         >
-          ⚠️ Este equipo está inactivo.
-          <br />
+          ⚠️ Este equipo está inactivo.<br />
           <strong>Motivo:</strong> {{ selectedEquipmentStatus?.remarks }}
         </div>
 
@@ -59,6 +59,7 @@
           ⚠️ Ya tienes una sesión activa con este equipo. Finalízala antes de
           iniciar una nueva.
         </div>
+
         <div
           *ngIf="isEquipmentInUseByAnotherUser"
           class="duplicate-session-warning"
@@ -68,11 +69,12 @@
         </div>
       </div>
     </div>
+
     <div *ngIf="isLoadingEquipments" class="spinner-mini">
       <div class="spinner"></div>
       <p>Cargando equipos disponibles...</p>
     </div>
-    <!-- BOTÓN DE INICIO -->
+
     <button
       class="start-btn"
       [disabled]="
@@ -88,7 +90,7 @@
       Iniciar Sesión
     </button>
 
-    <!-- MODAL DE CONFIRMACIÓN -->
+    <!-- Modal Confirmar Inicio -->
     <app-confirm-modal
       [title]="'¿Iniciar sesión con este equipo?'"
       [show]="showConfirmationModal"
@@ -105,7 +107,6 @@
         <p><strong>Responsable:</strong> {{ currentUserName }}</p>
       </div>
 
-      <!-- Feedback visual -->
       <div *ngIf="startSessionSuccess" class="feedback success">
         ✅ Sesión iniciada exitosamente.
       </div>
@@ -113,214 +114,5 @@
         ❌ Error al iniciar la sesión. Intenta nuevamente.
       </div>
     </app-confirm-modal>
-  </div>
-
-  <!-- Lista y detalles -->
-  <div class="session-section" *ngIf="activeSessions.length">
-    <div class="session-list-vertical">
-      <h2>Sesiones Activas</h2>
-      <button
-        class="sort-btn"
-        (click)="toggleSortOrder()"
-        aria-label="Cambiar orden de sesiones"
-      >
-        <span class="sort-label">
-          Ordenado por:
-          {{ sessionSortDescending ? "Más recientes" : "Más antiguas" }}
-          <span class="sort-icon">
-            {{ sessionSortDescending ? "⬇️" : "⬆️" }}
-          </span>
-        </span>
-      </button>
-
-      <div
-        class="session-card"
-        *ngFor="let s of activeSessions"
-        [class.active]="s.id === selectedSessionId"
-        (click)="selectSession(s.id)"
-      >
-        <strong>{{ s.equipment }}</strong>
-        <p>{{ s.lab }}</p>
-        <small>{{ s.checkIn.date }} - {{ s.checkIn.time }}</small>
-      </div>
-    </div>
-
-    <div class="session-detail" *ngIf="selectedSession">
-      <!-- Entrada -->
-      <div class="panel entrada">
-        <h2>Entrada</h2>
-        <div class="field-row">
-          <strong>Fecha:</strong> {{ selectedSession.checkIn.date }}
-        </div>
-        <div class="field-row">
-          <strong>Hora:</strong> {{ selectedSession.checkIn.time }}
-        </div>
-        <div class="field-row">
-          <strong>Nombre del Laboratorio:</strong> {{ selectedSession.lab }}
-        </div>
-        <div class="field-row">
-          <strong>Ubicación del Laboratorio:</strong>
-          {{ selectedSession.labLocation }}
-        </div>
-        <div class="field-row">
-          <strong>Código de Inventario:</strong>
-          {{ selectedSession.equipmentInventoryNumber }}
-        </div>
-        <div class="field-row">
-          <strong>Nombre del Equipo / Patrón:</strong>
-          {{ selectedSession.equipment }}
-        </div>
-        <div class="field-row">
-          <strong>Responsable:</strong> {{ selectedSession.checkIn.user }}
-        </div>
-      </div>
-
-      <!-- Salida -->
-      <div class="panel salida">
-        <h2>
-          Salida
-          <span
-            *ngIf="selectedSession?.checkOut?.usageDuration"
-            class="live-duration"
-          >
-            🕒 {{ selectedSession.checkOut.usageDuration }}
-          </span>
-        </h2>
-
-        <label>
-          Estado - Verificado: <span class="required">*</span>
-          <select [(ngModel)]="selectedSession.checkOut.verifiedStatus">
-            <option value="">Seleccione una opción</option>
-            <option value="YES">SI</option>
-            <option value="NO">NO</option>
-          </select>
-        </label>
-
-        <label>
-          Estado - Para uso: <span class="required">*</span>
-          <select
-            [(ngModel)]="selectedSession.checkOut.usageStatus"
-            (change)="onUsageStatusChange()"
-          >
-            <option value="">Seleccione una opción</option>
-            <option value="YES">SI</option>
-            <option value="NO">NO</option>
-          </select>
-        </label>
-
-        <label>
-          Cantidad de muestras: <span class="required">*</span>
-          <input
-            type="number"
-            [(ngModel)]="selectedSession.checkOut.sampleCount"
-            appIntegerOnly
-          />
-        </label>
-
-        <label> Funciones utilizadas: <span class="required">*</span> </label>
-        <app-tag-selector
-          [availableOptions]="selectedSession.availableFunctions"
-          [selected]="selectedSession.checkOut.selectedFunctions"
-          (selectedChange)="selectedSession.checkOut.selectedFunctions = $event"
-          [labelField]="'functionName'"
-          [valueField]="'id'"
-        ></app-tag-selector>
-
-        <label>
-          Observaciones:
-          <span
-            *ngIf="selectedSession.checkOut.usageStatus === 'NO'"
-            class="required"
-            >*</span
-          >
-          <textarea
-            [(ngModel)]="selectedSession.checkOut.remarks"
-            (input)="autoResizeTextarea($event)"
-          ></textarea>
-        </label>
-
-        <ng-container *ngIf="selectedSession.checkOut.usageStatus === 'NO'">
-          <div class="alert">
-            Por favor incluya en las observaciones los motivos por los cuales el
-            equipo no está disponible para uso.
-          </div>
-        </ng-container>
-
-        <button
-          class="finish-btn"
-          [disabled]="!isFormValid"
-          (click)="finishSession()"
-        >
-          Finalizar Sesión
-        </button>
-
-        <!-- Modal Finalizar -->
-        <app-confirm-modal
-          [title]="'¿Finalizar sesión?'"
-          [show]="showSummaryModal"
-          [confirmLabel]="'Finalizar'"
-          [isLoading]="isFinishingSession"
-          (confirm)="confirmFinishSession()"
-          (cancel)="cancelFinishSession()"
-        >
-          <div class="summary-section">
-            <h4>⏱ Detalles de uso</h4>
-            <p><strong>Fecha:</strong> {{ selectedSession.useDate }}</p>
-            <p>
-              <strong>Hora de inicio:</strong>
-              {{ selectedSession.startUseTime }}
-            </p>
-            <p>
-              <strong>Duración:</strong>
-              {{ selectedSession.checkOut.usageDuration }}
-            </p>
-          </div>
-
-          <div class="summary-section">
-            <h4>🔬 Equipo utilizado</h4>
-            <p><strong>Laboratorio:</strong> {{ selectedSession.labLabel }}</p>
-            <p>
-              <strong>Equipo / Patrón:</strong>
-              {{ selectedSession.equipmentLabel }}
-            </p>
-          </div>
-
-          <div class="summary-section">
-            <h4>📊 Datos de salida</h4>
-            <p>
-              <strong>Estado - Verificado:</strong>
-              {{
-                selectedSession.checkOut.verifiedStatus === "YES" ? "SI" : "NO"
-              }}
-            </p>
-            <p>
-              <strong>Estado - Para uso:</strong>
-              {{ selectedSession.checkOut.usageStatus === "YES" ? "SI" : "NO" }}
-            </p>
-            <p>
-              <strong>Cantidad de muestras:</strong>
-              {{ selectedSession.checkOut.sampleCount }}
-            </p>
-            <p><strong>Funciones utilizadas:</strong></p>
-            <ul>
-              <li *ngFor="let f of selectedSession.checkOut.selectedFunctions">
-                {{ f.functionName }}
-              </li>
-            </ul>
-            <p>
-              <strong>Observaciones:</strong>
-              {{ selectedSession.checkOut.remarks || "Ninguna" }}
-            </p>
-          </div>
-          <!-- Feedback visual -->
-          <div *ngIf="finishSessionSuccess" class="feedback success">
-            ✅ Sesión finalizada exitosamente.
-          </div>
-          <div *ngIf="finishSessionError" class="feedback error">
-            ❌ Error al finalizar la sesión. Intenta nuevamente.
-          </div>
-        </app-confirm-modal>
-      </div>
-    </div>
-  </div>
+  </section>
 </div>
