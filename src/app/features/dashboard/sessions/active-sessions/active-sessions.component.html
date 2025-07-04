@@ -89,7 +89,9 @@
             }}</span>
           </div>
           <div class="detail-item">
-            <span class="detail-label">Nombre de quien usa el equipo/patrón:</span>
+            <span class="detail-label"
+              >Nombre de quien usa el equipo/patrón:</span
+            >
             <span class="detail-value">{{ selectedSession.checkIn.user }}</span>
           </div>
         </div>
@@ -152,8 +154,10 @@
                 id="sampleCount"
                 [(ngModel)]="selectedSession.checkOut.sampleCount"
                 name="sampleCount"
-                appIntegerOnly
                 min="0"
+                appInputRules
+                [onlyNumbers]="true"
+                [maxLength]="10"
                 required
               />
             </div>
@@ -197,6 +201,9 @@
                 (input)="autoResizeTextarea($event)"
                 [required]="selectedSession.checkOut.usageStatus === 'NO'"
                 placeholder="Ingrese observaciones relevantes..."
+                appInputRules
+                [uppercase]="true"
+                [maxLength]="500"
               ></textarea>
             </div>
           </div>
@@ -275,9 +282,11 @@
             <span>Nombre del equipo/patrón:</span>
             <strong>{{ selectedSession?.equipment || "--" }}</strong>
           </div>
-           <div class="summary-item">
+          <div class="summary-item">
             <span>Código inventario:</span>
-            <strong>{{ selectedSession?.equipmentInventoryNumber || "--" }}</strong>
+            <strong>{{
+              selectedSession?.equipmentInventoryNumber || "--"
+            }}</strong>
           </div>
         </div>
 
@@ -299,9 +308,12 @@
             <span>Cantidad de muestras analizadas:</span>
             <strong>{{ selectedSession?.checkOut?.sampleCount || "0" }}</strong>
           </div>
+
           <div class="summary-item">
             <span>Funciones usadas:</span>
+            <strong>{{ getSelectedFunctionNames() }}</strong>
           </div>
+
           <div class="summary-item">
             <span>Observaciones:</span>
             <strong>{{

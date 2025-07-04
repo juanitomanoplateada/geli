@@ -8,20 +8,23 @@ import {
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
-import { UppercaseDirective } from '../../../../shared/directives/uppercase/uppercase.directive';
-import { UppercaseNospaceDirective } from '../../../../shared/directives/uppercase-nospace/uppercase-nospace.directive';
+// Components
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { DropdownSearchEntityComponent } from '../../../../shared/components/dropdown-search-entity/dropdown-search-entity.component';
 import { DropdownSearchEntityObjComponent } from './../../../../shared/components/dropdown-search-entity-obj/dropdown-search-entity-obj.component';
 import { TagMultiselectComponent } from '../../../../shared/components/tag-multiselect/tag-multiselect.component';
 
-import { EquipmentService } from '../../../../core/equipment/services/equipment.service';
-import { BrandService } from '../../../../core/brand/services/brand.service';
-import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
-import {
-  FunctionService,
-  FunctionDto,
-} from '../../../../core/function/services/function.service';
+// Directives
+import { InputRulesDirective } from '../../../../shared/directives/input-rules/input-rules';
+
+// Services
+import { EquipmentService } from '../../../../core/services/equipment/equipment.service';
+import { LaboratoryService } from '../../../../core/services/laboratory/laboratory.service';
+import { BrandService } from '../../../../core/services/brand/brand.service';
+import { FunctionService } from '../../../../core/services/function/function.service';
+
+// DTOs
+import { FunctionDto } from '../../../../core/dto/function/function-response.dto';
 
 @Component({
   selector: 'app-register-equipment-pattern',
@@ -30,19 +33,18 @@ import {
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    UppercaseDirective,
-    UppercaseNospaceDirective,
     ConfirmModalComponent,
     DropdownSearchEntityComponent,
     DropdownSearchEntityObjComponent,
     TagMultiselectComponent,
+    InputRulesDirective,
   ],
   templateUrl: './register-equipment-pattern.component.html',
   styleUrls: ['./register-equipment-pattern.component.scss'],
 })
 export class RegisterEquipmentPatternComponent implements OnInit {
+  // Form and State
   equipmentForm: FormGroup;
-
   isNameTaken = false;
   isInventoryCodeTaken = false;
   isSubmitting = false;
@@ -52,11 +54,13 @@ export class RegisterEquipmentPatternComponent implements OnInit {
   modalFeedbackSuccess = false;
   notesRequired = false;
 
+  // Data Options
   brandOptions: { label: string; value: string }[] = [];
   labOptions: { label: string; value: string }[] = [];
   availableFunctions: FunctionDto[] = [];
   selectedFunctions: FunctionDto[] = [];
 
+  // Selections
   selectedBrandOrProposed: string | null = null;
   selectedLab: string | null = null;
 
@@ -79,40 +83,45 @@ export class RegisterEquipmentPatternComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadBrands();
+    this.loadLaboratories();
+    this.loadFunctions();
+    this.setupInventoryCodeValidation();
+  }
+
+  // Initialization Methods
+  private loadBrands(): void {
     this.brandService.getAll().subscribe((brands) => {
-      if (brands) {
-        this.brandOptions = brands.map((b) => ({
-          label: b.brandName,
-          value: b.id.toString(),
-        }));
-      } else {
-        this.brandOptions = [];
-      }
+      this.brandOptions = brands
+        ? brands.map((b) => ({
+            label: b.brandName,
+            value: b.id.toString(),
+          }))
+        : [];
     });
+  }
 
+  private loadLaboratories(): void {
     this.laboratoryService.getLaboratories().subscribe((labs) => {
-      if (labs) {
-        this.labOptions = labs
-          .filter((l) => l.id != null)
-          .map((l) => ({ label: l.laboratoryName, value: l.id!.toString() }));
-      } else {
-        this.labOptions = [];
-      }
+      this.labOptions = labs
+        ? labs
+            .filter((l) => l.id != null)
+            .map((l) => ({ label: l.laboratoryName, value: l.id!.toString() }))
+        : [];
     });
+  }
 
+  private loadFunctions(): void {
     this.functionService.getAll().subscribe((functions) => {
-      if (functions) {
-        const hasNA = functions.some(
-          (f) => f.functionName.toUpperCase() === 'N/A'
-        );
-        this.availableFunctions = hasNA
-          ? functions
-          : [...functions, { id: 0, functionName: 'N/A' }];
-      } else {
-        this.availableFunctions = [{ id: 0, functionName: 'N/A' }];
-      }
+      this.availableFunctions = functions.sort((a, b) => {
+        if (a.functionName === 'NO APLICA') return -1;
+        if (b.functionName === 'NO APLICA') return 1;
+        return 0;
+      });
     });
+  }
 
+  private setupInventoryCodeValidation(): void {
     this.equipmentForm.get('inventoryCode')?.valueChanges.subscribe((value) => {
       const trimmed = value?.trim();
       if (trimmed) {
@@ -127,6 +136,7 @@ export class RegisterEquipmentPatternComponent implements OnInit {
     });
   }
 
+  // Form Control Methods
   onSelectBrand(brandId: string): void {
     const selected = this.brandOptions.find((b) => b.value === brandId);
     if (selected) {
@@ -146,7 +156,7 @@ export class RegisterEquipmentPatternComponent implements OnInit {
   onSelectLab(labId: string): void {
     const selected = this.labOptions.find((l) => l.value === labId);
     if (selected) {
-      this.selectedLab = labId; // ← usa el ID, no el label
+      this.selectedLab = labId;
       this.equipmentForm.get('lab')?.setValue(labId);
       this.equipmentForm.get('lab')?.markAsTouched();
       this.equipmentForm.get('lab')?.updateValueAndValidity();
@@ -164,6 +174,7 @@ export class RegisterEquipmentPatternComponent implements OnInit {
     const status = this.equipmentForm.get('availability')?.value;
     this.notesRequired = status === 'INACTIVO';
     const notesControl = this.equipmentForm.get('notes');
+
     if (this.notesRequired) {
       notesControl?.setValidators([Validators.required]);
     } else {
@@ -172,6 +183,7 @@ export class RegisterEquipmentPatternComponent implements OnInit {
     notesControl?.updateValueAndValidity();
   }
 
+  // Form Submission Methods
   submitForm(): void {
     if (
       this.equipmentForm.valid &&
@@ -184,6 +196,91 @@ export class RegisterEquipmentPatternComponent implements OnInit {
     }
   }
 
+  async confirmSubmit(): Promise<void> {
+    this.isSubmitting = true;
+
+    try {
+      const brandId = await this.handleBrandCreation();
+      const allFunctions = await this.handleFunctionCreation();
+
+      const payload = {
+        equipmentName: this.equipmentForm.get('name')?.value,
+        inventoryNumber: this.equipmentForm.get('inventoryCode')?.value,
+        brand: {
+          id: brandId,
+          brandName: this.selectedBrandOrProposed ?? '',
+        },
+        laboratoryId: Number(this.equipmentForm.get('lab')?.value),
+        availability:
+          this.equipmentForm.get('availability')?.value === 'ACTIVO',
+        equipmentObservations: this.equipmentForm.get('notes')?.value || '',
+        authorizedUsersIds: [],
+        functions: allFunctions.map((f) => f.id),
+      };
+
+      await this.equipmentService.create(payload).toPromise();
+      this.showSuccessFeedback();
+    } catch (error) {
+      this.showErrorFeedback();
+    }
+  }
+
+  private async handleBrandCreation(): Promise<number> {
+    const selectedBrand = this.brandOptions.find(
+      (b) => b.label === this.selectedBrandOrProposed
+    );
+
+    if (selectedBrand && isNaN(Number(selectedBrand.value))) {
+      const createdBrand = await this.brandService
+        .create({ brandName: selectedBrand.label })
+        .toPromise();
+
+      if (!createdBrand) throw new Error('No se pudo crear la marca');
+      return createdBrand.id;
+    }
+    return Number(selectedBrand?.value);
+  }
+
+  private async handleFunctionCreation(): Promise<FunctionDto[]> {
+    const newFunctions = this.selectedFunctions.filter((f) => f.id === 0);
+    const existingFunctions = this.selectedFunctions.filter((f) => f.id !== 0);
+    const createdFunctions: FunctionDto[] = [];
+
+    for (const func of newFunctions) {
+      const created = await this.functionService
+        .create({ functionName: func.functionName })
+        .toPromise();
+
+      if (!created) {
+        throw new Error(`No se pudo crear la función: ${func.functionName}`);
+      }
+      createdFunctions.push(created);
+    }
+
+    return [...existingFunctions, ...createdFunctions];
+  }
+
+  private showSuccessFeedback(): void {
+    this.modalFeedbackSuccess = true;
+    this.modalFeedbackMessage = '✅ Equipo registrado exitosamente.';
+    this.showModalFeedback = true;
+
+    setTimeout(() => {
+      this.isSubmitting = false;
+      this.showModalFeedback = false;
+      this.showConfirmationModal = false;
+      this.resetForm();
+    }, 4000);
+  }
+
+  private showErrorFeedback(): void {
+    this.modalFeedbackSuccess = false;
+    this.modalFeedbackMessage = '❌ Error al registrar el equipo';
+    this.showModalFeedback = true;
+    this.isSubmitting = false;
+  }
+
+  // Utility Methods
   cancelConfirmation(): void {
     this.showConfirmationModal = false;
   }
@@ -211,88 +308,5 @@ export class RegisterEquipmentPatternComponent implements OnInit {
         this.labOptions.find((l) => l.value === this.selectedLab)?.label || '',
       functions: this.selectedFunctions.map((f) => f.functionName).join(', '),
     };
-  }
-
-  async confirmSubmit(): Promise<void> {
-    this.isSubmitting = true;
-
-    try {
-      // 1. Verificar si la marca es nueva (ID no numérico)
-      let brandId: number;
-      const selectedBrand = this.brandOptions.find(
-        (b) => b.label === this.selectedBrandOrProposed
-      );
-
-      if (selectedBrand && isNaN(Number(selectedBrand.value))) {
-        const createdBrand = await this.brandService
-          .create({ brandName: selectedBrand.label })
-          .toPromise();
-
-        if (!createdBrand) {
-          throw new Error('No se pudo crear la marca');
-        }
-        brandId = createdBrand.id;
-      } else {
-        brandId = Number(selectedBrand?.value);
-      }
-
-      // 2. Verificar funciones nuevas (id === 0)
-      const newFunctions = this.selectedFunctions.filter((f) => f.id === 0);
-      const existingFunctions = this.selectedFunctions.filter(
-        (f) => f.id !== 0
-      );
-
-      const createdFunctions: FunctionDto[] = [];
-
-      for (const func of newFunctions) {
-        const created = await this.functionService
-          .create({ functionName: func.functionName })
-          .toPromise();
-
-        if (!created) {
-          throw new Error(`No se pudo crear la función: ${func.functionName}`);
-        }
-
-        createdFunctions.push(created);
-      }
-
-      const allFunctions = [...existingFunctions, ...createdFunctions];
-
-      // 3. Construir payload
-      const payload = {
-        equipmentName: this.equipmentForm.get('name')?.value,
-        inventoryNumber: this.equipmentForm.get('inventoryCode')?.value,
-        brand: {
-          id: brandId,
-          brandName: this.selectedBrandOrProposed ?? '',
-        },
-        laboratoryId: Number(this.equipmentForm.get('lab')?.value),
-        availability:
-          this.equipmentForm.get('availability')?.value === 'ACTIVO',
-        equipmentObservations: this.equipmentForm.get('notes')?.value || '',
-        authorizedUsersIds: [], // se llena luego
-        functions: allFunctions.map((f) => f.id),
-      };
-
-      // 4. Crear equipo
-      await this.equipmentService.create(payload).toPromise();
-
-      // 5. Mostrar éxito
-      this.modalFeedbackSuccess = true;
-      this.modalFeedbackMessage = '✅ Equipo registrado exitosamente.';
-      this.showModalFeedback = true;
-
-      setTimeout(() => {
-        this.isSubmitting = false;
-        this.showModalFeedback = false;
-        this.showConfirmationModal = false;
-        this.resetForm();
-      }, 4000);
-    } catch (error) {
-      this.modalFeedbackSuccess = false;
-      this.modalFeedbackMessage = '❌ Error al registrar el equipo';
-      this.showModalFeedback = true;
-      this.isSubmitting = false;
-    }
   }
 }

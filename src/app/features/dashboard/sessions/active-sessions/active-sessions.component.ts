@@ -8,16 +8,20 @@ import {
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
+import { Router } from '@angular/router';
 
+// Components
 import { TagSelectorComponent } from '../../../../shared/components/tag-selector/tag-selector.component';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
-import { IntegerOnlyDirective } from '../../../../shared/directives/integer-only/integer-only.directive';
 
+// Services
 import { EquipmentUseService } from '../../../../core/services/session/equipment-use.service';
 import { UserService } from '../../../../core/user/services/user.service';
+import { EquipmentService } from '../../../../core/services/equipment/equipment.service';
 
-import { Router } from '@angular/router';
+// Models and Directives
 import { Session } from '../../../../core/dto/session/session.dto';
+import { InputRulesDirective } from '../../../../shared/directives/input-rules/input-rules';
 
 @Component({
   selector: 'app-active-sessions',
@@ -27,40 +31,45 @@ import { Session } from '../../../../core/dto/session/session.dto';
     FormsModule,
     TagSelectorComponent,
     ConfirmModalComponent,
-    IntegerOnlyDirective,
+    InputRulesDirective,
   ],
   templateUrl: './active-sessions.component.html',
   styleUrls: ['./active-sessions.component.scss'],
 })
 export class ActiveSessionsComponent implements AfterViewInit, OnDestroy {
+  // Properties
   private isBrowser = false;
   private destroy$ = new Subject<void>();
   private intervalId: any;
 
+  // Session Data
   activeSessions: Session[] = [];
   selectedSessionId: number | null = null;
+  equipmentIdsInUse: Set<string> = new Set();
 
-  showSummaryModal = false;
+  // User Data
   currentUserName: string = '';
 
+  // UI State
+  showSummaryModal = false;
   isFinishingSession = false;
   finishSessionSuccess = false;
   finishSessionError = false;
-
   sessionSortDescending: boolean = true;
-  equipmentIdsInUse: Set<string> = new Set();
   isLoading: boolean = true;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private userService: UserService,
     private equipmentUseService: EquipmentUseService,
+    private equipmentService: EquipmentService,
     private router: Router
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     this.loadInitialData();
   }
 
+  // Lifecycle Hooks
   ngAfterViewInit(): void {
     if (this.isBrowser) {
       this.intervalId = setInterval(() => this.updateUsageTime(), 1000);
@@ -75,26 +84,13 @@ export class ActiveSessionsComponent implements AfterViewInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  toggleSortOrder() {
-    this.sessionSortDescending = !this.sessionSortDescending;
-    this.sortSessions();
+  // Initialization Methods
+  private loadInitialData() {
+    this.loadActiveSessions();
   }
 
-  sortSessions() {
-    const sorted = this.activeSessions.sort(
-      (a, b) =>
-        new Date(b.checkIn.date + 'T' + b.checkIn.time).getTime() -
-        new Date(a.checkIn.date + 'T' + a.checkIn.time).getTime()
-    );
-
-    if (!this.sessionSortDescending) {
-      sorted.reverse();
-    }
-
-    this.activeSessions = [...sorted];
-  }
-
-  loadActiveSessions() {
+  // Session Data Methods
+  private loadActiveSessions() {
     this.isLoading = true;
     const token = localStorage.getItem('auth_token');
     if (!token) {
@@ -182,65 +178,52 @@ export class ActiveSessionsComponent implements AfterViewInit, OnDestroy {
       };
     });
 
-    this.sortSessions(); // ordenar después de mapear
+    this.sortSessions();
     if (this.activeSessions.length > 0 && !this.selectedSessionId) {
-      this.selectedSessionId = this.activeSessions[0].id;
+      this.selectSession(this.activeSessions[0].id);
     }
   }
 
-  loadInitialData() {
-    this.loadActiveSessions();
-  }
-
-  private ensureNAFunction(functions: any[]): any[] {
-    if (!functions || functions.length === 0) {
-      return [{ id: -1, functionName: 'N/A' }];
-    }
-
-    const normalized = functions.map((f) => ({
-      ...f,
-      functionName: f.functionName?.trim() || 'N/A',
-    }));
-
-    const hasOnlyNA =
-      normalized.length === 1 &&
-      normalized[0].functionName.toUpperCase() === 'N/A';
-
-    if (hasOnlyNA) {
-      return normalized;
-    }
-
-    const hasNA = normalized.some(
-      (f) => f.functionName.toUpperCase() === 'N/A'
-    );
-    const cleaned = normalized.filter(
-      (f) => f.functionName.toUpperCase() !== 'N/A'
-    );
-
-    if (!hasNA) {
-      cleaned.unshift({ id: -1, functionName: 'N/A' });
-    }
-
-    return cleaned;
-  }
-
-  selectSession(sessionId: number) {
+  // Session Selection Methods
+  selectSession(sessionId: number): void {
     this.selectedSessionId = sessionId;
-  }
+    const session = this.activeSessions.find((s) => s.id === sessionId);
 
-  resolveFunctionIds(session: Session): number[] {
-    return session.availableFunctions
-      .filter((f) =>
-        session.checkOut.selectedFunctions.includes(f.functionName)
-      )
-      .map((f) => f.id);
+    if (!session) return;
+
+    this.equipmentService
+      .getFunctionsById(Number(session.equipmentId))
+      .subscribe((res) => {
+        session.availableFunctions = res.functions;
+      });
   }
 
   get selectedSession(): Session | undefined {
     return this.activeSessions.find((s) => s.id === this.selectedSessionId);
   }
 
-  updateUsageTime() {
+  // Sorting Methods
+  toggleSortOrder() {
+    this.sessionSortDescending = !this.sessionSortDescending;
+    this.sortSessions();
+  }
+
+  private sortSessions() {
+    const sorted = this.activeSessions.sort(
+      (a, b) =>
+        new Date(b.checkIn.date + 'T' + b.checkIn.time).getTime() -
+        new Date(a.checkIn.date + 'T' + a.checkIn.time).getTime()
+    );
+
+    if (!this.sessionSortDescending) {
+      sorted.reverse();
+    }
+
+    this.activeSessions = [...sorted];
+  }
+
+  // Timer Methods
+  private updateUsageTime() {
     const session = this.selectedSession;
     if (session && session.checkIn.time) {
       const now = new Date();
@@ -271,6 +254,7 @@ export class ActiveSessionsComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  // Form Handling Methods
   onUsageStatusChange(): void {}
 
   autoResizeTextarea(event: Event): void {
@@ -293,9 +277,13 @@ export class ActiveSessionsComponent implements AfterViewInit, OnDestroy {
     );
   }
 
+  // Session Finish Methods
   finishSession() {
     this.updateUsageTime();
     this.showSummaryModal = true;
+    const session = this.selectedSession;
+    if (!session) return;
+    console.log(session?.checkOut?.selectedFunctions);
   }
 
   confirmFinishSession() {
@@ -306,13 +294,14 @@ export class ActiveSessionsComponent implements AfterViewInit, OnDestroy {
     this.finishSessionSuccess = false;
     this.finishSessionError = false;
 
-    const usedFunctionIds = this.resolveFunctionIds(session);
+    const selectedFunctionIds =
+      session?.checkOut?.selectedFunctions?.map((func) => func.id) || [];
 
     const payload: any = {
       isVerified: session.checkOut.verifiedStatus === 'YES',
       isAvailable: session.checkOut.usageStatus === 'YES',
       samplesNumber: session.checkOut.sampleCount || 0,
-      usedFunctions: usedFunctionIds,
+      usedFunctions: selectedFunctionIds,
       observations: session.checkOut.remarks.trim(),
     };
 
@@ -337,6 +326,10 @@ export class ActiveSessionsComponent implements AfterViewInit, OnDestroy {
       });
   }
 
+  cancelFinishSession() {
+    this.showSummaryModal = false;
+  }
+
   private resetSessionState() {
     this.selectedSessionId = null;
     this.showSummaryModal = false;
@@ -345,7 +338,43 @@ export class ActiveSessionsComponent implements AfterViewInit, OnDestroy {
     this.finishSessionError = false;
   }
 
-  cancelFinishSession() {
-    this.showSummaryModal = false;
+  // Utility Methods
+  private ensureNAFunction(functions: any[]): any[] {
+    if (!functions || functions.length === 0) {
+      return [{ id: -1, functionName: 'NO APLICA' }];
+    }
+
+    const normalized = functions.map((f) => ({
+      ...f,
+      functionName: f.functionName?.trim() || 'NO APLICA',
+    }));
+
+    const hasOnlyNA =
+      normalized.length === 1 &&
+      normalized[0].functionName.toUpperCase() === 'NO APLICA';
+
+    if (hasOnlyNA) {
+      return normalized;
+    }
+
+    const hasNA = normalized.some(
+      (f) => f.functionName.toUpperCase() === 'NO APLICA'
+    );
+    const cleaned = normalized.filter(
+      (f) => f.functionName.toUpperCase() !== 'NO APLICA'
+    );
+
+    if (!hasNA) {
+      cleaned.unshift({ id: -1, functionName: 'NO APLICA' });
+    }
+
+    return cleaned;
+  }
+
+  getSelectedFunctionNames(): string {
+    const selected = this.selectedSession?.checkOut?.selectedFunctions || [];
+    return selected.length > 0
+      ? selected.map((f) => f.functionName).join(', ')
+      : 'NO APLICA';
   }
 }

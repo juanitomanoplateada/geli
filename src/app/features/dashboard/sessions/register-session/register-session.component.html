@@ -13,6 +13,7 @@
       administrador si consideras que es un error.
     </div>
 
+    <!-- Filtros -->
     <div class="dropdown-wrapper">
       <!-- Laboratorio -->
       <div class="dropdown-block">
@@ -46,6 +47,7 @@
           (select)="onSelectEquipment($event)"
         ></app-dropdown-search-entity-obj>
 
+        <!-- Mensajes de disponibilidad del equipo -->
         <div
           *ngIf="
             selectedEquipmentStatus?.active === false &&
@@ -72,6 +74,7 @@
           ⚠️ Este equipo ya está en uso por otro usuario. Espera a que liberen
           la sesión.
         </div>
+
         <div *ngIf="isCheckingAvailability" class="spinner-mini">
           <div class="spinner"></div>
           <p>Verificando disponibilidad del equipo...</p>
@@ -79,11 +82,13 @@
       </div>
     </div>
 
+    <!-- Spinner carga equipos -->
     <div *ngIf="isLoadingEquipments" class="spinner-mini">
       <div class="spinner"></div>
       <p>Cargando equipos disponibles...</p>
     </div>
 
+    <!-- Botón iniciar sesión -->
     <button
       class="start-btn"
       [disabled]="
@@ -99,6 +104,7 @@
       Iniciar Sesión
     </button>
 
+    <!-- Modal de confirmación -->
     <app-confirm-modal
       [title]="'¿Deseas iniciar sesión con este equipo?'"
       [show]="showConfirmationModal"
@@ -109,6 +115,7 @@
     >
       <div class="summary-section">
         <h3>Detalles de la sesión</h3>
+
         <div class="summary-grid">
           <div class="label">🏢 Laboratorio:</div>
           <div class="value">{{ getLabLabel(selectedLabId) }}</div>
@@ -121,6 +128,7 @@
         </div>
       </div>
 
+      <!-- Mensajes de estado -->
       <div *ngIf="startSessionSuccess" class="feedback success">
         ✅ Sesión iniciada exitosamente.
       </div>

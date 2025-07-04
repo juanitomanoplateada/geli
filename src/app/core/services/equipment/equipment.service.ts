@@ -4,13 +4,12 @@ import { catchError, map, Observable, of } from 'rxjs';
 
 import { EquipmentUpdateDto } from '../../dto/equipments-patterns/equipment-update.dto';
 import { environment } from '../../../../environments/environment.prod';
-import {
-  EquipmentCreateUpdateDto,
-  EquipmentFilterDto,
-} from '../../dto/equipments-patterns/equipment-request.dto';
+import { EquipmentCreateUpdateDto } from '../../dto/equipments-patterns/equipment-request.dto';
 import { EquipmentDto } from '../../dto/equipments-patterns/equipment-response.dto';
 import { EquipmentDTO } from '../../dto/equipments-patterns/equipment.dto';
 import { EquipmentAvailabilityDto } from '../../dto/equipments-patterns/equipment-availability.dto';
+import { EquipmentFunctionsDto } from '../../dto/equipments-patterns/equipment-functions-response.dto';
+import { EquipmentByUserResponseDTO } from '../../dto/equipments-patterns/equipment-by-user-response.dto';
 
 interface PagedResponse<T> {
   content: T[];
@@ -33,9 +32,37 @@ export class EquipmentService {
     return this.http.get<PagedResponse<EquipmentDto>>(this.baseUrl);
   }
 
+  /** GET all equipments */
+  getAllForFilters(): Observable<PagedResponse<EquipmentDto>> {
+    return this.http.get<PagedResponse<EquipmentDto>>(`${this.baseUrl}/filters`);
+  }
+
   /** GET one equipment by ID */
   getById(id: number): Observable<EquipmentDto> {
     return this.http.get<EquipmentDto>(`${this.baseUrl}/${id}`);
+  }
+
+  /** GET functions of an equipment by ID, safe against null or 404 */
+  getFunctionsById(id: number): Observable<EquipmentFunctionsDto> {
+    return this.http
+      .get<EquipmentFunctionsDto>(`${this.baseUrl}/${id}/functions`)
+      .pipe(
+        catchError((error) => {
+          console.warn(
+            `No se encontraron funciones para el equipo con ID ${id}`,
+            error
+          );
+          // Retornar un objeto válido con valores por defecto
+          const emptyResponse: EquipmentFunctionsDto = {
+            id: id,
+            equipmentName: '',
+            inventoryNumber: '',
+            availability: false,
+            functions: [],
+          };
+          return of(emptyResponse);
+        })
+      );
   }
 
   /** POST create new equipment */
@@ -99,7 +126,9 @@ export class EquipmentService {
     );
   }
 
-  getEquipmentsAuthorizeds(labId: number): Observable<EquipmentDTO[]> {
+  getEquipmentsAuthorizeds(
+    labId: number
+  ): Observable<EquipmentByUserResponseDTO[]> {
     return this.http
       .get<EquipmentDTO[]>(`${this.baseUrl}/authorized/by-lab/${labId}`)
       .pipe(

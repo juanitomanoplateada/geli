@@ -15,7 +15,10 @@
           class="form-control"
           formControlName="inventoryCode"
           placeholder="Ej: APOGE-2077"
-          appUppercaseNospace
+          appInputRules
+          [brandSafeCharacters]="true"
+          [uppercase]="true"
+          [maxLength]="50"
         />
         <button
           type="button"
@@ -52,7 +55,10 @@
           class="form-control"
           formControlName="name"
           placeholder="Ej: Sandevistan"
-          appUppercase
+          appInputRules
+          [brandSafeCharacters]="true"
+          [uppercase]="true"
+          [maxLength]="50"
         />
         <button
           type="button"
@@ -104,7 +110,7 @@
         [options]="labOptions"
         [selectedValue]="selectedLab"
         (select)="onSelectLab($event)"
-        placeholder="Seleccione el laboratorio para el equipo"
+        placeholder="Seleccione el laboratorio donde va a estar el equipo"
       ></app-dropdown-search-entity-obj>
     </div>
 
@@ -136,9 +142,11 @@
         class="form-control auto-expand"
         formControlName="notes"
         rows="2"
-        placeholder="Explique las razones del por qué el equipo está inactivo"
-        appUppercase
+        placeholder="Explique las razones del por qué el equipo está inactivo..."
         (input)="autoResize($event)"
+        appInputRules
+        [uppercase]="true"
+        [maxLength]="250"
       ></textarea>
       <div
         *ngIf="

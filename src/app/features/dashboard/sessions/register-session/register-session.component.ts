@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +9,6 @@ import { ConfirmModalComponent } from '../../../../shared/components/confirm-mod
 
 // Services
 import { LaboratoryService } from '../../../../core/services/laboratory/laboratory.service';
-import { UserService } from '../../../../core/user/services/user.service';
 import { EquipmentService } from '../../../../core/services/equipment/equipment.service';
 import { EquipmentUseService } from '../../../../core/services/session/equipment-use.service';
 
@@ -17,6 +17,8 @@ import { LabeledOption } from '../../../../shared/components/dropdown-search-ent
 import { Laboratory } from '../../../../core/dto/laboratory/laboratory.dto';
 import { AuthTokenService } from '../../../../core/auth/services/auth-token.service';
 import { EquipmentStartUseRequest } from '../../../../core/dto/session/start-session-request.dto';
+import { LaboratoryHelperService } from '../../../../core/helpers/laboratory/laboratory-helper.service';
+import { EquipmentHelperService } from '../../../../core/helpers/equipment/equipment-helper.service';
 
 @Component({
   selector: 'app-register-session',
@@ -61,7 +63,10 @@ export class RegisterSessionComponent {
     private labService: LaboratoryService,
     private equipmentUseService: EquipmentUseService,
     private equipmentService: EquipmentService,
-    private authTokenService: AuthTokenService
+    private authTokenService: AuthTokenService,
+    private laboratoryHelper: LaboratoryHelperService,
+    private equipmentHelper: EquipmentHelperService,
+    private router: Router
   ) {
     if (isPlatformBrowser(this.platformId)) {
       this.loadInitialData();
@@ -72,14 +77,12 @@ export class RegisterSessionComponent {
   private loadInitialData(): void {
     this.isLoading = true;
     this.currentUserName = this.authTokenService.getUserName();
+
     this.labService.getLaboratoriesAuthorizeds().subscribe({
       next: (labs) => {
         this.labs = labs;
-        this.labOptions = labs.map((lab) => ({
-          label: `${lab.laboratoryName} - ${lab.location.locationName}`,
-          value: String(lab.id),
-        }));
-        this.noAuthorizedLabs = !labs || labs.length === 0;
+        this.labOptions = this.laboratoryHelper.toLabeledOptions(labs);
+        this.noAuthorizedLabs = labs.length === 0;
         this.isLoading = false;
       },
       error: (err) => {
@@ -105,20 +108,16 @@ export class RegisterSessionComponent {
         selectedLab?.laboratoryObservations || 'Sin observaciones registradas.',
     };
 
-    // Si el laboratorio está inactivo, detenemos la carga de equipos
     if (!this.selectedLabStatus.active) {
       this.isLoadingEquipments = false;
       return;
     }
 
-    // Llamada al servicio protegida: ya retorna [] si hay error
     this.equipmentService.getEquipmentsAuthorizeds(Number(labId)).subscribe({
       next: (equipments) => {
-        // Protegido incluso si equipments es null o vacío
-        this.equipmentOptions = (equipments ?? []).map((eq) => ({
-          label: `${eq.equipmentName} - ${eq.inventoryNumber}`,
-          value: String(eq.id),
-        }));
+        this.equipmentOptions = this.equipmentHelper.toLabeledOptions(
+          equipments ?? []
+        );
         this.isLoadingEquipments = false;
       },
       error: (err) => {
@@ -134,20 +133,18 @@ export class RegisterSessionComponent {
 
   onSelectEquipment(equipmentId: string): void {
     this.selectedEquipment = equipmentId;
-    this.isCheckingAvailability = true; // <-- inicia carga
+    this.isCheckingAvailability = true;
 
-    // Reinicia estados
     this.selectedEquipmentStatus = null;
     this.hasActiveSessionWithEquipment = false;
     this.isEquipmentInUseByAnotherUser = false;
 
-    // Llama a ambos servicios y espera que terminen
     let availabilityChecked = false;
     let usageChecked = false;
 
     const stopLoadingIfDone = () => {
       if (availabilityChecked && usageChecked) {
-        this.isCheckingAvailability = false; // <-- termina carga
+        this.isCheckingAvailability = false;
       }
     };
 
@@ -155,10 +152,8 @@ export class RegisterSessionComponent {
       .getEquipmentAvailability(Number(equipmentId))
       .subscribe({
         next: (statusDto) => {
-          this.selectedEquipmentStatus = {
-            active: statusDto.active,
-            remarks: statusDto.message || 'Sin observaciones registradas.',
-          };
+          this.selectedEquipmentStatus =
+            this.equipmentHelper.parseEquipmentStatus(statusDto);
         },
         error: (err) => {
           console.error('Error al consultar disponibilidad del equipo:', err);
@@ -173,10 +168,9 @@ export class RegisterSessionComponent {
       .getEquipmentAvailability(Number(equipmentId))
       .subscribe({
         next: (statusDto) => {
-          this.hasActiveSessionWithEquipment =
-            statusDto.status === 'IN_USE_BY_YOU';
-          this.isEquipmentInUseByAnotherUser =
-            statusDto.status === 'IN_USE_BY_ANOTHER';
+          const usage = this.equipmentHelper.parseUsageStatus(statusDto);
+          this.hasActiveSessionWithEquipment = usage.usedByYou;
+          this.isEquipmentInUseByAnotherUser = usage.usedByAnother;
         },
         error: (err) => {
           console.error('Error al verificar disponibilidad del equipo:', err);
@@ -211,7 +205,8 @@ export class RegisterSessionComponent {
         this.startSessionError = false;
         setTimeout(() => {
           this.resetSession();
-        }, 4000);
+          this.router.navigate(['/dashboard/sessions/active-sessions']);
+        }, 3000);
       },
       error: () => {
         this.startSessionSuccess = false;

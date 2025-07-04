@@ -2,16 +2,27 @@
   <!-- Selector visible -->
   <div class="selector-box" *ngIf="!disabled" (click)="toggleDropdown()">
     {{ placeholder }}
+    <span class="triangle" [class.rotated]="showDropdown">&#9660;</span>
   </div>
 
   <!-- Dropdown con opciones -->
   <div class="dropdown-list" *ngIf="showDropdown">
-    <input
-      type="text"
-      [(ngModel)]="searchTerm"
-      placeholder="Buscar..."
-      appUppercase
-    />
+    <div class="input-wrapper">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Buscar..."
+        appUppercase
+      />
+      <button
+        *ngIf="searchTerm"
+        type="button"
+        class="clear-btn"
+        (click)="searchTerm = ''"
+      >
+        ✖
+      </button>
+    </div>
 
     <!-- Opciones filtradas -->
     <div

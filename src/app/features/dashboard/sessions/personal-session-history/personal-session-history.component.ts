@@ -9,16 +9,11 @@ import { UserRecordResponse } from '../../../../core/dto/user/record-user-respon
 import { LaboratoryResponseDto } from '../../../../core/dto/laboratory/laboratory-response.dto';
 import { EquipmentDto } from '../../../../core/dto/equipments-patterns/equipment-response.dto';
 import { SessionRecord } from '../../../../core/dto/session/session-record.dto';
-import {
-  EquipmentUseFilterRequest,
-  EquipmentUseResponse,
-} from './../../../../core/services/session/equipment-use.service';
 
 // Services
 import { LaboratoryService } from '../../../../core/services/laboratory/laboratory.service';
 import { EquipmentService } from '../../../../core/services/equipment/equipment.service';
 import { FunctionService } from './../../../../core/services/function/function.service';
-import { UserService } from '../../../../core/services/user/user.service';
 import { EquipmentUseService } from '../../../../core/services/session/equipment-use.service';
 
 // Components
@@ -30,8 +25,9 @@ import {
   DEFAULT_EQUIPMENT_USE_FILTERS,
 } from './equipment-use-filters.const';
 import { EQUIPMENT_USE_FIELDS_CONFIG } from './equipment-use-fields-config.const';
-import { decodeToken } from '../../../../core/auth/services/token.utils';
 import { AuthUserService } from '../../../../core/auth/services/auth-user.service';
+import { EquipmentUseFilterRequest } from '../../../../core/dto/session/session-filter-request.dto';
+import { EquipmentUseResponse } from '../../../../core/dto/session/session-response.dto';
 
 @Component({
   selector: 'app-personal-session-history',
@@ -79,7 +75,6 @@ export class PersonalSessionHistoryComponent implements OnInit {
     private labService: LaboratoryService,
     private equipmentService: EquipmentService,
     private functionService: FunctionService,
-    private userService: UserService,
     private authUserService: AuthUserService
   ) {}
 
@@ -261,7 +256,7 @@ export class PersonalSessionHistoryComponent implements OnInit {
   }
 
   private loadEquipmentInventory(): void {
-    this.equipmentService.getAll().subscribe({
+    this.equipmentService.getAllForFilters().subscribe({
       next: (response) => {
         const safeEquipments = Array.isArray(response.content)
           ? response.content
@@ -277,7 +272,7 @@ export class PersonalSessionHistoryComponent implements OnInit {
   }
 
   private loadEquipmentNames(): void {
-    this.equipmentService.getAll().subscribe({
+    this.equipmentService.getAllForFilters().subscribe({
       next: (response) => {
         const safeEquipments = Array.isArray(response.content)
           ? response.content
@@ -301,28 +296,15 @@ export class PersonalSessionHistoryComponent implements OnInit {
     });
   }
 
-  private loadAuthorizedUsers(): void {
-    const payload = { role: 'AUTHORIZED-USER' };
-    this.userService.filterUsers(payload, 0, 9999).subscribe({
-      next: (res) => {
-        this.usersFull = res.content || [];
-        this.availableUsers = this.usersFull.map(
-          (u) => `${u.id} - ${u.firstName} ${u.lastName}`
-        );
-      },
-      error: (err) => {
-        console.error('Error al cargar usuarios autorizados', err);
-        this.usersFull = [];
-      },
-    });
-  }
-
   // Search Handlers
   private handleSearchSuccess(response: any): void {
     const content = response?.content ?? [];
     this.sessionRecords = this.mapSessions(content);
+
+    // Selección basada en el orden aplicado
     this.selectedSession =
-      this.sessionRecords.length > 0 ? this.sessionRecords[0] : null;
+      this.filteredSessions.length > 0 ? this.filteredSessions[0] : null;
+
     this.isLoading = false;
     this.totalPages = response.totalPages || 0;
   }
@@ -339,18 +321,6 @@ export class PersonalSessionHistoryComponent implements OnInit {
     return this.labsFull.find(
       (l) => l.laboratoryName.toLowerCase() === name.toLowerCase()
     )?.id;
-  }
-
-  private getEquipmentIdByName(name: string): number | undefined {
-    return this.equipmentsFull.find(
-      (e) => e.equipmentName.toLowerCase() === name.toLowerCase()
-    )?.id;
-  }
-
-  private getUserIdByFullName(fullNameWithId: string): number | undefined {
-    const idStr = fullNameWithId.split(' - ')[0].trim();
-    const id = Number(idStr);
-    return isNaN(id) ? undefined : this.usersFull.find((u) => u.id === id)?.id;
   }
 
   private getFunctionIdByName(name: string): number[] | undefined {

@@ -1,4 +1,6 @@
-/* Main Container */
+/* ------------------------
+  ESTRUCTURA GENERAL
+-------------------------*/
 .session-wrapper {
   display: flex;
   flex-direction: column;
@@ -8,7 +10,9 @@
   gap: 2rem;
 }
 
-/* Header Section */
+/* ------------------------
+  SECCIÓN HEADER
+-------------------------*/
 .header-section {
   width: 100%;
   max-width: 1750px;
@@ -29,7 +33,9 @@
   }
 }
 
-/* Dropdown Area */
+/* ------------------------
+  SELECTORES (DROPDOWNS)
+-------------------------*/
 .dropdown-wrapper {
   display: flex;
   gap: 2rem;
@@ -46,7 +52,9 @@
   gap: 0.6rem;
 }
 
-/* Warning Messages */
+/* ------------------------
+  MENSAJES DE ALERTA
+-------------------------*/
 .inactive-warning,
 .duplicate-session-warning {
   padding: 0.8rem 1rem;
@@ -60,7 +68,20 @@
   line-height: 1.5;
 }
 
-/* Buttons */
+.no-labs-warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  padding: 1rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+  font-size: 1rem;
+  text-align: center;
+}
+
+/* ------------------------
+  BOTÓN PRINCIPAL
+-------------------------*/
 .start-btn {
   align-self: center;
   margin-top: 1rem;
@@ -85,7 +106,9 @@
   }
 }
 
-/* Summary Section (Modal Content) */
+/* ------------------------
+  SECCIÓN DE RESUMEN (MODAL)
+-------------------------*/
 .summary-section {
   margin: 1.5rem 0;
   padding: 1rem;
@@ -97,6 +120,7 @@
     margin-bottom: 1rem;
     font-size: 1.1rem;
     color: #333;
+    text-align: center;
   }
 
   .summary-grid {
@@ -121,11 +145,15 @@
   }
 }
 
+/* ------------------------
+  MENSAJES DE ESTADO
+-------------------------*/
 .feedback {
   margin-top: 1rem;
   padding: 0.75rem;
   border-radius: 6px;
   font-weight: 500;
+  text-align: center;
 
   &.success {
     color: #155724;
@@ -140,7 +168,9 @@
   }
 }
 
-/* Loading Spinner */
+/* ------------------------
+  SPINNER / CARGANDO
+-------------------------*/
 .spinner-wrapper {
   display: flex;
   flex-direction: column;
@@ -192,10 +222,16 @@
   }
 }
 
-/* Responsive Design */
+/* ------------------------
+  RESPONSIVE
+-------------------------*/
 @media (max-width: 768px) {
   .header-section {
     padding: 1rem;
+  }
+
+  .header-section h1 {
+    font-size: 1.6rem;
   }
 
   .dropdown-wrapper {
@@ -204,6 +240,31 @@
 
   .start-btn {
     width: 100%;
+    font-size: 0.95rem;
+    padding: 10px;
+  }
+
+  .summary-section {
+    padding: 0.75rem;
+
+    h3 {
+      font-size: 1rem;
+    }
+
+    .summary-grid {
+      grid-template-columns: 1fr; // una sola columna
+      row-gap: 1rem;
+
+      .label,
+      .value {
+        text-align: center;
+        white-space: normal;
+      }
+    }
+  }
+
+  .feedback {
+    font-size: 0.9rem;
   }
 }
 
@@ -211,14 +272,16 @@
   .header-section h1 {
     font-size: 1.4rem;
   }
-}
 
-.no-labs-warning {
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-  padding: 1rem;
-  border-radius: 6px;
-  margin: 1rem 0;
-  font-size: 1rem;
+  .feedback {
+    font-size: 0.85rem;
+  }
+
+  .start-btn {
+    font-size: 0.9rem;
+  }
+
+  .summary-section h3 {
+    font-size: 0.95rem;
+  }
 }

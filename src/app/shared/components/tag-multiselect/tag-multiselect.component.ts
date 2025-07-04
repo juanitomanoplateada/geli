@@ -18,9 +18,9 @@ import { FunctionDto } from '../../../core/function/services/function.service';
   styleUrls: ['./tag-multiselect.component.scss'],
 })
 export class TagMultiselectComponent {
-  readonly NA_LABEL = 'N/A';
+  readonly NA_LABEL = 'NO APLICA';
   @Input() placeholder: string = 'Seleccionar opciones';
-  @Input() availableOptions: FunctionDto[] = [{ id: 0, functionName: 'N/A' }];
+  @Input() availableOptions: FunctionDto[] = [{ id: 1, functionName: 'NO APLICA' }];
   @Input() selected: FunctionDto[] = [];
   @Input() disabled: boolean = false;
 

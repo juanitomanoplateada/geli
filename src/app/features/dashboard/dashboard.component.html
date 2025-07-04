@@ -21,38 +21,30 @@
     >
 
     <!-- Menú de Sesiones (para usuarios autorizados) -->
-    <div
+    <a
       *ngIf="hasRole(['AUTHORIZED-USER'])"
-      class="dashboard-group"
-      [class.active]="isActive('/dashboard/sessions')"
+      class="dashboard-link"
+      routerLink="/dashboard/sessions/register-session"
+      [class.active]="isActive('/dashboard/sessions/register-session')"
+      (click)="onNavigate()"
+      >Registrar Uso</a
     >
-      <div class="dashboard-link" (click)="toggleSubmenu('sessions')">
-        Sesiones
-        <span class="arrow" [class.open]="isSubmenuOpen('sessions')">▼</span>
-      </div>
-      <div class="dashboard-submenu" [class.open]="isSubmenuOpen('sessions')">
-        <a
-          routerLink="/dashboard/sessions/register-session"
-          [class.active]="isActive('/dashboard/sessions/register-session')"
-          (click)="onNavigate()"
-          >Registrar Uso</a
-        >
-        <a
-          routerLink="/dashboard/sessions/active-sessions"
-          [class.active]="isActive('/dashboard/sessions/active-sessions')"
-          (click)="onNavigate()"
-          >Sesiones Activas</a
-        >
-        <a
-          routerLink="/dashboard/sessions/personal-session-history"
-          [class.active]="
-            isActive('/dashboard/sessions/personal-session-history')
-          "
-          (click)="onNavigate()"
-          >Historial</a
-        >
-      </div>
-    </div>
+    <a
+      *ngIf="hasRole(['AUTHORIZED-USER'])"
+      class="dashboard-link"
+      routerLink="/dashboard/sessions/active-sessions"
+      [class.active]="isActive('/dashboard/sessions/active-sessions')"
+      (click)="onNavigate()"
+      >Sesiones Activas</a
+    >
+    <a
+      *ngIf="hasRole(['AUTHORIZED-USER'])"
+      class="dashboard-link"
+      routerLink="/dashboard/sessions/personal-session-history"
+      [class.active]="isActive('/dashboard/sessions/personal-session-history')"
+      (click)="onNavigate()"
+      >Historial de Sesiones</a
+    >
 
     <!-- Menú de Usuarios (para administradores de calidad) -->
     <div

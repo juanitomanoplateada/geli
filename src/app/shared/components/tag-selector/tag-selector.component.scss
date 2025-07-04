@@ -2,6 +2,7 @@
   position: relative;
   width: 100%;
   max-width: 100%;
+  box-sizing: border-box;
 }
 
 .selector-box {
@@ -10,6 +11,19 @@
   border-radius: 5px;
   background-color: white;
   cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .triangle {
+    margin-left: 10px;
+    transition: transform 0.2s ease;
+    font-size: 0.8rem;
+  }
+
+  .triangle.rotated {
+    transform: rotate(180deg);
+  }
 }
 
 .dropdown-list {
@@ -20,13 +34,31 @@
   border: 1px solid #ccc;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   z-index: 10;
+  box-sizing: border-box;
 
-  input {
-    width: 97%;
-    margin: 5px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+  .input-wrapper {
+    position: relative;
+
+    input {
+      width: 99%;
+      margin: 5px;
+      padding: 8px 30px 8px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #999;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
   }
 
   .option {
@@ -62,5 +94,48 @@
       font-size: 1.2rem;
       cursor: pointer;
     }
+  }
+}
+
+/* 🔁 Responsive */
+@media (max-width: 768px) {
+  .selector-box {
+    font-size: 0.95rem;
+    padding: 8px;
+  }
+
+  .dropdown-list {
+    top: 42px;
+
+    .option {
+      font-size: 0.9rem;
+    }
+
+    .input-wrapper input {
+      font-size: 0.95rem;
+      width: 97%;
+    }
+  }
+
+  .tags .tag {
+    font-size: 0.85rem;
+
+    button {
+      font-size: 1rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .selector-box {
+    align-items: flex-start;
+  }
+
+  .dropdown-list {
+    top: 40px;
+  }
+
+  .tags {
+    flex-direction: column;
   }
 }

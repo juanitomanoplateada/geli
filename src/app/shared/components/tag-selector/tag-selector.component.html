@@ -1,15 +1,22 @@
 <div class="tag-selector" appClickOutside (appClickOutside)="closeDropdown()">
   <div class="selector-box" (click)="toggleDropdown()">
     {{ placeholder }}
+    <span class="triangle" [class.rotated]="showDropdown">▼</span>
   </div>
 
   <div class="dropdown-list" *ngIf="showDropdown">
-    <input
-      type="text"
-      [(ngModel)]="searchTerm"
-      placeholder="Buscar..."
-      appUppercase
-    />
+    <div class="input-wrapper">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Buscar..."
+        appUppercase
+      />
+      <button class="clear-btn" *ngIf="searchTerm" (click)="searchTerm = ''">
+        ✖
+      </button>
+    </div>
+
     <div
       class="option"
       *ngFor="let option of filteredOptions"

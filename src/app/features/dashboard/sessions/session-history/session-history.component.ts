@@ -9,10 +9,6 @@ import { UserRecordResponse } from '../../../../core/dto/user/record-user-respon
 import { LaboratoryResponseDto } from '../../../../core/dto/laboratory/laboratory-response.dto';
 import { EquipmentDto } from '../../../../core/dto/equipments-patterns/equipment-response.dto';
 import { SessionRecord } from '../../../../core/dto/session/session-record.dto';
-import {
-  EquipmentUseFilterRequest,
-  EquipmentUseResponse,
-} from './../../../../core/services/session/equipment-use.service';
 
 // Services
 import { LaboratoryService } from '../../../../core/services/laboratory/laboratory.service';
@@ -30,6 +26,8 @@ import {
   DEFAULT_EQUIPMENT_USE_FILTERS,
 } from './equipment-use-filters.const';
 import { EQUIPMENT_USE_FIELDS_CONFIG } from './equipment-use-fields-config.const';
+import { EquipmentUseFilterRequest } from '../../../../core/dto/session/session-filter-request.dto';
+import { EquipmentUseResponse } from '../../../../core/dto/session/session-response.dto';
 
 @Component({
   selector: 'app-session-history',
@@ -242,7 +240,7 @@ export class SessionHistoryComponent implements OnInit {
   }
 
   private loadEquipmentInventory(): void {
-    this.equipmentService.getAll().subscribe({
+    this.equipmentService.getAllForFilters().subscribe({
       next: (response) => {
         const safeEquipments = Array.isArray(response.content)
           ? response.content
@@ -258,7 +256,7 @@ export class SessionHistoryComponent implements OnInit {
   }
 
   private loadEquipmentNames(): void {
-    this.equipmentService.getAll().subscribe({
+    this.equipmentService.getAllForFilters().subscribe({
       next: (response) => {
         const safeEquipments = Array.isArray(response.content)
           ? response.content

@@ -4,74 +4,8 @@ import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../../../environments/environment.prod';
 import { EquipmentAvailabilityStatusDto } from '../../dto/session/equipment-availability-status.dto';
 import { EquipmentStartUseRequest } from '../../dto/session/start-session-request.dto';
-
-export interface EquipmentEndUseRequest {
-  isVerified: boolean;
-  isAvailable: boolean;
-  samplesNumber: number;
-  usedFunctions: number[];
-  observations: string;
-}
-
-export interface EquipmentUseResponse {
-  id: number;
-  isInUse: boolean;
-  isVerified: boolean;
-  isAvailable: boolean;
-  samplesNumber: number;
-  observations: string;
-  useDate: string;
-  startUseTime: string;
-  endUseTime: string | null;
-  user: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-    identification: string;
-  };
-  equipment: {
-    id: number;
-    equipmentName: string;
-    inventoryNumber: string;
-    availability: boolean;
-    equipmentObservations: string | null;
-    laboratory: {
-      id: number;
-      laboratoryName: string;
-      laboratoryDescription: string;
-      location: {
-        id: number;
-        locationName: string;
-      };
-      laboratoryAvailability: boolean;
-      laboratoryObservations: string;
-    };
-  };
-  usedFunctions: {
-    id: number;
-    functionName: string;
-  }[];
-}
-
-export interface EquipmentUseFilterRequest {
-  isInUse?: boolean | null;
-  isVerified?: boolean | null;
-  isAvailable?: boolean | null;
-  userId?: number;
-  laboratoryId?: number;
-  samplesNumberFrom?: number;
-  samplesNumberTo?: number;
-  usedFunctionsIds?: number[];
-  useDateFrom?: string;
-  useDateTo?: string;
-  startUseTimeFrom?: string;
-  endUseTimeTo?: string;
-  startTimeFrom?: string;
-  endTimeTo?: string;
-  equipmentName?: string;
-  equipmentInventoryCode?: string;
-}
+import { EquipmentEndUseRequest } from '../../dto/session/end-session-request.dto';
+import { EquipmentUseResponse } from '../../dto/session/session-response.dto';
 
 @Injectable({ providedIn: 'root' })
 export class EquipmentUseService {
