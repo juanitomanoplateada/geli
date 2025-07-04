@@ -9,7 +9,7 @@
     margin-bottom: 2rem;
   }
 
-  // ✅ Secciones separadas visualmente
+  /* ✅ Secciones principales */
   .report-section {
     margin-bottom: 3rem;
     padding: 2rem;
@@ -26,28 +26,26 @@
       color: #333;
     }
 
+    /* Variantes de secciones */
+    &.filters-section {
+      background-color: #f0f8ff;
+    }
+    &.stats-section {
+      background-color: #fffef5;
+    }
+    &.charts-section {
+      background-color: #f9f9f9;
+    }
+
     @media (max-width: 768px) {
       padding: 1.2rem;
-
       h2 {
         font-size: 1.2rem;
       }
     }
   }
 
-  .filters-section {
-    background-color: #f0f8ff;
-  }
-
-  .stats-section {
-    background-color: #fffef5;
-  }
-
-  .charts-section {
-    background-color: #f9f9f9;
-  }
-
-  // ⏳ Estado de carga
+  /* ⏳ Estado de carga */
   .loading-state {
     display: flex;
     align-items: center;
@@ -72,48 +70,145 @@
     }
   }
 
-  // 📊 Estadísticas
-  .stats-boxes {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+  .stats-section {
+    background-color: #fffef5;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    margin-bottom: 3rem;
 
-    .stat-box {
-      flex: 1 1 250px;
-      max-width: 300px;
-      padding: 1.2rem;
-      border-radius: 8px;
-      text-align: center;
-      background: #f5f5f5;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+    .stats-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
 
-      &.success {
-        border-left: 6px solid #28a745;
-      }
-
-      &.warning {
-        border-left: 6px solid #ffc107;
-      }
-
-      &.info {
-        border-left: 6px solid #007bff;
-      }
-
-      h4 {
-        margin-bottom: 0.5rem;
-      }
-
-      p {
-        font-size: 1rem;
-        font-weight: bold;
+      h2 {
+        font-size: 1.6rem;
+        border-left: 4px solid #007bff;
+        padding-left: 0.8rem;
+        color: #333;
         margin: 0;
+      }
+
+      .export-buttons {
+        display: flex;
+        gap: 0.8rem;
+
+        button {
+          padding: 0.5rem 1rem;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: bold;
+          color: white;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          transition: background-color 0.2s ease;
+
+          &.excel {
+            background-color: #1d6f42;
+            &:hover {
+              background-color: #145b35;
+            }
+          }
+          &.csv {
+            background-color: #f0ad4e;
+            color: black;
+            &:hover {
+              background-color: #ec9a22;
+            }
+          }
+          &.pdf {
+            background-color: #d9534f;
+            &:hover {
+              background-color: #c9302c;
+            }
+          }
+        }
+
+        @media (max-width: 768px) {
+          width: 100%;
+          justify-content: flex-start;
+          flex-wrap: wrap;
+
+          button {
+            width: 100%;
+            max-width: 150px;
+          }
+        }
+      }
+    }
+
+    .stats-boxes {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+
+      .stat-box {
+        flex: 1 1 250px;
+        max-width: 300px;
+        padding: 1.2rem;
+        border-radius: 12px;
+        text-align: center;
+        background: #f9f9f9;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        font-weight: bold;
+        transition: transform 0.2s;
+
+        &:hover {
+          transform: translateY(-3px);
+        }
+
+        &.success {
+          border-left: 6px solid #28a745;
+        }
+
+        &.warning {
+          border-left: 6px solid #ffc107;
+        }
+
+        &.info {
+          border-left: 6px solid #007bff;
+        }
+
+        h4 {
+          margin-bottom: 0.5rem;
+          font-size: 1rem;
+        }
+
+        p {
+          font-size: 1.4rem;
+          font-weight: bold;
+          margin: 0;
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      padding: 1.2rem;
+
+      .stats-boxes {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .stats-header {
+        flex-direction: column;
+        align-items: flex-start;
+
+        h2 {
+          font-size: 1.3rem;
+        }
       }
     }
   }
 
-  // 🗂 Pestañas
+  /* 🗂 Pestañas */
   .tab-buttons {
     display: flex;
     justify-content: center;
@@ -135,14 +230,13 @@
         background-color: #007bff;
         color: #fff;
       }
-
       &:hover:not(.active) {
         background-color: #d5d5d5;
       }
     }
   }
 
-  // 📈 Gráficas
+  /* 📈 Gráficas */
   .chart-box {
     width: 100%;
     max-width: 1500px;
@@ -164,83 +258,28 @@
       object-fit: contain;
     }
 
+    /* Responsive para gráficas */
     @media (max-width: 1024px) {
       padding: 1rem;
-
       canvas {
         max-height: 400px;
       }
     }
-
     @media (max-width: 768px) {
       padding: 0.8rem;
-
       canvas {
         max-height: 350px;
       }
     }
-
     @media (max-width: 480px) {
       padding: 0.5rem;
-
       canvas {
         max-height: 300px;
       }
     }
   }
 
-  // 📤 Botones de exportación
-  .export-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.8rem;
-    margin-bottom: 1rem;
-
-    button {
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      color: white;
-      transition: background-color 0.2s ease;
-
-      &.excel {
-        background-color: #1d6f42; // Verde Excel
-        &:hover {
-          background-color: #145b35;
-        }
-      }
-
-      &.csv {
-        background-color: #f0ad4e; // Naranja CSV
-        color: black;
-        &:hover {
-          background-color: #ec9a22;
-        }
-      }
-
-      &.pdf {
-        background-color: #d9534f; // Rojo PDF
-        &:hover {
-          background-color: #c9302c;
-        }
-      }
-    }
-
-    @media (max-width: 768px) {
-      justify-content: center;
-      flex-wrap: wrap;
-
-      button {
-        width: 100%;
-        max-width: 150px;
-        text-align: center;
-      }
-    }
-  }
-
-  // ❌ Sin resultados
+  /* ❌ Sin resultados */
   .no-results {
     text-align: center;
     color: #777;
@@ -248,7 +287,7 @@
     padding: 3rem;
   }
 
-  // 🖨️ PDF friendly
+  /* 🖨️ Estilos para PDF */
   #pdfReportContent {
     background-color: white;
     color: black;
@@ -260,30 +299,26 @@
       text-align: center;
       margin-bottom: 1rem;
     }
-
     .stats-boxes {
       display: flex;
       justify-content: space-between;
       margin: 1rem 0;
     }
-
     .chart-box {
       page-break-inside: avoid;
       margin-bottom: 2rem;
     }
   }
 
-  // 📱 Responsive tablets
+  /* 📱 Responsive general */
   @media (max-width: 1024px) {
     .stats-boxes {
       flex-direction: column;
       align-items: center;
     }
-
     .tab-buttons {
       flex-direction: column;
       align-items: center;
-
       button {
         width: 100%;
         max-width: 300px;
@@ -291,36 +326,28 @@
     }
   }
 
-  // 📱 Responsive móviles
   @media (max-width: 480px) {
     padding: 0.5rem;
-
     h1 {
       font-size: 1.3rem;
     }
-
     .chart-box {
       padding: 1rem;
       min-height: 250px;
     }
-
     .stats-boxes .stat-box {
       font-size: 0.9rem;
-
       p {
         font-size: 1rem;
       }
     }
-
     .tab-buttons {
       gap: 0.5rem;
-
       button {
         font-size: 0.9rem;
         padding: 0.5rem 1rem;
       }
     }
-
     .no-results {
       font-size: 1rem;
     }

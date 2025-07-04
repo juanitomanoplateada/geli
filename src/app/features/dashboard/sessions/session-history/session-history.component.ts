@@ -320,12 +320,6 @@ export class SessionHistoryComponent implements OnInit {
     )?.id;
   }
 
-  private getEquipmentIdByName(name: string): number | undefined {
-    return this.equipmentsFull.find(
-      (e) => e.equipmentName.toLowerCase() === name.toLowerCase()
-    )?.id;
-  }
-
   private getUserIdByFullName(fullNameWithId: string): number | undefined {
     const idStr = fullNameWithId.split(' - ')[0].trim();
     const id = Number(idStr);

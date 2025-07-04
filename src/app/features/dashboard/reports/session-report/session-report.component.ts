@@ -1,29 +1,32 @@
-import {
-  EquipmentUseFilterRequest,
-  EquipmentUseResponse,
-  EquipmentUseService,
-} from './../../../../core/session/services/equipment-use.service';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SearchFilterOnlyComponent } from '../../../../shared/components/search-filter-only/search-filter-only.component';
 import { FieldConfig } from '../../../../shared/model/field-config.model';
-import { LaboratoryService } from '../../../../core/laboratory/services/laboratory.service';
-import { EquipmentService } from '../../../../core/equipment/services/equipment.service';
-import {
-  FunctionDto,
-  FunctionService,
-} from '../../../../core/function/services/function.service';
-import { UserRecordResponse } from '../../../../core/dto/user/record-user-response.dto';
-import { UserService } from '../../../../core/services/user/user.service';
-import { Laboratory } from '../../../../core/laboratory/models/laboratory.model';
-import { EquipmentDto } from '../../../../core/equipment/models/equipment-response.dto';
 import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { Laboratory } from '../../../../core/dto/laboratory/laboratory.dto';
+import { EquipmentDto } from '../../../../core/dto/equipments-patterns/equipment-response.dto';
+import { FunctionDto } from '../../../../core/dto/function/function-response.dto';
+import { UserRecordResponse } from '../../../../core/dto/user/record-user-response.dto';
+import { EquipmentUseResponse } from '../../../../core/dto/session/session-response.dto';
+import { LaboratoryService } from '../../../../core/services/laboratory/laboratory.service';
+import { EquipmentService } from '../../../../core/services/equipment/equipment.service';
+import { FunctionService } from '../../../../core/services/function/function.service';
+import { UserService } from '../../../../core/services/user/user.service';
+import { EquipmentUseService } from '../../../../core/services/session/equipment-use.service';
+import { EquipmentUseFilterRequest } from '../../../../core/dto/session/session-filter-request.dto';
+import {
+  AVAILABLE_FILTER_KEYS,
+  DEFAULT_EQUIPMENT_USE_FILTERS,
+} from './equipment-use-filters.const';
+import { EQUIPMENT_USE_FIELDS_CONFIG } from './equipment-use-fields-config.const';
+import { SessionRecord } from '../../../../core/dto/session/session-record.dto';
+import { LaboratoryResponseDto } from '../../../../core/dto/laboratory/laboratory-response.dto';
 
 @Component({
   selector: 'app-session-report',
@@ -40,125 +43,13 @@ import html2canvas from 'html2canvas';
 export class SessionReportComponent implements OnInit {
   isLoading = false;
 
-  filters = {
-    lab: '',
-    equipment: '',
-    dateFrom: '',
-    dateTo: '',
-    timeFrom: '',
-    timeTo: '',
-    verifiedStatus: '',
-    usageStatus: '',
-    usageDurationMin: null as number | null,
-    usageDurationMax: null as number | null,
-    sampleCountMin: null as number | null,
-    sampleCountMax: null as number | null,
-    function: '',
-    user: '',
-    sessionStatus: '',
-  };
+  filters = { ...DEFAULT_EQUIPMENT_USE_FILTERS };
 
-  availableFilterKeys = [
-    { key: 'user', label: 'Responsable' },
-    { key: 'lab', label: 'Laboratorio' },
-    { key: 'equipment', label: 'Equipo / Patrón' },
-    { key: 'function', label: 'Función' },
-    { key: 'sessionStatus', label: 'Estado de la sesión' },
-    { key: 'verifiedStatus', label: 'Verificado' },
-    { key: 'usageStatus', label: 'Para uso' },
-    { key: 'dateFrom', label: 'Fecha desde' },
-    { key: 'dateTo', label: 'Fecha hasta' },
-    { key: 'timeFrom', label: 'Hora desde' },
-    { key: 'timeTo', label: 'Hora hasta' },
-    { key: 'sampleCountMin', label: 'Muestras desde' },
-    { key: 'sampleCountMax', label: 'Muestras hasta' },
-  ];
+  availableFilterKeys = AVAILABLE_FILTER_KEYS;
 
   activeFilterKeys: string[] = [];
 
-  fieldsConfig: FieldConfig[] = [
-    {
-      key: 'user',
-      label: 'Responsable',
-      type: 'dropdown',
-      allowEmptyOption: 'Todos',
-    },
-    {
-      key: 'lab',
-      label: 'Laboratorio',
-      type: 'dropdown',
-      allowEmptyOption: 'Todos',
-    },
-    {
-      key: 'equipment',
-      label: 'Equipo / Patrón',
-      type: 'dropdown',
-      allowEmptyOption: 'Todos',
-    },
-    {
-      key: 'function',
-      label: 'Función utilizada',
-      type: 'dropdown',
-      allowEmptyOption: 'Todas',
-    },
-    {
-      key: 'sessionStatus',
-      label: 'Estado de la sesión',
-      type: 'select',
-      options: ['En curso', 'Finalizada'],
-      allowEmptyOption: 'Todas',
-    },
-    {
-      key: 'verifiedStatus',
-      label: 'Estado - Verificado',
-      type: 'select',
-      options: ['SI', 'NO'],
-      allowEmptyOption: 'Todos',
-    },
-    {
-      key: 'usageStatus',
-      label: 'Estado - Para uso',
-      type: 'select',
-      options: ['SI', 'NO'],
-      allowEmptyOption: 'Todos',
-    },
-    {
-      key: 'dateFrom',
-      label: 'Fecha desde',
-      type: 'date',
-      placeholder: 'YYYY-MM-DD',
-    },
-    {
-      key: 'dateTo',
-      label: 'Fecha hasta',
-      type: 'date',
-      placeholder: 'YYYY-MM-DD',
-    },
-    {
-      key: 'timeFrom',
-      label: 'Hora desde',
-      type: 'time',
-      placeholder: 'HH:mm:ss',
-    },
-    {
-      key: 'timeTo',
-      label: 'Hora hasta',
-      type: 'time',
-      placeholder: 'HH:mm:ss',
-    },
-    {
-      key: 'sampleCountMin',
-      label: 'Muestras desde',
-      type: 'number',
-      placeholder: 'Desde',
-    },
-    {
-      key: 'sampleCountMax',
-      label: 'Muestras hasta',
-      type: 'number',
-      placeholder: 'Hasta',
-    },
-  ];
+  fieldsConfig: FieldConfig[] = EQUIPMENT_USE_FIELDS_CONFIG;
 
   activeTab:
     | 'estado'
@@ -166,22 +57,25 @@ export class SessionReportComponent implements OnInit {
     | 'hora'
     | 'laboratorio'
     | 'equipo'
+    | 'codigo'
     | 'funcion'
     | 'usuario'
     | 'verificado'
     | 'paraUso'
-    | 'muestras' = 'usuario';
+    | 'muestras' = 'estado';
 
   availableLabs: string[] = [];
   availableEquipments: string[] = [];
   availableFunctions: string[] = [];
   availableUsers: string[] = [];
+  codesInventory: string[] = [];
 
-  labsFull: Laboratory[] = [];
+  sessionRecords: SessionRecord[] = [];
+  labsFull: LaboratoryResponseDto[] = [];
+  codesInventoryFull: EquipmentDto[] = [];
   equipmentsFull: EquipmentDto[] = [];
   functionsFull: FunctionDto[] = [];
   usersFull: UserRecordResponse[] = [];
-  sessionRecords: EquipmentUseResponse[] = [];
 
   sessionStartDates: Date[] = [];
   usageLabels = ['Finalizadas', 'En Progreso'];
@@ -190,6 +84,8 @@ export class SessionReportComponent implements OnInit {
   laboratoryData: number[] = [];
   equipmentLabels: string[] = [];
   equipmentData: number[] = [];
+  inventoryCodeData: number[] = [];
+  inventoryCodeLabels: string[] = [];
   functionLabels: string[] = [];
   functionData: number[] = [];
   sessionHourLabels: string[] = [];
@@ -206,6 +102,7 @@ export class SessionReportComponent implements OnInit {
   userUsageChartConfig!: ChartConfiguration<'bar'>;
   labUsageChartConfig!: ChartConfiguration<'bar'>;
   equipmentUsageChartConfig!: ChartConfiguration<'bar'>;
+  inventoryCodeUsageChartConfig!: ChartConfiguration<'bar'>;
   functionUsageChartConfig!: ChartConfiguration<'bar'>;
   samplesChartConfig!: ChartConfiguration<'bar'>;
   sessionsByHourChartConfig!: ChartConfiguration<'bar'>;
@@ -213,6 +110,27 @@ export class SessionReportComponent implements OnInit {
   sessionStatusChartConfig!: ChartConfiguration<'pie'>;
   verifiedStatusChartConfig!: ChartConfiguration<'pie'>;
   usageStatusChartConfig!: ChartConfiguration<'pie'>;
+
+  private chartColors: string[] = [
+    '#007bff',
+    '#28a745',
+    '#ffc107',
+    '#dc3545',
+    '#6f42c1',
+    '#17a2b8',
+    '#fd7e14',
+    '#20c997',
+    '#6610f2',
+    '#e83e8c',
+    '#343a40',
+    '#ff6384',
+    '#36a2eb',
+    '#cc65fe',
+    '#ffce56',
+    '#00c851',
+    '#ffbb33',
+    '#33b5e5',
+  ];
 
   constructor(
     private labService: LaboratoryService,
@@ -231,34 +149,78 @@ export class SessionReportComponent implements OnInit {
     return Array.isArray(data) ? data.reduce((a, b) => a + b, 0) : 0;
   }
 
+  // Data Loading Methods
   loadFilterOptions(): void {
+    this.loadLaboratories();
+    this.loadEquipmentInventory();
+    this.loadEquipmentNames();
+    this.loadFunctions();
+    this.loadAuthorizedUsers();
+  }
+
+  // Data Loading Handlers
+  private loadLaboratories(): void {
     this.labService.getLaboratories().subscribe({
       next: (labs) => {
         this.labsFull = labs;
         this.availableLabs = labs.map((lab) => lab.laboratoryName);
       },
     });
+  }
 
-    this.equipmentService.getAll().subscribe({
-      next: (equipments) => {
-        this.equipmentsFull = equipments;
-        this.availableEquipments = equipments.map(
-          (e) => `${e.equipmentName} - ${e.inventoryNumber}`
-        );
+  private loadEquipmentInventory(): void {
+    this.equipmentService.getAllForFilters().subscribe({
+      next: (response) => {
+        const safeEquipments = Array.isArray(response.content)
+          ? response.content
+          : [];
+        this.codesInventoryFull = safeEquipments;
+        this.codesInventory = safeEquipments.map((e) => `${e.inventoryNumber}`);
+      },
+      error: () => {
+        this.equipmentsFull = [];
+        this.availableEquipments = [];
       },
     });
+  }
 
+  private loadEquipmentNames(): void {
+    this.equipmentService.getAllForFilters().subscribe({
+      next: (response) => {
+        const safeEquipments = Array.isArray(response.content)
+          ? response.content
+          : [];
+        this.equipmentsFull = safeEquipments;
+        this.availableEquipments = safeEquipments.map((e) => e.equipmentName);
+      },
+      error: () => {
+        this.equipmentsFull = [];
+        this.availableEquipments = [];
+      },
+    });
+  }
+
+  private loadFunctions(): void {
     this.functionService.getAll().subscribe({
       next: (functions) => {
         this.functionsFull = functions;
         this.availableFunctions = functions.map((f) => f.functionName);
       },
     });
+  }
 
-    this.userService.getUsers().subscribe({
-      next: (users) => {
-        this.usersFull = users;
-        this.availableUsers = users.map((u) => `${u.firstName} ${u.lastName}`);
+  private loadAuthorizedUsers(): void {
+    const payload = { role: 'AUTHORIZED-USER' };
+    this.userService.filterUsers(payload, 0, 9999).subscribe({
+      next: (res) => {
+        this.usersFull = res.content || [];
+        this.availableUsers = this.usersFull.map(
+          (u) => `${u.id} - ${u.firstName} ${u.lastName}`
+        );
+      },
+      error: (err) => {
+        console.error('Error al cargar usuarios autorizados', err);
+        this.usersFull = [];
       },
     });
   }
@@ -269,59 +231,150 @@ export class SessionReportComponent implements OnInit {
   }
 
   onSearch(): void {
-    const request: EquipmentUseFilterRequest = {
-      isInUse:
-        this.filters.sessionStatus === 'En curso'
-          ? true
-          : this.filters.sessionStatus === 'Finalizada'
-          ? false
-          : null,
-      isVerified:
-        this.filters.verifiedStatus === ''
-          ? null
-          : this.filters.verifiedStatus === 'SI'
-          ? true
-          : false,
-      isAvailable:
-        this.filters.usageStatus === ''
-          ? null
-          : this.filters.usageStatus === 'SI'
-          ? true
-          : false,
+    const request = this.buildFilterRequest();
+    console.log(request);
+    this.isLoading = true;
+
+    this.equipmentUseService.filter(request, 0, 9999).subscribe({
+      next: (response) => this.handleSearchSuccess(response),
+      error: () => this.handleSearchError(),
+    });
+  }
+
+  // Search Handlers
+  private handleSearchSuccess(response: any): void {
+    const content = response?.content ?? [];
+    this.sessionRecords = this.mapSessions(content);
+    this.processSessionDataFromSessionRecords();
+    this.isLoading = false;
+  }
+
+  // Data Mapping Methods
+  private mapSessions(response: EquipmentUseResponse[]): SessionRecord[] {
+    if (!response) return [];
+    return response.map((session) => this.mapSingleSession(session));
+  }
+
+  private mapSingleSession(session: EquipmentUseResponse): SessionRecord {
+    const inProgress = session.isInUse;
+    const usageDuration = this.calculateDuration(
+      session.startUseTime,
+      session.endUseTime
+    );
+
+    return {
+      id: session.id,
+      equipment: session.equipment.equipmentName,
+      lab: `${session.equipment.laboratory.laboratoryName}`,
+      labName: session.equipment.laboratory.laboratoryName,
+      inventoryCode: session.equipment.inventoryNumber,
+      date: this.formatDate(session.startUseTime),
+      time: this.formatTime(session.startUseTime),
+      verifiedStatus: session.isVerified ? 'SI' : 'NO',
+      usageStatus: session.isAvailable ? 'SI' : 'NO',
+      usageDuration: inProgress ? 'EN CURSO' : usageDuration,
+      sampleCount: inProgress ? undefined : session.samplesNumber,
+      functionsUsed: inProgress
+        ? undefined
+        : session.usedFunctions?.map((f) => f.functionName),
+      observations: inProgress ? undefined : session.observations || 'N/A',
+      responsible: `${session.user.firstName} ${session.user.lastName}`,
+      inProgress,
+      startDateTime: session.startUseTime,
+    };
+  }
+
+  private calculateDuration(start: string, end: string | null): string {
+    if (!start || !end) return 'EN CURSO';
+
+    const diff = new Date(end).getTime() - new Date(start).getTime();
+    if (diff <= 0) return '00s';
+
+    const totalSeconds = Math.floor(diff / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+
+    if (days > 0)
+      return `${pad(days)}d ${pad(hours)}h:${pad(minutes)}m:${pad(seconds)}s`;
+    if (hours > 0) return `${pad(hours)}h:${pad(minutes)}m:${pad(seconds)}s`;
+    if (minutes > 0) return `${pad(minutes)}m:${pad(seconds)}s`;
+    return `${pad(seconds)}s`;
+  }
+
+  // Date/Time Methods
+  private formatDate(isoDate: string): string {
+    if (!isoDate) return 'N/A';
+    const date = new Date(isoDate);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      '0'
+    )}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  private formatTime(isoDate: string): string {
+    if (!isoDate) return 'N/A';
+    const date = new Date(isoDate);
+    return date.toLocaleTimeString('es-CO', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: 'America/Bogota',
+    });
+  }
+
+  private handleSearchError(): void {
+    this.sessionRecords = [];
+    this.isLoading = false;
+  }
+
+  private buildFilterRequest(): EquipmentUseFilterRequest {
+    return {
+      isInUse: this.getSessionStatusFilter(),
+      isVerified: this.getVerifiedStatusFilter(),
+      isAvailable: this.getUsageStatusFilter(),
       samplesNumberFrom: this.filters.sampleCountMin ?? undefined,
       samplesNumberTo: this.filters.sampleCountMax ?? undefined,
-      useDateFrom:
-        this.combineDateTime(this.filters.dateFrom, this.filters.timeFrom) ??
-        undefined,
-      useDateTo:
-        this.combineDateTime(this.filters.dateTo, this.filters.timeTo) ??
-        undefined,
-      startUseTimeFrom:
-        this.combineDateTime(this.filters.dateFrom, this.filters.timeFrom) ??
-        undefined,
-      endUseTimeTo:
-        this.combineDateTime(this.filters.dateTo, this.filters.timeTo) ??
-        undefined,
+      useDateFrom: this.filters.dateFrom,
+      useDateTo: this.filters.dateTo,
+      startTimeFrom: this.filters.timeFrom,
+      endTimeTo: this.filters.timeTo,
       usedFunctionsIds: this.filters.function
         ? this.getFunctionIdByName(this.filters.function)
         : undefined,
-      equipmentId: this.getEquipmentIdByInventoryCode(this.filters.equipment),
+      equipmentInventoryCode: this.filters.codeInventory,
+      equipmentName: this.filters.equipment,
       userId: this.getUserIdByFullName(this.filters.user),
       laboratoryId: this.getLabIdByName(this.filters.lab),
     };
+  }
 
-    this.isLoading = true;
-    this.equipmentUseService.filter(request).subscribe({
-      next: (response) => {
-        this.sessionRecords = response ?? [];
-        this.processSessionDataFromSessionRecords();
-        this.isLoading = false;
-      },
-      error: () => {
-        this.sessionRecords = [];
-        this.isLoading = false;
-      },
-    });
+  private getSessionStatusFilter(): boolean | null {
+    return this.filters.sessionStatus === 'EN CURSO'
+      ? true
+      : this.filters.sessionStatus === 'FINALIZADA'
+      ? false
+      : null;
+  }
+
+  private getVerifiedStatusFilter(): boolean | null {
+    return this.filters.verifiedStatus === ''
+      ? null
+      : this.filters.verifiedStatus === 'SI'
+      ? true
+      : false;
+  }
+
+  private getUsageStatusFilter(): boolean | null {
+    return this.filters.usageStatus === ''
+      ? null
+      : this.filters.usageStatus === 'SI'
+      ? true
+      : false;
   }
 
   combineDateTime(date: string, time: string): string | null {
@@ -342,13 +395,10 @@ export class SessionReportComponent implements OnInit {
       ?.id;
   }
 
-  getUserIdByFullName(fullName: string): number | undefined {
-    const [firstName, lastName] = fullName.trim().split(' ');
-    return this.usersFull.find(
-      (u) =>
-        u.firstName.toLowerCase() === firstName?.toLowerCase() &&
-        u.lastName.toLowerCase() === lastName?.toLowerCase()
-    )?.id;
+  private getUserIdByFullName(fullNameWithId: string): number | undefined {
+    const idStr = fullNameWithId.split(' - ')[0].trim();
+    const id = Number(idStr);
+    return isNaN(id) ? undefined : this.usersFull.find((u) => u.id === id)?.id;
   }
 
   getFunctionIdByName(name: string): number[] | undefined {
@@ -359,479 +409,8 @@ export class SessionReportComponent implements OnInit {
   }
 
   clearFilters(): void {
-    this.filters = {
-      lab: '',
-      equipment: '',
-      dateFrom: '',
-      dateTo: '',
-      timeFrom: '',
-      timeTo: '',
-      verifiedStatus: '',
-      usageStatus: '',
-      usageDurationMin: null,
-      usageDurationMax: null,
-      sampleCountMin: null,
-      sampleCountMax: null,
-      function: '',
-      user: '',
-      sessionStatus: '',
-    };
+    this.filters = { ...DEFAULT_EQUIPMENT_USE_FILTERS };
     this.onSearch();
-  }
-
-  private processSessionDataFromSessionRecords(): void {
-    let active = 0;
-    let finished = 0;
-    this.sessionStartDates = [];
-    const labMap = new Map<string, number>();
-    const equipmentMap = new Map<string, number>();
-    const functionMap = new Map<string, number>();
-    const hourMap = new Map<number, number>();
-    const userMap = new Map<string, number>();
-    let verified = 0;
-    let notVerified = 0;
-    let available = 0;
-    let unavailable = 0;
-    this.sampleRangeData = [0, 0, 0, 0, 0];
-
-    for (const session of this.sessionRecords) {
-      if (session.isInUse) active++;
-      else finished++;
-
-      const start = new Date(session.startUseTime);
-      if (!isNaN(start.getTime())) {
-        this.sessionStartDates.push(start);
-        const hour = start.getHours();
-        hourMap.set(hour, (hourMap.get(hour) || 0) + 1);
-      }
-
-      const lab =
-        session.equipment?.laboratory?.laboratoryName ?? 'Desconocido';
-      labMap.set(lab, (labMap.get(lab) || 0) + 1);
-
-      const eq = session.equipment
-        ? `${session.equipment.equipmentName} - ${session.equipment.inventoryNumber}`
-        : 'Equipo desconocido';
-      equipmentMap.set(eq, (equipmentMap.get(eq) || 0) + 1);
-
-      for (const func of session.usedFunctions ?? []) {
-        functionMap.set(
-          func.functionName,
-          (functionMap.get(func.functionName) || 0) + 1
-        );
-      }
-
-      const responsible = session.user
-        ? `${session.user.firstName} ${session.user.lastName}`
-        : 'Desconocido';
-      userMap.set(responsible, (userMap.get(responsible) || 0) + 1);
-
-      if (session.isVerified) verified++;
-      else notVerified++;
-
-      if (session.isAvailable) available++;
-      else unavailable++;
-
-      const count = session.samplesNumber ?? 0;
-
-      if (count === 0) this.sampleRangeData[0]++;
-      else if (count <= 5) this.sampleRangeData[1]++;
-      else if (count <= 10) this.sampleRangeData[2]++;
-      else if (count <= 20) this.sampleRangeData[3]++;
-      else this.sampleRangeData[4]++;
-    }
-
-    this.usageData = [finished, active];
-    this.laboratoryLabels = [...labMap.keys()];
-    this.laboratoryData = [...labMap.values()];
-    this.equipmentLabels = [...equipmentMap.keys()];
-    this.equipmentData = [...equipmentMap.values()];
-    this.functionLabels = [...functionMap.keys()];
-    this.functionData = [...functionMap.values()];
-    this.sessionHourLabels = [...hourMap.keys()]
-      .sort((a, b) => a - b)
-      .map((h) => `${h.toString().padStart(2, '0')}:00`);
-    this.sessionHourData = [...hourMap.keys()]
-      .sort((a, b) => a - b)
-      .map((h) => hourMap.get(h)!);
-    this.userLabels = [...userMap.keys()];
-    this.userData = [...userMap.values()];
-    this.verifiedData = [verified, notVerified];
-    this.usageStatusData = [available, unavailable];
-
-    this.userUsageChartConfig = {
-      type: 'bar',
-      data: {
-        labels: this.userLabels.length ? this.userLabels : ['Sin datos'],
-        datasets: [
-          {
-            data: this.userData.length ? this.userData : [0],
-            label: 'Sesiones',
-            backgroundColor: '#dc3545',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: {
-          title: {
-            display: true,
-            text: 'Frecuencia de Uso por Responsable',
-          },
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: {
-              display: true,
-              text: 'Cantidad de Sesiones',
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Responsables',
-            },
-          },
-        },
-      },
-    };
-
-    this.labUsageChartConfig = {
-      type: 'bar',
-      data: {
-        labels: this.laboratoryLabels.length
-          ? this.laboratoryLabels
-          : ['Sin datos'],
-        datasets: [
-          {
-            data: this.laboratoryData.length ? this.laboratoryData : [0],
-            label: 'Sesiones',
-            backgroundColor: '#28a745',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: {
-          title: {
-            display: true,
-            text: 'Frecuencia de Uso por Laboratorio',
-          },
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: { display: true, text: 'Cantidad de Sesiones' },
-          },
-          y: {
-            title: { display: true, text: 'Laboratorios' },
-          },
-        },
-      },
-    };
-
-    this.equipmentUsageChartConfig = {
-      type: 'bar',
-      data: {
-        labels: this.equipmentLabels.length
-          ? this.equipmentLabels
-          : ['Sin datos'],
-        datasets: [
-          {
-            data: this.equipmentData.length ? this.equipmentData : [0],
-            label: 'Sesiones',
-            backgroundColor: '#ffc107',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: {
-          title: {
-            display: true,
-            text: 'Frecuencia de Uso por Equipo',
-          },
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: {
-              display: true,
-              text: 'Cantidad de Sesiones',
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Equipos',
-            },
-          },
-        },
-      },
-    };
-
-    this.functionUsageChartConfig = {
-      type: 'bar',
-      data: {
-        labels: this.functionLabels.length
-          ? this.functionLabels
-          : ['Sin datos'],
-        datasets: [
-          {
-            data: this.functionData.length ? this.functionData : [0],
-            label: 'Sesiones',
-            backgroundColor: '#17a2b8',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: {
-          title: {
-            display: true,
-            text: 'Frecuencia de Uso por Función',
-          },
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: {
-              display: true,
-              text: 'Cantidad de Sesiones',
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Funciones Utilizadas',
-            },
-          },
-        },
-      },
-    };
-
-    this.samplesChartConfig = {
-      type: 'bar',
-      data: {
-        labels: this.sampleRangeLabels,
-        datasets: [
-          {
-            data: this.sampleRangeData,
-            label: 'Sesiones',
-            backgroundColor: '#20c997',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Distribución por Cantidad de Muestras',
-          },
-        },
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Rango de Muestras',
-            },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: {
-              display: true,
-              text: 'Cantidad de Sesiones',
-            },
-          },
-        },
-      },
-    };
-
-    this.sessionsByHourChartConfig = {
-      type: 'bar',
-      data: {
-        labels: this.sessionHourLabels.length
-          ? this.sessionHourLabels
-          : ['Sin datos'],
-        datasets: [
-          {
-            data: this.sessionHourData.length ? this.sessionHourData : [0],
-            label: 'Sesiones',
-            backgroundColor: '#6f42c1',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Sesiones por Hora del Día',
-          },
-        },
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Hora',
-            },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: {
-              display: true,
-              text: 'Cantidad de Sesiones',
-            },
-          },
-        },
-      },
-    };
-
-    const dateCounts = new Map<string, number>();
-    for (const date of this.sessionStartDates) {
-      const formatted = date.toISOString().split('T')[0];
-      dateCounts.set(formatted, (dateCounts.get(formatted) || 0) + 1);
-    }
-
-    const timelineLabels = Array.from(dateCounts.keys()).sort();
-    const timelineData = timelineLabels.map((label) => dateCounts.get(label)!);
-
-    this.sessionTimelineChartConfig = {
-      type: 'line',
-      data: {
-        labels: timelineLabels.length ? timelineLabels : ['Sin datos'],
-        datasets: [
-          {
-            data: timelineData.length ? timelineData : [0],
-            label: 'Sesiones',
-            fill: false,
-            tension: 0.3,
-            borderColor: '#007bff',
-            backgroundColor: '#007bff',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Histórico de Inicio de Sesiones',
-          },
-        },
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Fecha de Inicio',
-              font: { size: 14, weight: 'bold' },
-            },
-            ticks: {
-              autoSkip: true,
-              maxRotation: 45,
-              minRotation: 30,
-            },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: { precision: 0 },
-            title: {
-              display: true,
-              text: 'Cantidad de Sesiones',
-              font: { size: 14, weight: 'bold' },
-            },
-          },
-        },
-      },
-    };
-
-    this.sessionStatusChartConfig = {
-      type: 'pie',
-      data: {
-        labels: ['Finalizadas', 'En Progreso'],
-        datasets: [
-          {
-            data: this.usageData,
-            backgroundColor: ['#20c997', '#ffc107'],
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Distribución de Estado de la Sesión',
-          },
-        },
-      },
-    };
-
-    this.verifiedStatusChartConfig = {
-      type: 'pie',
-      data: {
-        labels: ['SI', 'NO'],
-        datasets: [
-          {
-            data: this.verifiedData,
-            backgroundColor: ['#0d6efd', '#adb5bd'],
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Distribución de Estado Verificado',
-          },
-        },
-      },
-    };
-
-    this.usageStatusChartConfig = {
-      type: 'pie',
-      data: {
-        labels: ['SI', 'NO'],
-        datasets: [
-          {
-            data: this.usageStatusData,
-            backgroundColor: ['#20c997', '#adb5bd'],
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Distribución de Estado Para Uso',
-          },
-        },
-      },
-    };
   }
 
   exportToExcel(): void {
@@ -858,7 +437,7 @@ export class SessionReportComponent implements OnInit {
   }
 
   exportToCSV(): void {
-    const data = this.mapSessionRecordsToExport();
+    /*const data = this.mapSessionRecordsToExport();
     const worksheet = XLSX.utils.json_to_sheet(data);
     const csv = XLSX.utils.sheet_to_csv(worksheet);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -868,11 +447,11 @@ export class SessionReportComponent implements OnInit {
       .slice(0, 19)
       .replace(/[:T]/g, '-')}.csv`;
 
-    saveAs(blob, fileName);
+    saveAs(blob, fileName);*/
   }
 
   private mapSessionRecordsToExport(): any[] {
-    return this.sessionRecords.map((s) => {
+    /*return this.sessionRecords.map((s) => {
       const [startDate, startTime] = s.startUseTime.split('T');
       const [endDate, endTime] = s.endUseTime
         ? s.endUseTime.split('T')
@@ -901,7 +480,8 @@ export class SessionReportComponent implements OnInit {
           .join(', '),
         Observaciones: s.observations ?? '',
       };
-    });
+    });*/
+    return [];
   }
 
   private getUsageDuration(start: string, end: string | null): string {
@@ -955,5 +535,302 @@ export class SessionReportComponent implements OnInit {
 
       pdf.save(fileName);
     });
+  }
+
+  private processSessionDataFromSessionRecords(): void {
+    let active = 0,
+      finished = 0;
+    let verified = 0,
+      notVerified = 0;
+    let available = 0,
+      unavailable = 0;
+    this.sessionStartDates = [];
+    this.sampleRangeData = [0, 0, 0, 0, 0];
+
+    const equipmentMap = new Map<string, number>();
+    const labMap = new Map<string, number>();
+    const inventoryCodeMap = new Map<string, number>();
+    const hourMap = new Map<number, number>();
+    const functionMap = new Map<string, number>();
+    const userMap = new Map<string, number>();
+    const dateCounts = new Map<string, number>();
+
+    const incrementMap = <T>(map: Map<T, number>, key: T) => {
+      map.set(key, (map.get(key) ?? 0) + 1);
+    };
+
+    const classifySampleRange = (count: number) => {
+      if (count === 0) return 0;
+      if (count <= 5) return 1;
+      if (count <= 10) return 2;
+      if (count <= 20) return 3;
+      return 4;
+    };
+
+    for (const session of this.sessionRecords) {
+      session.inProgress ? active++ : finished++;
+      incrementMap(equipmentMap, session.equipment);
+      incrementMap(labMap, session.labName ?? 'Desconocido');
+      incrementMap(inventoryCodeMap, session.inventoryCode);
+
+      const start = new Date(session.startDateTime);
+      if (!isNaN(start.getTime())) {
+        this.sessionStartDates.push(start);
+        incrementMap(hourMap, start.getHours());
+        incrementMap(dateCounts, start.toISOString().split('T')[0]);
+      }
+
+      session.verifiedStatus === 'SI' ? verified++ : notVerified++;
+      session.usageStatus === 'SI' ? available++ : unavailable++;
+
+      const sampleIndex = classifySampleRange(session.sampleCount ?? 0);
+      this.sampleRangeData[sampleIndex]++;
+
+      (session.functionsUsed ?? []).forEach((func) =>
+        incrementMap(functionMap, func)
+      );
+      incrementMap(userMap, session.responsible);
+    }
+
+    // Set chart data arrays
+    this.usageData = [finished, active];
+    this.equipmentLabels = [...equipmentMap.keys()];
+    this.equipmentData = [...equipmentMap.values()];
+    this.laboratoryLabels = [...labMap.keys()];
+    this.laboratoryData = [...labMap.values()];
+    this.inventoryCodeLabels = [...inventoryCodeMap.keys()];
+    this.inventoryCodeData = [...inventoryCodeMap.values()];
+
+    const sortedHours = [...hourMap.keys()].sort((a, b) => a - b);
+    this.sessionHourLabels = sortedHours.map(
+      (h) => `${h.toString().padStart(2, '0')}:00`
+    );
+    this.sessionHourData = sortedHours.map((h) => hourMap.get(h)!);
+
+    this.verifiedData = [verified, notVerified];
+    this.usageStatusData = [available, unavailable];
+    this.functionLabels = [...functionMap.keys()];
+    this.functionData = [...functionMap.values()];
+    this.userLabels = [...userMap.keys()];
+    this.userData = [...userMap.values()];
+
+    this.sessionStatusChartConfig = this.createPieChartConfig(
+      ['Finalizadas', 'En progreso'],
+      this.usageData,
+      'Estado de las Sesiones'
+    );
+
+    this.equipmentUsageChartConfig = this.createBarChartConfig(
+      this.equipmentLabels,
+      this.equipmentData,
+      'Sesiones por Equipo',
+      'Equipo'
+    );
+
+    this.labUsageChartConfig = this.createBarChartConfig(
+      this.laboratoryLabels,
+      this.laboratoryData,
+      'Sesiones por Laboratorio',
+      'Laboratorio'
+    );
+
+    this.inventoryCodeUsageChartConfig = this.createBarChartConfig(
+      this.inventoryCodeLabels,
+      this.inventoryCodeData,
+      'Sesiones por Código de Inventario',
+      'Código'
+    );
+
+    const timelineLabels = [...dateCounts.keys()].sort();
+    const timelineData = timelineLabels.map((label) => dateCounts.get(label)!);
+    this.sessionTimelineChartConfig = this.createLineChartConfig(
+      timelineLabels,
+      timelineData,
+      'Tendencia de Inicio de Sesiones',
+      'Fecha',
+      'Sesiones'
+    );
+
+    this.sessionsByHourChartConfig = this.createBarChartConfig(
+      this.sessionHourLabels,
+      this.sessionHourData,
+      'Sesiones por Hora del Día',
+      'Hora del Día'
+    );
+
+    this.verifiedStatusChartConfig = this.createPieChartConfig(
+      ['Verificadas', 'No verificadas'],
+      this.verifiedData,
+      'Estado de Verificación'
+    );
+
+    this.usageStatusChartConfig = this.createPieChartConfig(
+      ['Habilitados', 'No habilitados'],
+      this.usageStatusData,
+      'Estado de Disponibilidad para Uso'
+    );
+
+    this.samplesChartConfig = this.createBarChartConfig(
+      this.sampleRangeLabels,
+      this.sampleRangeData,
+      'Cantidad de Muestras por Sesión',
+      'Rango de Muestras'
+    );
+
+    this.functionUsageChartConfig = this.createBarChartConfig(
+      this.functionLabels.length ? this.functionLabels : ['Sin datos'],
+      this.functionData.length ? this.functionData : [0],
+      'Funciones Más Utilizadas',
+      'Función'
+    );
+
+    this.userUsageChartConfig = this.createBarChartConfig(
+      this.userLabels.length ? this.userLabels : ['Sin datos'],
+      this.userData.length ? this.userData : [0],
+      'Sesiones por Responsable',
+      'Responsable'
+    );
+  }
+
+  private createLineChartConfig(
+    labels: string[],
+    data: number[],
+    title: string,
+    xAxisLabel: string,
+    yAxisLabel: string
+  ): any {
+    const color = this.chartColors[0]; // Primer color
+    return {
+      type: 'line',
+      data: {
+        labels: labels.length ? labels : ['Sin datos'],
+        datasets: [
+          {
+            data: data.length ? data : [0],
+            label: 'Sesiones',
+            fill: false,
+            tension: 0.3,
+            borderColor: color,
+            backgroundColor: color,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: {
+            display: true,
+            text: title,
+          },
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: xAxisLabel,
+              font: { size: 14, weight: 'bold' },
+            },
+            ticks: {
+              autoSkip: true,
+              maxRotation: 45,
+              minRotation: 30,
+            },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            title: {
+              display: true,
+              text: yAxisLabel,
+              font: { size: 14, weight: 'bold' },
+            },
+          },
+        },
+      },
+    };
+  }
+
+  private createBarChartConfig(
+    labels: string[],
+    data: number[],
+    title: string,
+    yAxisLabel: string
+  ): any {
+    const backgroundColors = labels.map(
+      (_, i) => this.chartColors[i % this.chartColors.length]
+    );
+    return {
+      type: 'bar',
+      data: {
+        labels: labels.length ? labels : ['Sin datos'],
+        datasets: [
+          {
+            data: data.length ? data : [0],
+            label: 'Sesiones',
+            backgroundColor: backgroundColors,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+          title: {
+            display: true,
+            text: title,
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            title: {
+              display: true,
+              text: 'Cantidad de Sesiones',
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: yAxisLabel,
+            },
+          },
+        },
+      },
+    };
+  }
+
+  private createPieChartConfig(
+    labels: string[],
+    data: number[],
+    title: string
+  ): any {
+    const backgroundColors = labels.map(
+      (_, i) => this.chartColors[i % this.chartColors.length]
+    );
+    return {
+      type: 'pie',
+      data: {
+        labels,
+        datasets: [
+          {
+            data,
+            backgroundColor: backgroundColors,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: {
+            display: true,
+            text: title,
+          },
+        },
+      },
+    };
   }
 }
