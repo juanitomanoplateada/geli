@@ -1,4 +1,4 @@
-import { BrandDto } from '../../brand/services/brand.service';
+import { BrandDto } from '../brand/brand-response.dto';
 
 export interface EquipmentCreateUpdateDto {
   id?: number;

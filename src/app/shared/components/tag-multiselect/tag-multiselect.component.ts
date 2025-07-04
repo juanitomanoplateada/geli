@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UppercaseDirective } from '../../directives/uppercase/uppercase.directive';
 import { ClickOutsideDirective } from '../../directives/click-outside/click-outside.directive';
-import { FunctionDto } from '../../../core/function/services/function.service';
+import { FunctionDto } from '../../../core/dto/function/function-response.dto';
 
 @Component({
   selector: 'app-tag-multiselect',
@@ -20,7 +20,9 @@ import { FunctionDto } from '../../../core/function/services/function.service';
 export class TagMultiselectComponent {
   readonly NA_LABEL = 'NO APLICA';
   @Input() placeholder: string = 'Seleccionar opciones';
-  @Input() availableOptions: FunctionDto[] = [{ id: 1, functionName: 'NO APLICA' }];
+  @Input() availableOptions: FunctionDto[] = [
+    { id: 1, functionName: 'NO APLICA' },
+  ];
   @Input() selected: FunctionDto[] = [];
   @Input() disabled: boolean = false;
 

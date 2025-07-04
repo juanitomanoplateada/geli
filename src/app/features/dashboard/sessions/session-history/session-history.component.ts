@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 
 // Models and DTOs
 import { FieldConfig } from '../../../../shared/model/field-config.model';
-import { FunctionDto } from '../../../../core/function/services/function.service';
 import { UserRecordResponse } from '../../../../core/dto/user/record-user-response.dto';
 import { LaboratoryResponseDto } from '../../../../core/dto/laboratory/laboratory-response.dto';
 import { EquipmentDto } from '../../../../core/dto/equipments-patterns/equipment-response.dto';
@@ -28,6 +27,7 @@ import {
 import { EQUIPMENT_USE_FIELDS_CONFIG } from './equipment-use-fields-config.const';
 import { EquipmentUseFilterRequest } from '../../../../core/dto/session/session-filter-request.dto';
 import { EquipmentUseResponse } from '../../../../core/dto/session/session-response.dto';
+import { FunctionDto } from '../../../../core/dto/function/function-response.dto';
 
 @Component({
   selector: 'app-session-history',

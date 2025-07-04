@@ -21,12 +21,10 @@ import { TagMultiselectComponent } from '../../../../shared/components/tag-multi
 
 // Services
 import { EquipmentService } from '../../../../core/services/equipment/equipment.service';
-import { BrandService } from '../../../../core/brand/services/brand.service';
 import { LaboratoryService } from '../../../../core/services/laboratory/laboratory.service';
-import {
-  FunctionService,
-  FunctionDto,
-} from '../../../../core/function/services/function.service';
+import { BrandService } from '../../../../core/services/brand/brand.service';
+import { FunctionService } from '../../../../core/services/function/function.service';
+import { FunctionDto } from '../../../../core/dto/function/function-response.dto';
 
 @Component({
   selector: 'app-update-equipment',

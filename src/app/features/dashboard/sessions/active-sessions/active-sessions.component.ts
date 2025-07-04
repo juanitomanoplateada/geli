@@ -16,12 +16,12 @@ import { ConfirmModalComponent } from '../../../../shared/components/confirm-mod
 
 // Services
 import { EquipmentUseService } from '../../../../core/services/session/equipment-use.service';
-import { UserService } from '../../../../core/user/services/user.service';
 import { EquipmentService } from '../../../../core/services/equipment/equipment.service';
 
 // Models and Directives
 import { Session } from '../../../../core/dto/session/session.dto';
 import { InputRulesDirective } from '../../../../shared/directives/input-rules/input-rules';
+import { UserService } from '../../../../core/services/user/user.service';
 
 @Component({
   selector: 'app-active-sessions',

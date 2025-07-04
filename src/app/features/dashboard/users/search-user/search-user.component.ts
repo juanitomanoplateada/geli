@@ -7,9 +7,9 @@ import { FieldConfig } from '../../../../shared/model/field-config.model';
 import { SearchAdvancedComponent } from '../../../../shared/components/search-advanced/search-advanced.component';
 import { ResultsTableComponent } from '../../../../shared/components/results-table/results-table.component';
 
-import { UserService } from '../../../../core/user/services/user.service';
 import { PositionService } from './../../../../core/services/position/position.service';
 import { PositionDto } from './../../../../core/dto/position/position-response.dto';
+import { UserService } from '../../../../core/services/user/user.service';
 
 interface UserRecord {
   id: number;
