@@ -1,4 +1,22 @@
-// 🌀 Spinner de carga
+/* =============================================
+   BASE STYLES
+   ============================================= */
+
+.session-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 1750px;
+  width: 100%;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+/* =============================================
+   LOADING SPINNER
+   ============================================= */
+
 .spinner-wrapper {
   display: flex;
   flex-direction: column;
@@ -25,30 +43,21 @@
     color: #555;
     margin-top: 1rem;
   }
+}
 
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
 
-// 📦 Contenedor principal
-.session-wrapper {
-  display: flex;
-  flex-direction: column;
-  max-width: 1750px;
-  width: 100%;
-  margin: 0 auto;
-  font-family: Arial, sans-serif;
-  padding: 0 1rem;
-  box-sizing: border-box;
-}
+/* =============================================
+   EMPTY STATE
+   ============================================= */
 
-// ❌ Mensaje sin sesiones
 .no-sessions {
   text-align: center;
   padding: 3rem;
@@ -69,7 +78,10 @@
   }
 }
 
-// 📑 Sección de sesiones
+/* =============================================
+   SESSION LAYOUT
+   ============================================= */
+
 .session-section {
   display: grid;
   grid-template-columns: 350px 1fr;
@@ -81,7 +93,10 @@
   }
 }
 
-// 📜 Lista vertical de sesiones
+/* =============================================
+   SESSION LIST
+   ============================================= */
+
 .session-list-vertical {
   background-color: #fff;
   border-radius: 8px;
@@ -119,14 +134,13 @@
       justify-content: space-between;
       align-items: center;
     }
-
-    .sort-icon {
-      font-size: 1.1rem;
-    }
   }
 }
 
-// 🃏 Tarjeta de sesión
+/* =============================================
+   SESSION CARD
+   ============================================= */
+
 .session-card {
   background-color: #fff;
   border: 1px solid #e0e0e0;
@@ -135,7 +149,6 @@
   margin-bottom: 0.8rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  position: relative;
 
   &:hover {
     border-color: #1976d2;
@@ -183,7 +196,10 @@
   }
 }
 
-// 🔍 Detalle de sesión
+/* =============================================
+   SESSION DETAIL
+   ============================================= */
+
 .session-detail {
   background-color: #fff;
   border-radius: 8px;
@@ -208,7 +224,10 @@
   }
 }
 
-// 📋 Paneles de entrada/salida
+/* =============================================
+   PANELS
+   ============================================= */
+
 .panel {
   margin-bottom: 2rem;
 
@@ -220,34 +239,29 @@
     border-bottom: 1px solid #eee;
   }
 
-  &.entrada {
-    .detail-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-      gap: 1rem;
-    }
+  &.entrada .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 1rem;
   }
 
-  &.salida {
-    .salida-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
+  &.salida .salida-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
 
-      .duration-badge {
-        background-color: #f0f8ff;
-        color: #1976d2;
-        padding: 0.5rem 1rem;
-        border-radius: 1rem;
-        font-size: 0.9rem;
-        font-weight: 600;
-      }
+    .duration-badge {
+      background-color: #e6f7ff;
+      color: #1976d2;
+      padding: 0.5rem 1rem;
+      border-radius: 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
     }
   }
 }
 
-// 📝 Detalle de ítem
 .detail-item {
   margin-bottom: 1rem;
 
@@ -265,54 +279,55 @@
   }
 }
 
-// 📝 Formulario de salida
+/* =============================================
+   FORM STYLES
+   ============================================= */
+
 .salida-form {
-  .form-group {
-    margin-bottom: 1.5rem;
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1rem;
 
-    label {
-      display: block;
-      font-size: 0.95rem;
-      color: #444;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-
-      .required {
-        color: #e53e3e;
+    .form-group {
+      &.full-width {
+        grid-column: 1 / -1;
       }
-    }
 
-    select,
-    input {
-      width: 100%;
-      padding: 0.7rem;
-      border: 1px solid #d0d7de;
-      border-radius: 6px;
-      font-size: 1rem;
-      background-color: #fff;
-      transition: border-color 0.2s;
+      label {
+        display: block;
+        font-size: 0.95rem;
+        color: #444;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
 
-      &:focus {
-        outline: none;
-        border-color: #1976d2;
-        box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        .required {
+          color: #e53e3e;
+        }
       }
-    }
 
-    textarea {
-      width: 100%;
-      min-height: 100px;
-      padding: 0.7rem;
-      border: 1px solid #d0d7de;
-      border-radius: 6px;
-      font-size: 1rem;
-      resize: vertical;
-      font-family: Arial, sans-serif;
+      select,
+      input,
+      textarea {
+        width: 100%;
+        padding: 0.7rem 1rem;
+        border: 1px solid #d0d7de;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        background-color: #fff;
+        transition: all 0.2s ease;
 
-      &:focus {
-        outline: none;
-        border-color: #1976d2;
-        box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        &:focus {
+          outline: none;
+          border-color: #1976d2;
+          box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+      }
+
+      textarea {
+        min-height: 50px;
+        resize: none;
       }
     }
   }
@@ -322,22 +337,24 @@
     color: #856404;
     padding: 1rem;
     border-radius: 6px;
-    margin-bottom: 1.5rem;
     font-size: 0.95rem;
+    margin-bottom: 1.5rem;
   }
 }
 
-// 🔘 Botones de acción
+/* =============================================
+   BUTTONS & ACTIONS
+   ============================================= */
+
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 2rem;
 
   .btn-finish {
     background-color: #1976d2;
     color: white;
     border: none;
-    padding: 0.8rem 1.5rem;
+    padding: 0.8rem 2rem;
     border-radius: 6px;
     font-size: 1rem;
     font-weight: 500;
@@ -355,7 +372,10 @@
   }
 }
 
-// 🚨 Alertas
+/* =============================================
+   ALERTS & MESSAGES
+   ============================================= */
+
 .alert {
   padding: 1rem;
   border-radius: 6px;
@@ -392,7 +412,10 @@
   }
 }
 
-// 📊 Resumen de sesión
+/* =============================================
+   SUMMARY SECTION
+   ============================================= */
+
 .summary-section {
   margin-bottom: 1.5rem;
 
@@ -424,38 +447,15 @@
   }
 }
 
-// 📱 Responsive
+/* =============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================= */
+
 @media (max-width: 768px) {
-  .session-section {
-    grid-template-columns: 1fr;
-  }
-
-  .session-list-vertical {
-    max-height: none;
-    margin-bottom: 1.5rem;
-  }
-
-  .session-detail {
-    padding: 1.5rem;
-  }
-
-  .panel.entrada .detail-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .session-card {
-    padding: 0.8rem;
-
-    .session-card-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-
-      .badge {
-        align-self: flex-end;
-      }
+  .panel {
+    &.entrada .detail-grid,
+    &.salida .salida-form .form-row {
+      grid-template-columns: 1fr;
     }
   }
 
@@ -464,15 +464,16 @@
 
     .btn-finish {
       width: 100%;
-      padding: 1rem;
     }
   }
 
+  .session-card .session-card-header,
   .panel.salida .salida-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
 
+    .badge,
     .duration-badge {
       align-self: flex-start;
       margin-top: 0.5rem;
@@ -480,164 +481,8 @@
   }
 }
 
-.panel.salida {
-  .salida-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-
-    h3 {
-      margin: 0;
-      font-size: 1.3rem;
-      color: #2c3e50;
-    }
-
-    .duration-badge {
-      background-color: #e6f7ff;
-      color: #1976d2;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-  }
-
-  .salida-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-
-    .form-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      align-items: flex-start;
-
-      @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-      }
-
-      .form-group {
-        margin-bottom: 0;
-
-        &.full-width {
-          grid-column: 1 / -1;
-        }
-
-        label {
-          display: block;
-          margin-bottom: 0.5rem;
-          font-size: 0.95rem;
-          color: #444;
-          font-weight: 500;
-
-          .required {
-            color: #e53e3e;
-          }
-        }
-
-        select,
-        input {
-          width: 100%;
-          padding: 0.7rem 1rem;
-          border: 1px solid #d0d7de;
-          border-radius: 6px;
-          font-size: 0.95rem;
-          background-color: #fff;
-          transition: all 0.2s ease;
-
-          &:focus {
-            outline: none;
-            border-color: #1976d2;
-            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
-          }
-        }
-
-        textarea {
-          width: 100%;
-          min-height: 35px;
-          padding: 0.8rem;
-          border: 1px solid #d0d7de;
-          border-radius: 6px;
-          font-size: 0.95rem;
-          resize: none;
-          font-family: inherit;
-          transition: all 0.2s ease;
-
-          &:focus {
-            outline: none;
-            border-color: #1976d2;
-            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
-          }
-        }
-      }
-    }
-
-    .alert-warning {
-      background-color: #fff3cd;
-      color: #856404;
-      padding: 1rem;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      margin-top: 0.5rem;
-    }
-  }
-
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 0rem;
-
-    .btn-finish {
-      background-color: #1976d2;
-      color: white;
-      border: none;
-      padding: 0.8rem 2rem;
-      border-radius: 6px;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background-color 0.2s;
-
-      &:hover {
-        background-color: #1565c0;
-      }
-
-      &:disabled {
-        background-color: #b0bec5;
-        cursor: not-allowed;
-      }
-    }
-  }
-}
-
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .panel.salida {
-    .salida-form {
-      .form-row {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .panel.salida {
-    .salida-form {
-      .form-row {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-    }
-
-    .form-actions {
-      justify-content: center;
-
-      .btn-finish {
-        width: 100%;
-      }
-    }
+@media (max-width: 480px) {
+  .session-card {
+    padding: 0.8rem;
   }
 }

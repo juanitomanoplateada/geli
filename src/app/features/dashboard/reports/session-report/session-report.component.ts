@@ -3,14 +3,7 @@ import {
   EquipmentUseResponse,
   EquipmentUseService,
 } from './../../../../core/session/services/equipment-use.service';
-import {
-  Component,
-  ElementRef,
-  OnInit,
-  QueryList,
-  ViewChild,
-  ViewChildren,
-} from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SearchFilterOnlyComponent } from '../../../../shared/components/search-filter-only/search-filter-only.component';
