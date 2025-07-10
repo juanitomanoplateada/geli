@@ -1,24 +1,27 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 
+// Components
 import { DropdownSearchComponent } from '../../../shared/components/dropdown-search/dropdown-search.component';
 import { SearchAdvancedComponent } from '../../../shared/components/search-advanced/search-advanced.component';
 import { ResultsTableCheckboxComponent } from '../../../shared/components/results-table-checkbox/results-table-checkbox.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
+// Models
 import { FieldConfig } from '../../../shared/model/field-config.model';
 import { ColumnConfig } from '../../../shared/model/column-config.model';
-
-import { forkJoin } from 'rxjs';
 import { EquipmentDto } from '../../../core/dto/equipments-patterns/equipment-response.dto';
 import { UserRecordResponse } from '../../../core/dto/user/record-user-response.dto';
+import { EquipmentFilterDto } from '../../../core/dto/equipments-patterns/equipment-request.dto';
+
+// Services
 import { UserService } from '../../../core/services/user/user.service';
 import { EquipmentService } from '../../../core/services/equipment/equipment.service';
 import { BrandService } from '../../../core/services/brand/brand.service';
 import { FunctionService } from '../../../core/services/function/function.service';
 import { LaboratoryService } from '../../../core/services/laboratory/laboratory.service';
-import { EquipmentFilterDto } from '../../../core/dto/equipments-patterns/equipment-request.dto';
 
 interface EquipmentTableRecord extends EquipmentDto {
   availabilityText: string;
@@ -59,19 +62,16 @@ interface LaboratoryGroup {
   styleUrls: ['./assign-equipment-permissions.component.scss'],
 })
 export class AssignEquipmentPermissionsComponent implements OnInit {
+  // User related properties
   users: UserRecord[] = [];
   selectedUser: UserRecordResponse | null = null;
   userOptions: string[] = [];
 
+  // Search related properties
   searchQuery = '';
   isLoading = false;
   showAdvancedSearch = false;
   hasSearched = false;
-
-  modalSuccessMessage = '';
-
-  modalSuccessType: 'success' | 'error' | '' = '';
-
   filters: {
     availability?: 'ACTIVO' | 'INACTIVO' | '';
     function?: number;
@@ -84,6 +84,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     brand: undefined,
   };
 
+  // Configuration properties
   fieldsConfig: FieldConfig[] = [
     {
       key: 'brand',
@@ -131,21 +132,23 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     brand: [],
   };
 
+  // Equipment related properties
   equipmentResults: EquipmentTableRecord[] = [];
   authorizedEquipments: EquipmentTableRecord[] = [];
-
-  // Agrupación por laboratorio
   laboratoryGroups: LaboratoryGroup[] = [];
-  showGroupedView = true; // por defecto mostrar vista agrupada
+  showGroupedView = true;
 
-  // Confirm modal
+  // Modal properties
   showConfirmModal = false;
   isModalProcessing = false;
+  modalSuccessMessage = '';
+  modalSuccessType: 'success' | 'error' | '' = '';
 
-  isInitialLoading = true; // loading inicial (usuarios y filtros)
-  isLoadingEquipments = false; // loading de equipos cuando se selecciona usuario
+  // Loading states
+  isInitialLoading = true;
+  isLoadingEquipments = false;
 
-  // Variables de paginación
+  // Pagination properties
   currentPage = 0;
   totalPages = 0;
   pageSize = 25;
@@ -160,48 +163,25 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadInitialData();
+  }
+
+  // Initialization methods
+  private loadInitialData(): void {
     this.isInitialLoading = true;
 
     forkJoin({
       users: this.userService.filterUsers(
-        { role: 'AUTHORIZED-USER', status: true }, // o un payload vacío: {}
-        0, // página inicial
-        10000 // tamaño de página suficientemente grande para traer todos
+        { role: 'AUTHORIZED-USER', status: true },
+        0,
+        10000
       ),
       brands: this.brandService.getAll(),
       functions: this.functionService.getAll(),
       laboratories: this.laboratoryService.getLaboratories(),
     }).subscribe({
       next: ({ users, brands, functions, laboratories }) => {
-        this.users = (users.content || []).map((u: any) => ({
-          id: u.id,
-          fullName: `${u.firstName} ${u.lastName}`,
-          identification: u.identification,
-          email: u.email,
-          role: u.role,
-          status: u.enabledStatus ? 'ACTIVO' : 'INACTIVO',
-          position: u.position?.positionName || '—',
-          creationDate: u.creationDate,
-        }));
-        this.userOptions = this.users.map((u) => u.fullName);
-
-        // Marcas
-        this.options['brand'] = brands.map((b) => ({
-          label: b.brandName,
-          value: b.id,
-        }));
-
-        // Funciones
-        this.options['function'] = functions.map((f) => ({
-          label: f.functionName,
-          value: f.id,
-        }));
-
-        // Laboratorios
-        this.options['laboratory'] = laboratories.map((l) => ({
-          label: l.laboratoryName,
-          value: l.id,
-        }));
+        this.processInitialData(users, brands, functions, laboratories);
       },
       error: (err) => {
         console.error('Error al cargar datos iniciales:', err);
@@ -212,17 +192,53 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     });
   }
 
-  changePage(page: number) {
+  private processInitialData(
+    users: any,
+    brands: any[],
+    functions: any[],
+    laboratories: any[]
+  ): void {
+    this.users = (users.content || []).map((u: any) => ({
+      id: u.id,
+      fullName: `${u.firstName} ${u.lastName}`,
+      identification: u.identification,
+      email: u.email,
+      role: u.role,
+      status: u.enabledStatus ? 'ACTIVO' : 'INACTIVO',
+      position: u.position?.positionName || '—',
+      creationDate: u.creationDate,
+    }));
+    this.userOptions = this.users.map((u) => u.fullName);
+
+    this.options['brand'] = brands.map((b) => ({
+      label: b.brandName,
+      value: b.id,
+    }));
+
+    this.options['function'] = functions.map((f) => ({
+      label: f.functionName,
+      value: f.id,
+    }));
+
+    this.options['laboratory'] = laboratories.map((l) => ({
+      label: l.laboratoryName,
+      value: l.id,
+    }));
+  }
+
+  // Pagination methods
+  changePage(page: number): void {
     this.currentPage = page;
     this.performSearch();
   }
 
-  onPageSizeChange(size: number) {
+  onPageSizeChange(size: number): void {
     this.pageSize = size;
     this.currentPage = 0;
     this.performSearch();
   }
 
+  // User selection methods
   onUserSelect(userFullName: string): void {
     const selected = this.users.find((u) => u.fullName === userFullName);
     if (!selected) return;
@@ -231,18 +247,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
 
     this.userService.getUserById(selected.id).subscribe({
       next: (user) => {
-        this.selectedUser = user;
-        this.authorizedEquipments = (user.authorizedUserEquipments ?? []).map(
-          (eq) => ({
-            ...eq,
-            availabilityText: eq.availability ? 'ACTIVO' : 'INACTIVO',
-            functionsText: Array.isArray(eq.functions)
-              ? eq.functions.map((f) => f.functionName).join(', ')
-              : '—',
-          })
-        );
-
-        this.performSearch();
+        this.handleUserSelection(user);
       },
       error: (err) => {
         console.error('Error al obtener usuario:', err);
@@ -251,6 +256,22 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     });
   }
 
+  private handleUserSelection(user: UserRecordResponse): void {
+    this.selectedUser = user;
+    this.authorizedEquipments = (user.authorizedUserEquipments ?? []).map(
+      (eq) => ({
+        ...eq,
+        availabilityText: eq.availability ? 'ACTIVO' : 'INACTIVO',
+        functionsText: Array.isArray(eq.functions)
+          ? eq.functions.map((f) => f.functionName).join(', ')
+          : '—',
+      })
+    );
+
+    this.performSearch();
+  }
+
+  // Search methods
   performSearch(): void {
     if (!this.selectedUser) return;
 
@@ -270,80 +291,72 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
           : undefined,
     };
 
-    // Usar el método con paginación
     this.equipmentService
       .filterEquipments(filterPayload, this.currentPage, this.pageSize)
       .subscribe({
-        next: (response) => {
-          const equipments = response.content || []; // Usar content de la respuesta paginada
-          this.totalPages = response.totalPages || 0; // Actualizar total de páginas
-
-          // Mapeo corregido con tipado explícito
-          const mapped: EquipmentTableRecord[] = equipments.map(
-            (eq: EquipmentDto) => ({
-              ...eq,
-              availabilityText: eq.availability ? 'ACTIVO' : 'INACTIVO', // Operador ternario corregido
-              functionsText:
-                Array.isArray(eq.functions) && eq.functions.length > 0
-                  ? eq.functions.map((f) => f.functionName).join(', ')
-                  : '—',
-            })
-          );
-
-          // Mapeo corregido para authorizedMap
-          const authorizedMap = new Map<number, EquipmentTableRecord>(
-            (this.authorizedEquipments ?? []).map((eq) => [eq.id, eq])
-          );
-
-          const visibleAuthorized = mapped.filter((eq) =>
-            authorizedMap.has(eq.id)
-          );
-          const hiddenAuthorized = (this.authorizedEquipments ?? []).filter(
-            (eq) => !mapped.some((res) => res.id === eq.id)
-          );
-
-          this.equipmentResults = mapped;
-          this.authorizedEquipments = [
-            ...hiddenAuthorized,
-            ...visibleAuthorized,
-          ];
-
-          this.groupEquipmentsByLaboratory();
-          this.hasSearched = true;
-          this.isLoading = false;
-          this.isLoadingEquipments = false;
-        },
-        error: (error) => {
-          console.error('Error al buscar equipos:', error);
-          this.equipmentResults = [];
-          this.totalPages = 0;
-          this.hasSearched = true;
-          this.isLoading = false;
-          this.isLoadingEquipments = false;
-        },
+        next: (response) => this.handleSearchSuccess(response),
+        error: (error) => this.handleSearchError(error),
       });
   }
 
-  // Método para agrupar equipos por laboratorio
-  groupEquipmentsByLaboratory(): void {
-    // Crear mapa de laboratorios
+  private handleSearchSuccess(response: any): void {
+    const equipments = response.content || [];
+    this.totalPages = response.totalPages || 0;
+
+    const mapped: EquipmentTableRecord[] = equipments.map(
+      (eq: EquipmentDto) => ({
+        ...eq,
+        availabilityText: eq.availability ? 'ACTIVO' : 'INACTIVO',
+        functionsText:
+          Array.isArray(eq.functions) && eq.functions.length > 0
+            ? eq.functions.map((f) => f.functionName).join(', ')
+            : '—',
+      })
+    );
+
+    const authorizedMap = new Map<number, EquipmentTableRecord>(
+      (this.authorizedEquipments ?? []).map((eq) => [eq.id, eq])
+    );
+
+    const visibleAuthorized = mapped.filter((eq) => authorizedMap.has(eq.id));
+    const hiddenAuthorized = (this.authorizedEquipments ?? []).filter(
+      (eq) => !mapped.some((res) => res.id === eq.id)
+    );
+
+    this.equipmentResults = mapped;
+    this.authorizedEquipments = [...hiddenAuthorized, ...visibleAuthorized];
+
+    this.groupEquipmentsByLaboratory();
+    this.hasSearched = true;
+    this.isLoading = false;
+    this.isLoadingEquipments = false;
+  }
+
+  private handleSearchError(error: any): void {
+    console.error('Error al buscar equipos:', error);
+    this.equipmentResults = [];
+    this.totalPages = 0;
+    this.hasSearched = true;
+    this.isLoading = false;
+    this.isLoadingEquipments = false;
+  }
+
+  // Laboratory grouping methods
+  private groupEquipmentsByLaboratory(): void {
     const labGroups = new Map<number, LaboratoryGroup>();
 
-    // Procesar cada equipo
     this.equipmentResults.forEach((equipment) => {
       const labId = equipment.laboratory?.id;
       const labName = equipment.laboratory?.laboratoryName;
 
       if (labId && labName) {
-        // Si el laboratorio ya existe en el mapa, agregar equipo
         if (labGroups.has(labId)) {
           labGroups.get(labId)?.equipments.push(equipment);
         } else {
-          // Si no existe, crear nuevo grupo de laboratorio
           labGroups.set(labId, {
             id: labId,
             name: labName,
-            expanded: true, // Expandido por defecto
+            expanded: true,
             equipments: [equipment],
             allSelected: false,
           });
@@ -351,70 +364,56 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
       }
     });
 
-    // Convertir mapa a array
     this.laboratoryGroups = Array.from(labGroups.values());
-
-    // Actualizar estado de selecciu00f3n para cada grupo
     this.updateGroupSelectionState();
   }
 
-  // Método para alternar la expansión de un grupo
   toggleGroupExpansion(group: LaboratoryGroup): void {
     group.expanded = !group.expanded;
   }
 
-  // Método para seleccionar/deseleccionar todos los equipos de un grupo
   toggleGroupSelection(group: LaboratoryGroup): void {
     const newState = !group.allSelected;
 
     if (newState) {
-      // Seleccionar todos los equipos del grupo que no estén ya seleccionados
       const currentIds = new Set(this.authorizedEquipments.map((eq) => eq.id));
-
       group.equipments.forEach((equipment) => {
         if (!currentIds.has(equipment.id)) {
           this.authorizedEquipments.push(equipment);
         }
       });
     } else {
-      // Deseleccionar todos los equipos del grupo
       this.authorizedEquipments = this.authorizedEquipments.filter(
         (auth) => !group.equipments.some((eq) => eq.id === auth.id)
       );
     }
 
-    // Actualizar estado del grupo
     group.allSelected = newState;
   }
 
-  // Método para alternar entre vista agrupada y vista plana
+  // View toggle methods
   toggleGroupedView(): void {
     this.showGroupedView = !this.showGroupedView;
   }
 
-  // Método para verificar si un equipo está marcado como autorizado
+  // Equipment selection methods
   isChecked(equipment: EquipmentTableRecord): boolean {
     return this.authorizedEquipments.some((eq) => eq.id === equipment.id);
   }
 
-  // Método para manejar el cambio de estado de un checkbox individual
   onItemCheckChange(item: EquipmentTableRecord): void {
     if (this.isChecked(item)) {
-      // Si ya está seleccionado, eliminarlo
       this.authorizedEquipments = this.authorizedEquipments.filter(
         (eq) => eq.id !== item.id
       );
     } else {
-      // Si no está seleccionado, añadirlo
       this.authorizedEquipments = [...this.authorizedEquipments, item];
     }
 
-    // Actualizar estado de grupos
     this.updateGroupSelectionState();
   }
 
-  // Método para actualizar el estado de selección de todos los grupos
-  updateGroupSelectionState(): void {
+  private updateGroupSelectionState(): void {
     this.laboratoryGroups.forEach((group) => {
       const allEquipmentIds = new Set(group.equipments.map((eq) => eq.id));
       const selectedEquipmentIds = new Set(
@@ -423,14 +422,13 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
           .map((eq) => eq.id)
       );
 
-      // Un grupo está totalmente seleccionado si todos sus equipos están seleccionados
       group.allSelected =
         selectedEquipmentIds.size === allEquipmentIds.size &&
         allEquipmentIds.size > 0;
     });
   }
 
-  // Método para obtener valores anidados de un objeto
+  // Utility methods
   resolveNestedValue(item: any, key: string): any {
     if (!key.includes('.')) {
       return item[key];
@@ -461,6 +459,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     this.authorizedEquipments = [...preserved, ...newOnes];
   }
 
+  // Modal methods
   savePermissions(): void {
     this.showConfirmModal = true;
   }
@@ -470,7 +469,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
 
     this.isModalProcessing = true;
     this.modalSuccessMessage = '';
-    this.modalSuccessType = ''; // limpiar antes
+    this.modalSuccessType = '';
 
     const payload = {
       userId: this.selectedUser.id,
@@ -480,25 +479,28 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     this.userService
       .updateAuthorizedEquipments(payload.userId, payload.equipmentIds)
       .subscribe({
-        next: () => {
-          this.modalSuccessMessage = '✅ Permisos actualizados correctamente.';
-          this.modalSuccessType = 'success';
-
-          setTimeout(() => {
-            this.isModalProcessing = false;
-            this.showConfirmModal = false;
-            this.modalSuccessMessage = '';
-            this.modalSuccessType = '';
-          }, 4000);
-        },
-        error: (err) => {
-          console.error('Error al guardar permisos:', err);
-          this.modalSuccessMessage =
-            '❌ Ocurrió un error al guardar los permisos.';
-          this.modalSuccessType = 'error';
-          this.isModalProcessing = false;
-        },
+        next: () => this.handleSaveSuccess(),
+        error: (err) => this.handleSaveError(err),
       });
+  }
+
+  private handleSaveSuccess(): void {
+    this.modalSuccessMessage = '✅ Permisos actualizados correctamente.';
+    this.modalSuccessType = 'success';
+
+    setTimeout(() => {
+      this.isModalProcessing = false;
+      this.showConfirmModal = false;
+      this.modalSuccessMessage = '';
+      this.modalSuccessType = '';
+    }, 4000);
+  }
+
+  private handleSaveError(err: any): void {
+    console.error('Error al guardar permisos:', err);
+    this.modalSuccessMessage = '❌ Ocurrió un error al guardar los permisos.';
+    this.modalSuccessType = 'error';
+    this.isModalProcessing = false;
   }
 
   cancelSave(): void {
@@ -507,6 +509,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     this.modalSuccessType = '';
   }
 
+  // Search control methods
   resetSearch(): void {
     this.searchQuery = '';
     this.filters = {
@@ -530,6 +533,7 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
     this.performSearch();
   }
 
+  // Utility methods
   trackById(_: number, item: EquipmentDto): number {
     return item.id;
   }

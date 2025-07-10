@@ -1,37 +1,95 @@
+// Table component styles
 .table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
+  margin: 1rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
+  // Header and cell styles
   th,
   td {
     padding: 0.75rem;
     border: 1px solid #ddd;
     text-align: left;
+    vertical-align: middle;
   }
 
+  // Header specific styles
   th {
     background-color: #f0f0f0;
+    font-weight: 600;
+    position: relative;
+
+    // Add sorting indicators if needed
+    &.sortable {
+      cursor: pointer;
+      &:hover {
+        background-color: #e6e6e6;
+      }
+      &::after {
+        content: "↕";
+        margin-left: 5px;
+        font-size: 0.8em;
+      }
+    }
   }
 
-  .available {
-    color: green;
-    font-weight: bold;
+  // Row hover effect
+  tr:hover {
+    background-color: #f9f9f9;
   }
 
-  .unavailable {
-    color: red;
-    font-weight: bold;
+  // Status indicators
+  .status-indicator {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 500;
+
+    &.available {
+      color: #2e7d32;
+      background-color: #e8f5e9;
+    }
+
+    &.unavailable {
+      color: #c62828;
+      background-color: #ffebee;
+    }
   }
-}
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
+
+  // Checkbox column styling
+  .selection-column {
+    width: 40px;
+    text-align: center;
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .checkbox-input {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+  }
+
+  // Responsive adaptations
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+
+    th,
+    td {
+      padding: 0.5rem;
+    }
+
+    // Hide less important columns on mobile
+    .secondary-column {
+      display: none;
+    }
+  }
 }

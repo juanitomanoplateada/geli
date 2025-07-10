@@ -5,6 +5,7 @@
   font-family: Arial, sans-serif;
   color: #333;
 
+  // User selection section
   .user-select-section {
     margin-bottom: 2rem;
 
@@ -16,40 +17,12 @@
     }
   }
 
-  .no-results {
-    text-align: center;
-    background-color: #fff3f3;
-    border: 1px solid #ffcdd2;
-    border-radius: 6px;
-    padding: 1.5rem;
-    margin-top: 2rem;
-    color: #c62828;
-
-    .try-again-btn {
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      background-color: #ffcdd2;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-
-      &:hover {
-        background-color: #ef9a9a;
-      }
-    }
-  }
-
-  app-results-table-checkbox {
-    margin-top: 2rem;
-  }
-
+  // Permissions summary section
   .permissions-summary {
     background-color: #f5f5f5;
     border: 1px solid #ddd;
     border-radius: 8px;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+    margin: 2rem 0;
     padding: 1.5rem;
 
     h3 {
@@ -93,29 +66,157 @@
       }
     }
   }
-}
 
-.modal-feedback {
-  color: #28a745;
-  margin-top: 1rem;
-  font-weight: bold;
-  text-align: center;
-}
+  // No results section
+  .no-results {
+    text-align: center;
+    background-color: #fff3f3;
+    border: 1px solid #ffcdd2;
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    color: #c62828;
 
-.no-results {
-  text-align: center;
-  color: #b22222;
-  font-weight: bold;
-  margin-top: 1rem;
+    .try-again-btn {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background-color: #ffcdd2;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
 
-  .try-again-btn {
-    margin-top: 0.5rem;
-    padding: 0.5rem 1rem;
+      &:hover {
+        background-color: #ef9a9a;
+      }
+    }
+  }
+
+  // Results table component
+  app-results-table-checkbox {
+    margin-top: 2rem;
+  }
+
+  // Loading spinner
+  .loading-spinner {
+    text-align: center;
+    margin: 2rem 0;
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    .spinner {
+      margin: 1rem auto;
+      width: 40px;
+      height: 40px;
+      border: 5px solid #ccc;
+      border-top-color: #007bff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+
+  // View toggle controls
+  .view-toggle {
+    margin: 20px 0;
+    text-align: right;
+
+    .toggle-btn {
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px 15px;
+      cursor: pointer;
+      font-size: 14px;
+
+      &:hover {
+        background-color: #e0e0e0;
+      }
+    }
+  }
+
+  // Laboratory groups view
+  .lab-groups {
+    margin-top: 20px;
+
+    .lab-group {
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+
+      .lab-header {
+        background-color: #f8f8f8;
+        padding: 10px 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #ddd;
+
+        &:hover {
+          background-color: #f0f0f0;
+        }
+
+        .toggle-icon {
+          margin-right: 10px;
+          font-size: 12px;
+        }
+
+        h3 {
+          margin: 0;
+          font-size: 16px;
+          flex-grow: 1;
+        }
+
+        .equipment-count {
+          color: #666;
+          margin-right: 15px;
+        }
+
+        .select-all {
+          display: flex;
+          align-items: center;
+          font-size: 14px;
+
+          input {
+            margin-right: 5px;
+          }
+        }
+      }
+
+      .lab-equipment-list {
+        padding: 10px;
+
+        .equipment-table {
+          width: 100%;
+          border-collapse: collapse;
+
+          th,
+          td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+          }
+
+          th {
+            background-color: #f5f5f5;
+            font-weight: 500;
+          }
+
+          tr:hover {
+            background-color: #f9f9f9;
+          }
+        }
+      }
+    }
   }
 }
 
+// Modal styles
 .modal-body-content {
   text-align: left;
+
   p {
     margin-bottom: 1rem;
   }
@@ -161,138 +262,110 @@
   }
 }
 
-.loading-spinner {
-  text-align: center;
-  margin-top: 3rem;
-
-  .spinner {
-    margin: 1rem auto;
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-top-color: #007bff;
-    border-radius: 50%;
-    animation: spin 0.9s linear infinite;
-  }
-}
-
+// Animation keyframes
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-.loading-spinner {
-  text-align: center;
-  margin: 2rem 0;
+.assign-equipment-permissions {
+  // Estilos existentes para escritorio se mantienen igual
 
-  .spinner {
-    margin: 1rem auto;
-    width: 40px;
-    height: 40px;
-    border: 5px solid #ccc;
-    border-top-color: #007bff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-}
+  // Media queries para móvil (max-width: 767px)
+  @media (max-width: 767px) {
+    padding: 1.5rem 1rem;
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-// Estilos para la vista agrupada por laboratorio
-.view-toggle {
-  margin: 20px 0;
-  text-align: right;
-
-  .toggle-btn {
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 8px 15px;
-    cursor: pointer;
-    font-size: 14px;
-
-    &:hover {
-      background-color: #e0e0e0;
+    .user-select-section {
+      margin-bottom: 1.5rem;
     }
-  }
-}
 
-.lab-groups {
-  margin-top: 20px;
-
-  .lab-group {
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    overflow: hidden;
-
-    .lab-header {
-      background-color: #f8f8f8;
-      padding: 10px 15px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid #ddd;
-
-      &:hover {
-        background-color: #f0f0f0;
-      }
-
-      .toggle-icon {
-        margin-right: 10px;
-        font-size: 12px;
-      }
+    .permissions-summary {
+      margin: 1.5rem 0;
+      padding: 1rem;
 
       h3 {
-        margin: 0;
-        font-size: 16px;
-        flex-grow: 1;
+        font-size: 1.1rem;
       }
 
-      .equipment-count {
-        color: #666;
-        margin-right: 15px;
+      ul li {
+        font-size: 0.9rem;
       }
 
-      .select-all {
-        display: flex;
-        align-items: center;
-        font-size: 14px;
-
-        input {
-          margin-right: 5px;
-        }
+      .save-btn {
+        width: 100%;
       }
     }
 
-    .lab-equipment-list {
-      padding: 10px;
+    .no-results {
+      padding: 1rem;
+      margin-top: 1.5rem;
+    }
 
-      .equipment-table {
+    .view-toggle {
+      margin: 15px 0;
+      text-align: center;
+
+      .toggle-btn {
         width: 100%;
-        border-collapse: collapse;
+        padding: 10px;
+      }
+    }
 
-        th, td {
-          padding: 8px 12px;
-          text-align: left;
-          border-bottom: 1px solid #eee;
+    .lab-groups {
+      .lab-group {
+        .lab-header {
+          flex-wrap: wrap;
+          padding: 10px;
+
+          h3 {
+            width: 100%;
+            margin-bottom: 5px;
+          }
+
+          .equipment-count {
+            margin-right: 10px;
+          }
         }
 
-        th {
-          background-color: #f5f5f5;
-          font-weight: 500;
-        }
+        .lab-equipment-list {
+          padding: 5px;
+          overflow-x: auto;
 
-        tr:hover {
-          background-color: #f9f9f9;
+          .equipment-table {
+            min-width: 600px;
+
+            th,
+            td {
+              padding: 6px 8px;
+              font-size: 0.85rem;
+            }
+          }
         }
       }
     }
   }
 }
 
+.modal-body-content {
+  // Estilos existentes para escritorio se mantienen igual
+
+  @media (max-width: 767px) {
+    .modal-equipment-list {
+      max-height: 200px;
+      overflow-y: auto;
+      padding-left: 1rem;
+
+      li {
+        font-size: 0.9rem;
+      }
+    }
+
+    .modal-feedback {
+      padding: 0.5rem;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// El keyframe de animación se mantiene igual

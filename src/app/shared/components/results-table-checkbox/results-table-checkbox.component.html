@@ -1,41 +1,59 @@
-<table class="table">
+<table class="table" aria-describedby="table-description">
+  <caption id="table-description" class="visually-hidden">
+    Tabla de resultados con selección múltiple
+  </caption>
+
   <thead>
     <tr>
-      <th>✓</th>
-      <th *ngFor="let col of columns">{{ col.label }}</th>
+      <th scope="col" class="selection-column">
+        <span class="visually-hidden">Selección</span>
+      </th>
+      <th *ngFor="let col of columns" scope="col">
+        {{ col.label }}
+      </th>
     </tr>
   </thead>
+
   <tbody>
     <tr *ngFor="let item of data; trackBy: trackById">
-      <td>
-        <label>
+      <!-- Checkbox Column -->
+      <td class="selection-column">
+        <label class="checkbox-label">
           <input
             type="checkbox"
             [checked]="isChecked(item)"
             (change)="onCheckboxToggle(item, $event)"
-            [attr.title]="'Seleccionar ' + (item.equipmentName || item.name)"
+            [attr.aria-label]="
+              'Seleccionar ' + (item.equipmentName || item.name)
+            "
+            class="checkbox-input"
           />
-          <span class="visually-hidden"
-            >Seleccionar {{ item.equipmentName || item.name }}</span
-          >
+          <span class="visually-hidden">
+            Seleccionar {{ item.equipmentName || item.name }}
+          </span>
         </label>
       </td>
-      <td *ngFor="let col of columns">
-        <span *ngIf="col.type === 'text'">
-          {{ resolveNestedValue(item, col.key) }}
-        </span>
-        <span *ngIf="col.type === 'status'">
-          <span
-            [class.available]="
-              resolveNestedValue(item, col.key) === 'Disponible'
-            "
-            [class.unavailable]="
-              resolveNestedValue(item, col.key) === 'No disponible'
-            "
-          >
-            {{ resolveNestedValue(item, col.key) }}
+
+      <!-- Data Columns -->
+      <td *ngFor="let col of columns" [class]="'column-' + col.key">
+        <ng-container [ngSwitch]="col.type">
+          <!-- Text Type Column -->
+          <span *ngSwitchCase="'text'" class="text-cell">
+            {{ resolveNestedValue(item, col.key) || "—" }}
           </span>
-        </span>
+
+          <!-- Status Type Column -->
+          <span *ngSwitchCase="'status'" class="status-cell">
+            <span
+              [class]="
+                'status-badge ' +
+                getStatusClass(resolveNestedValue(item, col.key))
+              "
+            >
+              {{ resolveNestedValue(item, col.key) || "—" }}
+            </span>
+          </span>
+        </ng-container>
       </td>
     </tr>
   </tbody>

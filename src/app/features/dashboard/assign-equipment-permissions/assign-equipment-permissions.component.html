@@ -1,12 +1,14 @@
 <div class="assign-equipment-permissions">
+  <!-- Header Section -->
   <h1>Asignar Permisos de Uso de Equipos</h1>
 
+  <!-- Initial Loading State -->
   <div *ngIf="isInitialLoading" class="loading-spinner">
     <p>Cargando datos iniciales...</p>
     <div class="spinner"></div>
   </div>
 
-  <!-- Selección de usuario -->
+  <!-- User Selection Section -->
   <div *ngIf="!isInitialLoading" class="user-select-section">
     <app-dropdown-search
       [options]="userOptions"
@@ -16,7 +18,7 @@
     ></app-dropdown-search>
   </div>
 
-  <!-- Panel de equipos autorizados (siempre visible cuando hay usuario) -->
+  <!-- Authorized Equipment Summary -->
   <div *ngIf="selectedUser" class="permissions-summary">
     <h3>Equipos autorizados para {{ getUserLabel(selectedUser) }}</h3>
     <ng-container *ngIf="authorizedEquipments.length > 0; else noEquipos">
@@ -35,9 +37,10 @@
     </button>
   </div>
 
+  <!-- Equipment Search Section -->
   <h1 *ngIf="selectedUser">Búsqueda de Equipos</h1>
 
-  <!-- Filtros y búsqueda -->
+  <!-- Search Controls -->
   <app-search-advanced
     *ngIf="selectedUser"
     [searchQuery]="searchQuery"
@@ -65,14 +68,14 @@
     (pageSizeChange)="onPageSizeChange($event)"
   ></app-search-advanced>
 
-  <!-- Toggle para cambiar entre vista agrupada y plana -->
+  <!-- View Toggle -->
   <div *ngIf="!isLoading && equipmentResults.length > 0" class="view-toggle">
     <button (click)="toggleGroupedView()" class="toggle-btn">
       {{ showGroupedView ? "Mostrar vista plana" : "Mostrar vista agrupada" }}
     </button>
   </div>
 
-  <!-- Vista agrupada por laboratorio -->
+  <!-- Grouped View (by Laboratory) -->
   <div
     *ngIf="!isLoading && equipmentResults.length > 0 && showGroupedView"
     class="lab-groups"
@@ -121,10 +124,10 @@
                 <span *ngIf="col.type === 'status'">
                   <span
                     [class.available]="
-                      resolveNestedValue(item, col.key) === 'Disponible'
+                      resolveNestedValue(item, col.key) === 'ACTIVO'
                     "
                     [class.unavailable]="
-                      resolveNestedValue(item, col.key) === 'No disponible'
+                      resolveNestedValue(item, col.key) === 'INACTIVO'
                     "
                   >
                     {{ resolveNestedValue(item, col.key) }}
@@ -138,7 +141,7 @@
     </div>
   </div>
 
-  <!-- Vista plana (tabla original) -->
+  <!-- Flat View (Table) -->
   <app-results-table-checkbox
     *ngIf="!isLoading && equipmentResults.length > 0 && !showGroupedView"
     [columns]="columns"
@@ -147,7 +150,7 @@
     (checkedItemsChange)="updateAuthorizedEquipments($event)"
   ></app-results-table-checkbox>
 
-  <!-- Sin resultados -->
+  <!-- No Results Section -->
   <div
     *ngIf="hasSearched && !isLoading && equipmentResults.length === 0"
     class="no-results"
@@ -158,12 +161,13 @@
     </button>
   </div>
 
+  <!-- Equipment Loading State -->
   <div *ngIf="isLoadingEquipments" class="loading-spinner">
     <p>Cargando equipos del usuario...</p>
     <div class="spinner"></div>
   </div>
 
-  <!-- Modal de confirmación -->
+  <!-- Confirmation Modal -->
   <app-confirm-modal
     [show]="showConfirmModal"
     [title]="'¿Confirmar cambios de permisos?'"
