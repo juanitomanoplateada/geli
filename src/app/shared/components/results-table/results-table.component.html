@@ -5,57 +5,61 @@
       [ngStyle]="{ 'grid-template-columns': gridTemplate }"
       [attr.data-sorted-column]="sortedColumnIndex"
     >
-      <!-- HEADER -->
+      <!-- Sección de Cabecera -->
       <div class="results-header" id="results-header">
-        <div *ngFor="let col of columns" (click)="sortBy(col.key)">
-          {{ col.label }}
+        <div
+          *ngFor="let col of columns"
+          (click)="sortBy(col.key)"
+          class="header-cell"
+          [class.sortable]="sortEnabled"
+        >
+          <span class="header-label">{{ col.label }}</span>
           <span class="sort-icon" *ngIf="isSortingBy(col.key)">
             {{ getSortIcon(col.key) }}
           </span>
         </div>
       </div>
 
-      <!-- FILAS -->
+      <!-- Sección de Filas de Datos -->
       <div
         *ngFor="let item of data; trackBy: trackByFunction"
         class="result-item"
       >
+        <!-- Celdas de Datos -->
         <div
           *ngFor="let col of columns"
           class="result-cell"
+          [class.status-cell]="col.type === 'status'"
+          [class.actions-cell]="col.type === 'actions'"
           [attr.data-label]="col.label"
         >
           <ng-container [ngSwitch]="col.type">
-            <!-- Texto simple -->
+            <!-- Tipo: Texto Simple -->
             <ng-container *ngSwitchCase="'text'">
-              {{ item[col.key] }}
+              <span class="text-content">{{ item[col.key] || "-" }}</span>
             </ng-container>
 
-            <!-- Indicador de estado -->
+            <!-- Tipo: Estado -->
             <ng-container *ngSwitchCase="'status'">
-              <div class="availability">
+              <div class="status-indicator">
                 <span
-                  class="dot"
+                  class="status-dot"
                   [ngClass]="{
-                    available:
-                      item[col.key]?.toLowerCase() === 'activo' ||
-                      item[col.key]?.toLowerCase() === 'disponible',
-                    'not-available':
-                      item[col.key]?.toLowerCase() === 'inactivo' ||
-                      item[col.key]?.toLowerCase() === 'no disponible'
+                    available: isAvailableStatus(item[col.key]),
+                    'not-available': !isAvailableStatus(item[col.key])
                   }"
                 ></span>
-                {{ item[col.key] }}
+                <span class="status-label">{{ item[col.key] }}</span>
               </div>
             </ng-container>
 
-            <!-- Botones de acción -->
+            <!-- Tipo: Acciones -->
             <ng-container *ngSwitchCase="'actions'">
-              <div class="actions">
+              <div class="action-buttons">
                 <button
                   *ngFor="let action of actionButtons"
-                  (click)="action.action(item)"
-                  class="action-btn"
+                  (click)="$event.stopPropagation(); action.action(item)"
+                  class="action-button"
                   [ngClass]="getColor(action, item)"
                 >
                   {{ getLabel(action, item) }}

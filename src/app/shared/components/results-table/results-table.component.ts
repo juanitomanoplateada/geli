@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+// Interfaces
 interface ColumnConfig {
   key: string;
   label: string;
@@ -21,6 +22,7 @@ interface ActionButton {
   styleUrls: ['./results-table.component.scss'],
 })
 export class ResultsTableComponent implements OnInit {
+  // Inputs
   @Input() columns: ColumnConfig[] = [];
   @Input() data: any[] = [];
   @Input() actionButtons: ActionButton[] = [];
@@ -28,12 +30,13 @@ export class ResultsTableComponent implements OnInit {
   @Input() trackByFunction: (index: number, item: any) => any = (index, item) =>
     item.id;
 
+  // Variables de estado
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
-  sortedColumnIndex: number = -1; // ✅ para saber cuál columna ordenar
-
+  sortedColumnIndex: number = -1;
   gridTemplate: string = '';
 
+  // Lifecycle hooks
   ngOnInit(): void {
     if (this.columns.length > 0) {
       this.sortBy(this.columns[0].key, false);
@@ -41,7 +44,8 @@ export class ResultsTableComponent implements OnInit {
     }
   }
 
-  buildGridTemplate(): void {
+  // Métodos de inicialización
+  private buildGridTemplate(): void {
     if (this.columns.length > 0) {
       this.gridTemplate = this.columns
         .map(() => 'minmax(120px, auto)')
@@ -49,9 +53,15 @@ export class ResultsTableComponent implements OnInit {
     }
   }
 
+  // Métodos de ordenación
   sortBy(column: string, toggleDirection: boolean = true): void {
     if (!this.sortEnabled) return;
 
+    this.updateSortState(column, toggleDirection);
+    this.sortData();
+  }
+
+  private updateSortState(column: string, toggleDirection: boolean): void {
     const index = this.columns.findIndex((c) => c.key === column);
     this.sortedColumnIndex = index;
 
@@ -61,36 +71,44 @@ export class ResultsTableComponent implements OnInit {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
+  }
 
+  private sortData(): void {
     this.data.sort((a, b) => {
       const aValue = (a[this.sortColumn] ?? '').toString().toLowerCase();
       const bValue = (b[this.sortColumn] ?? '').toString().toLowerCase();
+
       if (aValue < bValue) return this.sortDirection === 'asc' ? -1 : 1;
       if (aValue > bValue) return this.sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
   }
 
+  // Métodos de utilidad para la vista
   isSortingBy(column: string): boolean {
     return this.sortColumn === column;
   }
 
   getSortIcon(column: string): string {
     if (!this.isSortingBy(column)) return '';
-    return this.sortDirection === 'asc' ? '↑' : '↓';
+    return this.sortDirection === 'asc' ? '↓' : '↑';
   }
 
-  /** Devuelve la etiqueta real, sea string o función */
   getLabel(action: ActionButton, row: any): string {
     return typeof action.label === 'function'
       ? action.label(row)
       : action.label;
   }
 
-  /** Devuelve la clase de color real, sea string o función */
   getColor(action: ActionButton, row: any): string {
     const color =
       typeof action.color === 'function' ? action.color(row) : action.color;
     return color || 'primary';
+  }
+
+  isAvailableStatus(status: string): boolean {
+    if (!status) return false;
+    const statusStr = status.toLowerCase();
+    return statusStr === 'activo' || statusStr === 'disponible';
   }
 }

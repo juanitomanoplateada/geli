@@ -148,8 +148,8 @@ export class AssignEquipmentPermissionsComponent implements OnInit {
   // Variables de paginación
   currentPage = 0;
   totalPages = 0;
-  pageSize = 5;
-  pageSizeOptions = [5, 15, 30, 50, 100];
+  pageSize = 25;
+  pageSizeOptions = [25, 50, 100, 150, 300, 600, 1200];
 
   constructor(
     private userService: UserService,
