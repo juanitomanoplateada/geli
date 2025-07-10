@@ -16,6 +16,14 @@
     border-radius: 8px;
     min-width: max-content;
     background-color: #fff;
+    // Asegura que las celdas mantengan su ancho mínimo
+    grid-auto-columns: minmax(120px, auto);
+
+    // Permite que el contenido fluya en filas
+    grid-auto-flow: row;
+
+    // Asegura que las filas se ajusten al contenido
+    grid-template-rows: auto;
 
     // Estructura común para header y filas
     .results-header,
@@ -23,16 +31,49 @@
       display: contents;
     }
 
-    // Estilos de celdas
+    // Estilos base para celdas
     .results-header > div,
     .result-item > div {
       padding: 0.75rem 1rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       border-bottom: 1px solid #eee;
       display: flex;
       align-items: center;
+      min-width: 120px; // Ancho mínimo para evitar compresión excesiva
+    }
+
+    // Contenedor especial para celdas de texto
+    .text-cell-wrapper {
+      width: 100%;
+      position: relative;
+    }
+
+    // Estilos específicos para contenido de texto
+    .text-content {
+      width: 100%;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      -webkit-hyphens: auto;
+      hyphens: auto;
+      max-width: 350px;
+
+      &.multiline {
+        display: -webkit-box;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 5;
+        line-clamp: 5;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+        line-height: 1.4;
+        max-height: calc(1.4em * 5);
+      }
+
+      &:not(.multiline) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
 
     // Cabecera de la tabla
@@ -144,13 +185,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
-    }
-
-    // Contenido de texto
-    .text-content {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
   }
 

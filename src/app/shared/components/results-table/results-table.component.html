@@ -36,7 +36,14 @@
           <ng-container [ngSwitch]="col.type">
             <!-- Tipo: Texto Simple -->
             <ng-container *ngSwitchCase="'text'">
-              <span class="text-content">{{ item[col.key] || "-" }}</span>
+              <div class="text-cell-wrapper">
+                <span
+                  class="text-content"
+                  [class.multiline]="shouldWrapText(item[col.key])"
+                >
+                  {{ item[col.key] }}
+                </span>
+              </div>
             </ng-container>
 
             <!-- Tipo: Estado -->

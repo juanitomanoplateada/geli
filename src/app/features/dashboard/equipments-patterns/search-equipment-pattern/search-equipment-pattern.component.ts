@@ -115,7 +115,7 @@ export class SearchEquipmentPatternComponent implements OnInit {
   currentPage = 0;
   totalPages = 0;
   pageSize = 5;
-  pageSizeOptions = [5, 15, 30, 50, 100];
+  pageSizeOptions = [5, 15, 30, 50, 100, 300, 1000];
 
   constructor(
     private router: Router,

@@ -1,6 +1,10 @@
 <section class="dashboard-layout">
   <!-- Botón de toggle para el sidebar -->
-  <button class="dashboard-toggle" (click)="toggleSidebar()">
+  <button
+    class="dashboard-toggle"
+    (click)="toggleSidebar()"
+    aria-label="Toggle sidebar"
+  >
     {{ sidebarOpen ? "✖" : "☰" }}
   </button>
 
@@ -8,224 +12,262 @@
   <nav class="dashboard-sidebar" [class.open]="sidebarOpen">
     <!-- Logo -->
     <div class="dashboard-logo">
-      <img src="/logo_incitema.png" alt="Logo INCITEMA" />
+      <img src="/logo_incitema.png" alt="Logo INCITEMA" loading="lazy" />
     </div>
 
-    <!-- Enlace de Inicio -->
-    <a
-      routerLink="/dashboard/home"
-      class="dashboard-link"
-      [class.active]="isExactActive('/dashboard/home')"
-      (click)="onNavigate()"
-      >Inicio</a
-    >
-
-    <!-- Menú de Sesiones (para usuarios autorizados) -->
-    <a
-      *ngIf="hasRole(['AUTHORIZED-USER'])"
-      class="dashboard-link"
-      routerLink="/dashboard/sessions/register-session"
-      [class.active]="isActive('/dashboard/sessions/register-session')"
-      (click)="onNavigate()"
-      >Registrar Uso</a
-    >
-    <a
-      *ngIf="hasRole(['AUTHORIZED-USER'])"
-      class="dashboard-link"
-      routerLink="/dashboard/sessions/active-sessions"
-      [class.active]="isActive('/dashboard/sessions/active-sessions')"
-      (click)="onNavigate()"
-      >Sesiones Activas</a
-    >
-    <a
-      *ngIf="hasRole(['AUTHORIZED-USER'])"
-      class="dashboard-link"
-      routerLink="/dashboard/sessions/personal-session-history"
-      [class.active]="isActive('/dashboard/sessions/personal-session-history')"
-      (click)="onNavigate()"
-      >Historial de Sesiones</a
-    >
-
-    <!-- Menú de Usuarios (para administradores de calidad) -->
-    <div
-      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
-      class="dashboard-group"
-      [class.active]="isActive('/dashboard/users')"
-    >
-      <div class="dashboard-link" (click)="toggleSubmenu('users')">
-        Usuarios
-        <span class="arrow" [class.open]="isSubmenuOpen('users')">▼</span>
-      </div>
-      <div class="dashboard-submenu" [class.open]="isSubmenuOpen('users')">
-        <a
-          routerLink="/dashboard/users/search-user"
-          [class.active]="isActive('/dashboard/users/search-user')"
-          (click)="onNavigate()"
-          >Buscar Usuario</a
-        >
-        <a
-          routerLink="/dashboard/users/register-authorized-personnel"
-          [class.active]="
-            isActive('/dashboard/users/register-authorized-personnel')
-          "
-          (click)="onNavigate()"
-          >Registrar Personal Autorizado</a
-        >
-        <a
-          routerLink="/dashboard/users/register-quality-analyst"
-          [class.active]="isActive('/dashboard/users/register-quality-analyst')"
-          (click)="onNavigate()"
-          >Registrar Analista de Calidad</a
-        >
-        <a
-          routerLink="/dashboard/users/positions"
-          [class.active]="isActive('/dashboard/users/positions')"
-          (click)="onNavigate()"
-          >Actualizar Cargo</a
-        >
-      </div>
-    </div>
-
-    <!-- Menú de Laboratorios (para administradores de calidad) -->
-    <div
-      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
-      class="dashboard-group"
-      [class.active]="isActive('/dashboard/laboratories')"
-    >
-      <div class="dashboard-link" (click)="toggleSubmenu('laboratories')">
-        Laboratorios
-        <span class="arrow" [class.open]="isSubmenuOpen('laboratories')"
-          >▼</span
-        >
-      </div>
-      <div
-        class="dashboard-submenu"
-        [class.open]="isSubmenuOpen('laboratories')"
-      >
-        <a
-          routerLink="/dashboard/laboratories/search-laboratory"
-          [class.active]="isActive('/dashboard/laboratories/search-laboratory')"
-          (click)="onNavigate()"
-          >Buscar Laboratorio</a
-        >
-        <a
-          routerLink="/dashboard/laboratories/register-laboratory"
-          [class.active]="
-            isActive('/dashboard/laboratories/register-laboratory')
-          "
-          (click)="onNavigate()"
-          >Registrar Laboratorio</a
-        >
-        <a
-          routerLink="/dashboard/laboratories/locations"
-          [class.active]="isActive('/dashboard/laboratories/locations')"
-          (click)="onNavigate()"
-          >Actualizar Ubicación</a
-        >
-      </div>
-    </div>
-
-    <!-- Menú de Equipos/Patrones (para administradores de calidad) -->
-    <div
-      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
-      class="dashboard-group"
-      [class.active]="isActive('/dashboard/equipments-patterns')"
-    >
-      <div
+    <!-- Grupo: Navegación principal -->
+    <div class="dashboard-group">
+      <a
+        routerLink="/dashboard/home"
         class="dashboard-link"
-        (click)="toggleSubmenu('equipments-patterns')"
+        [class.active]="isExactActive('/dashboard/home')"
+        (click)="onNavigate()"
       >
-        Equipos / Patrones
-        <span class="arrow" [class.open]="isSubmenuOpen('equipments-patterns')"
-          >▼</span
-        >
-      </div>
+        <i class="icon-home"></i> Inicio
+      </a>
+    </div>
+
+    <!-- Grupo: Sesiones (para usuarios autorizados) -->
+    <div *ngIf="hasRole(['AUTHORIZED-USER'])" class="dashboard-group">
+      <div class="dashboard-group-title">Sesiones</div>
+      <a
+        class="dashboard-link"
+        routerLink="/dashboard/sessions/register-session"
+        [class.active]="isActive('/dashboard/sessions/register-session')"
+        (click)="onNavigate()"
+      >
+        <i class="icon-register"></i> Registrar Uso
+      </a>
+      <a
+        class="dashboard-link"
+        routerLink="/dashboard/sessions/active-sessions"
+        [class.active]="isActive('/dashboard/sessions/active-sessions')"
+        (click)="onNavigate()"
+      >
+        <i class="icon-active"></i> Sesiones Activas
+      </a>
+      <a
+        class="dashboard-link"
+        routerLink="/dashboard/sessions/personal-session-history"
+        [class.active]="
+          isActive('/dashboard/sessions/personal-session-history')
+        "
+        (click)="onNavigate()"
+      >
+        <i class="icon-history"></i> Historial Personal
+      </a>
+    </div>
+
+    <!-- Grupo: Administración (para administradores de calidad) -->
+    <div *ngIf="hasRole(['QUALITY-ADMIN-USER'])">
+      <!-- Subgrupo: Usuarios -->
       <div
-        class="dashboard-submenu"
-        [class.open]="isSubmenuOpen('equipments-patterns')"
+        class="dashboard-group"
+        [class.active]="isActive('/dashboard/users')"
       >
+        <div class="dashboard-link" (click)="toggleSubmenu('users')">
+          <i class="icon-users"></i> Usuarios
+          <span class="arrow" [class.open]="isSubmenuOpen('users')">▼</span>
+        </div>
+        <div class="dashboard-submenu" [class.open]="isSubmenuOpen('users')">
+          <a
+            routerLink="/dashboard/users/search-user"
+            [class.active]="isActive('/dashboard/users/search-user')"
+            (click)="onNavigate()"
+          >
+            Buscar Usuario
+          </a>
+          <a
+            routerLink="/dashboard/users/register-authorized-personnel"
+            [class.active]="
+              isActive('/dashboard/users/register-authorized-personnel')
+            "
+            (click)="onNavigate()"
+          >
+            Registrar Personal Autorizado
+          </a>
+          <a
+            routerLink="/dashboard/users/register-quality-analyst"
+            [class.active]="
+              isActive('/dashboard/users/register-quality-analyst')
+            "
+            (click)="onNavigate()"
+          >
+            Registrar Analista de Calidad
+          </a>
+          <a
+            routerLink="/dashboard/users/positions"
+            [class.active]="isActive('/dashboard/users/positions')"
+            (click)="onNavigate()"
+          >
+            Actualizar Cargo
+          </a>
+        </div>
+      </div>
+
+      <!-- Subgrupo: Laboratorios -->
+      <div
+        class="dashboard-group"
+        [class.active]="isActive('/dashboard/laboratories')"
+      >
+        <div class="dashboard-link" (click)="toggleSubmenu('laboratories')">
+          <i class="icon-lab"></i> Laboratorios
+          <span class="arrow" [class.open]="isSubmenuOpen('laboratories')"
+            >▼</span
+          >
+        </div>
+        <div
+          class="dashboard-submenu"
+          [class.open]="isSubmenuOpen('laboratories')"
+        >
+          <a
+            routerLink="/dashboard/laboratories/search-laboratory"
+            [class.active]="
+              isActive('/dashboard/laboratories/search-laboratory')
+            "
+            (click)="onNavigate()"
+          >
+            Buscar Laboratorio
+          </a>
+          <a
+            routerLink="/dashboard/laboratories/register-laboratory"
+            [class.active]="
+              isActive('/dashboard/laboratories/register-laboratory')
+            "
+            (click)="onNavigate()"
+          >
+            Registrar Laboratorio
+          </a>
+          <a
+            routerLink="/dashboard/laboratories/locations"
+            [class.active]="isActive('/dashboard/laboratories/locations')"
+            (click)="onNavigate()"
+          >
+            Actualizar Ubicación
+          </a>
+        </div>
+      </div>
+
+      <!-- Subgrupo: Equipos/Patrones -->
+      <div
+        class="dashboard-group"
+        [class.active]="isActive('/dashboard/equipments-patterns')"
+      >
+        <div
+          class="dashboard-link"
+          (click)="toggleSubmenu('equipments-patterns')"
+        >
+          <i class="icon-equipment"></i> Equipos / Patrones
+          <span
+            class="arrow"
+            [class.open]="isSubmenuOpen('equipments-patterns')"
+            >▼</span
+          >
+        </div>
+        <div
+          class="dashboard-submenu"
+          [class.open]="isSubmenuOpen('equipments-patterns')"
+        >
+          <a
+            routerLink="/dashboard/equipments-patterns/search-equipment-pattern"
+            [class.active]="
+              isActive(
+                '/dashboard/equipments-patterns/search-equipment-pattern'
+              )
+            "
+            (click)="onNavigate()"
+          >
+            Buscar Equipo
+          </a>
+          <a
+            routerLink="/dashboard/equipments-patterns/register-equipment-pattern"
+            [class.active]="
+              isActive(
+                '/dashboard/equipments-patterns/register-equipment-pattern'
+              )
+            "
+            (click)="onNavigate()"
+          >
+            Registrar Equipo
+          </a>
+          <a
+            routerLink="/dashboard/equipments-patterns/brands"
+            [class.active]="isActive('/equipments-patterns/brands')"
+            (click)="onNavigate()"
+          >
+            Actualizar Marca
+          </a>
+          <a
+            routerLink="/dashboard/equipments-patterns/functions"
+            [class.active]="
+              isActive('/dashboard/equipments-patterns/functions')
+            "
+            (click)="onNavigate()"
+          >
+            Actualizar Función
+          </a>
+        </div>
+      </div>
+
+      <!-- Enlaces directos para administradores -->
+      <div class="dashboard-group">
+        <div class="dashboard-group-title">Administración</div>
         <a
-          routerLink="/dashboard/equipments-patterns/search-equipment-pattern"
+          routerLink="/dashboard/assign-equipment-permissions"
+          class="dashboard-link"
           [class.active]="
-            isActive('/dashboard/equipments-patterns/search-equipment-pattern')
+            isExactActive('/dashboard/assign-equipment-permissions')
           "
           (click)="onNavigate()"
-          >Buscar Equipo</a
         >
+          <i class="icon-permissions"></i> Permisos de Uso
+        </a>
         <a
-          routerLink="/dashboard/equipments-patterns/register-equipment-pattern"
-          [class.active]="
-            isActive(
-              '/dashboard/equipments-patterns/register-equipment-pattern'
-            )
-          "
+          routerLink="/dashboard/sessions/session-history"
+          class="dashboard-link"
+          [class.active]="isExactActive('/dashboard/sessions/session-history')"
           (click)="onNavigate()"
-          >Registrar Equipo</a
         >
+          <i class="icon-sessions"></i> Historial de Sesiones
+        </a>
         <a
-          routerLink="/dashboard/equipments-patterns/brands"
-          [class.active]="isActive('/equipments-patterns/brands')"
+          routerLink="/dashboard/reports/session-report"
+          class="dashboard-link"
+          [class.active]="isExactActive('/dashboard/reports/session-report')"
           (click)="onNavigate()"
-          >Actualizar Marca</a
         >
-        <a
-          routerLink="/dashboard/equipments-patterns/functions"
-          [class.active]="isActive('/dashboard/equipments-patterns/functions')"
-          (click)="onNavigate()"
-          >Actualizar Función</a
-        >
+          <i class="icon-reports"></i> Reporte de Sesiones
+        </a>
       </div>
     </div>
 
-    <!-- Enlaces individuales para administradores de calidad -->
-    <a
-      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
-      routerLink="/dashboard/assign-equipment-permissions"
-      class="dashboard-link"
-      [class.active]="isExactActive('/dashboard/assign-equipment-permissions')"
-      (click)="onNavigate()"
-      >Permisos de Uso</a
-    >
-
-    <a
-      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
-      routerLink="/dashboard/sessions/session-history"
-      class="dashboard-link"
-      [class.active]="isExactActive('/dashboard/sessions/session-history')"
-      (click)="onNavigate()"
-      >Historial de Sesiones</a
-    >
-
-    <a
-      *ngIf="hasRole(['QUALITY-ADMIN-USER'])"
-      routerLink="/dashboard/reports/session-report"
-      class="dashboard-link"
-      [class.active]="isExactActive('/dashboard/reports/session-report')"
-      (click)="onNavigate()"
-      >Reporte de Sesiones</a
-    >
-
-    <!-- Enlaces comunes para todos los usuarios -->
-    <a
-      routerLink="/dashboard/user-profile"
-      class="dashboard-link"
-      [class.active]="isExactActive('/dashboard/user-profile')"
-      (click)="onNavigate()"
-      >Perfil de Usuario</a
-    >
-
-    <!-- Botón de cierre de sesión -->
-    <a (click)="logout()" class="dashboard-link">Cerrar Sesión</a>
+    <!-- Grupo: Usuario -->
+    <div class="dashboard-group user-section">
+      <a
+        routerLink="/dashboard/user-profile"
+        class="dashboard-link"
+        [class.active]="isExactActive('/dashboard/user-profile')"
+        (click)="onNavigate()"
+      >
+        <i class="icon-profile"></i> Perfil de Usuario
+      </a>
+      <a (click)="logout()" class="dashboard-link">
+        <i class="icon-logout"></i> Cerrar Sesión
+      </a>
+    </div>
   </nav>
 
   <!-- Área principal del dashboard -->
   <main class="dashboard-main">
     <header class="dashboard-header">
       <span class="dashboard-user-info">
-        {{ name.toUpperCase() }} - {{ getTranslatedRole() }}
+        <i class="icon-user"></i> {{ name.toUpperCase() }} -
+        {{ getTranslatedRole() }}
       </span>
     </header>
 
-    <router-outlet></router-outlet>
+    <div class="dashboard-content">
+      <router-outlet></router-outlet>
+    </div>
   </main>
 </section>

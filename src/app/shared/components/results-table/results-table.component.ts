@@ -111,4 +111,20 @@ export class ResultsTableComponent implements OnInit {
     const statusStr = status.toLowerCase();
     return statusStr === 'activo' || statusStr === 'disponible';
   }
+
+  isLongText(text: string): boolean {
+    return text?.length > 60;
+  }
+
+  shouldWrapText(text: string): boolean {
+    if (!text) return false;
+
+    // Considerar como texto largo si:
+    // - Tiene más de 50 caracteres
+    // - Contiene comas (para frases largas)
+    // - Tiene más de 5 palabras
+    return (
+      text.length > 30 || text.includes(',') || text.split(/\s+/).length > 5
+    );
+  }
 }
