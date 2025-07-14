@@ -141,3 +141,17 @@ Para más detalles, incluyendo ejemplos de código, flujos de navegación y pers
 👉 [https://deepwiki.com/juanitomanoplateada/geli/1-overview](https://deepwiki.com/juanitomanoplateada/geli/1-overview)
 
 ---
+
+## 🖼️ Vista previa de módulos
+
+### 🔍 Módulo de Búsqueda
+![Módulo de Búsqueda](public/module_search_preview.png)
+
+### 🔐 Módulo de Permisos
+![Permisos de Usuario](public/preview_permissions_module.png)
+
+### 📊 Historial de Sesiones
+![Historial de Sesiones](public/session_history_module_preview.png)
+
+### ▶️ Módulo de Sesiones Activas
+![Sesiones Activas](public/preview_active_sessions_module.png)
