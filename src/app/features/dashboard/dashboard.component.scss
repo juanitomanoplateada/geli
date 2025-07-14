@@ -260,7 +260,8 @@ $tablet-breakpoint: 992px;
 }
 
 .dashboard-content {
-  padding: 1.5rem;
+  padding: 1rem;
+  padding-bottom: 0rem;
   flex-grow: 1;
 
   @include mobile {

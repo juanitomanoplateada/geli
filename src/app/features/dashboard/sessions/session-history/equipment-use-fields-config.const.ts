@@ -84,7 +84,7 @@ export const EQUIPMENT_USE_FIELDS_CONFIG: FieldConfig[] = [
   },
   {
     key: 'user',
-    label: 'Nombre de quien usa el equipo/patrón',
+    label: 'Nombre de quien usa el equipo',
     type: 'dropdown',
     allowEmptyOption: 'TODOS',
   },

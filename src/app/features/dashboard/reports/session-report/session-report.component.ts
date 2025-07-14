@@ -9,7 +9,6 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { Laboratory } from '../../../../core/dto/laboratory/laboratory.dto';
 import { EquipmentDto } from '../../../../core/dto/equipments-patterns/equipment-response.dto';
 import { FunctionDto } from '../../../../core/dto/function/function-response.dto';
 import { UserRecordResponse } from '../../../../core/dto/user/record-user-response.dto';
@@ -27,6 +26,7 @@ import {
 import { EQUIPMENT_USE_FIELDS_CONFIG } from './equipment-use-fields-config.const';
 import { SessionRecord } from '../../../../core/dto/session/session-record.dto';
 import { LaboratoryResponseDto } from '../../../../core/dto/laboratory/laboratory-response.dto';
+import JSZip from 'jszip';
 
 @Component({
   selector: 'app-session-report',
@@ -132,6 +132,10 @@ export class SessionReportComponent implements OnInit {
     '#33b5e5',
   ];
 
+  pdfCooldown = false;
+  excelCooldown = false;
+  csvCooldown = false;
+
   constructor(
     private labService: LaboratoryService,
     private equipmentService: EquipmentService,
@@ -232,10 +236,9 @@ export class SessionReportComponent implements OnInit {
 
   onSearch(): void {
     const request = this.buildFilterRequest();
-    console.log(request);
     this.isLoading = true;
 
-    this.equipmentUseService.filter(request, 0, 9999).subscribe({
+    this.equipmentUseService.filter(request, 0, 999999).subscribe({
       next: (response) => this.handleSearchSuccess(response),
       error: () => this.handleSearchError(),
     });
@@ -265,22 +268,29 @@ export class SessionReportComponent implements OnInit {
     return {
       id: session.id,
       equipment: session.equipment.equipmentName,
+      brand: session.equipment.brand.brandName,
       lab: `${session.equipment.laboratory.laboratoryName}`,
       labName: session.equipment.laboratory.laboratoryName,
       inventoryCode: session.equipment.inventoryNumber,
       date: this.formatDate(session.startUseTime),
       time: this.formatTime(session.startUseTime),
-      verifiedStatus: session.isVerified ? 'SI' : 'NO',
-      usageStatus: session.isAvailable ? 'SI' : 'NO',
+      verifiedStatus:
+        session.isVerified == null ? '—' : session.isVerified ? 'SI' : 'NO',
+
+      usageStatus:
+        session.isAvailable == null ? '—' : session.isAvailable ? 'SI' : 'NO',
+
       usageDuration: inProgress ? 'EN CURSO' : usageDuration,
       sampleCount: inProgress ? undefined : session.samplesNumber,
       functionsUsed: inProgress
         ? undefined
         : session.usedFunctions?.map((f) => f.functionName),
-      observations: inProgress ? undefined : session.observations || 'N/A',
+      observations: inProgress ? undefined : session.observations,
       responsible: `${session.user.firstName} ${session.user.lastName}`,
+      email: session.user.email,
       inProgress,
       startDateTime: session.startUseTime,
+      endUseTime: session.endUseTime ?? '',
     };
   }
 
@@ -414,6 +424,9 @@ export class SessionReportComponent implements OnInit {
   }
 
   exportToExcel(): void {
+    if (this.excelCooldown) return;
+    this.excelCooldown = true;
+
     const data = this.mapSessionRecordsToExport();
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -424,116 +437,215 @@ export class SessionReportComponent implements OnInit {
       type: 'array',
     });
 
-    const blob = new Blob([excelBuffer], {
-      type: 'application/octet-stream',
+    const zip = new JSZip();
+    zip.file('reporte_sesiones.xlsx', excelBuffer);
+    zip.file('filtros_aplicados.txt', this.buildFilterText());
+
+    const fileName = this.generateFileName('zip');
+    zip.generateAsync({ type: 'blob' }).then((blob) => {
+      saveAs(blob, fileName);
+      setTimeout(() => (this.excelCooldown = false), 3000);
     });
-
-    const fileName = `reporte_sesiones_${new Date()
-      .toISOString()
-      .slice(0, 19)
-      .replace(/[:T]/g, '-')}.xlsx`;
-
-    saveAs(blob, fileName);
   }
 
   exportToCSV(): void {
-    /*const data = this.mapSessionRecordsToExport();
+    if (this.csvCooldown) return;
+    this.csvCooldown = true;
+
+    const data = this.mapSessionRecordsToExport();
     const worksheet = XLSX.utils.json_to_sheet(data);
     const csv = XLSX.utils.sheet_to_csv(worksheet);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
 
-    const fileName = `reporte_sesiones_${new Date()
-      .toISOString()
-      .slice(0, 19)
-      .replace(/[:T]/g, '-')}.csv`;
+    const zip = new JSZip();
+    zip.file('reporte_sesiones.csv', csv);
+    zip.file('filtros_aplicados.txt', this.buildFilterText());
 
-    saveAs(blob, fileName);*/
+    const fileName = this.generateFileName('zip');
+    zip.generateAsync({ type: 'blob' }).then((blob) => {
+      saveAs(blob, fileName);
+      setTimeout(() => (this.csvCooldown = false), 3000);
+    });
+  }
+
+  private buildFilterText(): string {
+    const lines: string[] = [];
+    lines.push('🧾 Filtros aplicados');
+    lines.push('======================');
+
+    const keyLabels: Record<keyof typeof this.filters, string> = {
+      sessionStatus: 'Estado de la sesión',
+      equipment: 'Nombre del equipo/patrón',
+      lab: 'Ubicación',
+      codeInventory: 'Código de inventario',
+      dateFrom: 'Fecha desde',
+      dateTo: 'Fecha hasta',
+      timeFrom: 'Hora desde',
+      timeTo: 'Hora hasta',
+      verifiedStatus: 'Estado - Verificado',
+      usageStatus: 'Estado - Para uso',
+      usageDurationMin: 'Duración mínima de uso (segundos)',
+      usageDurationMax: 'Duración máxima de uso (segundos)',
+      sampleCountMin: 'Cantidad de muestras analizadas desde',
+      sampleCountMax: 'Cantidad de muestras analizadas hasta',
+      function: 'Función utilizada',
+      user: 'Nombre de quien usa el equipo/patrón',
+    };
+
+    for (const key in this.filters) {
+      const typedKey = key as keyof typeof this.filters;
+      const value = this.filters[typedKey];
+
+      if (value !== null && value !== undefined && value !== '') {
+        const label = keyLabels[typedKey] || key;
+        lines.push(
+          `${label}: ${Array.isArray(value) ? value.join(', ') : value}`
+        );
+      }
+    }
+
+    return lines.join('\n');
+  }
+
+  private generateFileName(extension: string): string {
+    const now = new Date();
+    const bogotaTime = new Date(
+      now.toLocaleString('en-US', { timeZone: 'America/Bogota' })
+    );
+    const yyyy = bogotaTime.getFullYear();
+    const MM = String(bogotaTime.getMonth() + 1).padStart(2, '0');
+    const dd = String(bogotaTime.getDate()).padStart(2, '0');
+    const hh = String(bogotaTime.getHours()).padStart(2, '0');
+    const mm = String(bogotaTime.getMinutes()).padStart(2, '0');
+    const ss = String(bogotaTime.getSeconds()).padStart(2, '0');
+
+    return `reporte_sesiones_${yyyy}-${MM}-${dd}_${hh}-${mm}-${ss}.${extension}`;
   }
 
   private mapSessionRecordsToExport(): any[] {
-    /*return this.sessionRecords.map((s) => {
-      const [startDate, startTime] = s.startUseTime.split('T');
-      const [endDate, endTime] = s.endUseTime
-        ? s.endUseTime.split('T')
-        : ['N/A', 'N/A'];
+    return this.sessionRecords.map((s) => {
+      const start = new Date(s.startDateTime);
+      const end = s.endUseTime ? new Date(s.endUseTime) : null;
+
+      const bogotaStart = new Date(
+        start.toLocaleString('en-US', { timeZone: 'America/Bogota' })
+      );
+
+      const MM = bogotaStart.getMonth() + 1;
+      const dd = bogotaStart.getDate();
+      const yyyy = bogotaStart.getFullYear();
+
+      const hh = String(bogotaStart.getHours()).padStart(2, '0');
+      const mm = String(bogotaStart.getMinutes()).padStart(2, '0');
+      const ss = String(bogotaStart.getSeconds()).padStart(2, '0');
+
+      const marcaTemporal = `${MM}/${dd}/${yyyy} ${hh}:${mm}:${ss}`;
+      const fecha = `${dd}/${MM}/${yyyy}`;
+
+      const hora = bogotaStart.toLocaleTimeString('es-CO', {
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      });
+
+      const nombreEquipo =
+        `${s.equipment} ${s.brand} Código inventario: ${s.inventoryCode}`.toUpperCase();
+
+      // 🧮 Duración
+      let duracion = 'EN CURSO';
+      if (end) {
+        const diffMs = end.getTime() - start.getTime();
+        const hours = Math.floor(diffMs / (1000 * 60 * 60));
+        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+        duracion = `${hours}:${String(minutes).padStart(2, '0')}:${String(
+          seconds
+        ).padStart(2, '0')}`;
+      }
+
+      // 🧪 Funciones usadas
+      const funciones = Array.isArray(s.functionsUsed)
+        ? s.functionsUsed.join(', ')
+        : '—';
 
       return {
-        ID: s.id,
-        Responsable: `${s.user.firstName} ${s.user.lastName}`,
-        Correo: s.user.email,
-        Identificación: s.user.identification,
-        'Código de inventario': s.equipment.inventoryNumber,
-        Equipo: s.equipment.equipmentName,
-        Laboratorio: s.equipment.laboratory.laboratoryName,
-        Ubicación: s.equipment.laboratory.location.locationName,
-        'Fecha de inicio': startDate,
-        'Hora de inicio': startTime,
-        'Fecha de fin': endDate,
-        'Hora de fin': endTime,
-        'Tiempo de uso': this.getUsageDuration(s.startUseTime, s.endUseTime),
-        'Sesión activa': s.isInUse ? 'Sí' : 'No',
-        Verificado: s.isVerified ? 'Sí' : 'No',
-        'Para uso': s.isAvailable ? 'Sí' : 'No',
-        'Cantidad de muestras': s.samplesNumber ?? 0,
-        'Funciones usadas': s.usedFunctions
-          .map((f) => f.functionName)
-          .join(', '),
-        Observaciones: s.observations ?? '',
+        'Marca temporal': marcaTemporal,
+        'Dirección de correo electrónico': s.email?.toUpperCase() || '',
+        'Nombre del equipo': nombreEquipo,
+        Fecha: fecha,
+        Hora: hora,
+        'Estado - Verificado': s.verifiedStatus || '',
+        'Estado - Para uso': s.usageStatus || '',
+        'Condiciones de uso - Tiempo de uso': duracion,
+        'Condiciones de uso - Cantidad de muestras analizadas':
+          s.sampleCount ?? '—',
+        'Condiciones de uso - Funciones utilizadas': funciones,
+        'Condiciones de uso - Observaciones':
+          s.observations?.toUpperCase() || '',
+        'Nombre de quien usa el equipo': s.responsible?.toUpperCase() || '',
       };
-    });*/
-    return [];
-  }
-
-  private getUsageDuration(start: string, end: string | null): string {
-    if (!start || !end) return 'En curso';
-
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const diffMs = endDate.getTime() - startDate.getTime();
-
-    if (isNaN(diffMs) || diffMs < 0) return 'Inválido';
-
-    const totalSeconds = Math.floor(diffMs / 1000);
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds % 86400) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    const pad = (n: number): string => n.toString().padStart(2, '0');
-
-    if (days > 0) {
-      return `${days}d ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-    }
-
-    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    });
   }
 
   @ViewChild('pdfReportContent', { static: false })
   pdfReportContent!: ElementRef;
 
   exportToPDF(): void {
+    if (this.pdfCooldown || !this.pdfReportContent) return;
+
+    this.pdfCooldown = true;
+
     const element = this.pdfReportContent.nativeElement;
 
     html2canvas(element, {
-      scale: 2, // 🔍 Alta resolución
+      scale: 2,
       scrollY: -window.scrollY,
       useCORS: true,
     }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-
       const imgProps = pdf.getImageProperties(imgData);
       const pdfWidth = 210;
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
-      const fileName = `informe_sesiones_${new Date()
-        .toISOString()
-        .slice(0, 19)
-        .replace(/[:T]/g, '-')}.pdf`;
+      // 🎯 Mapa de nombres bonitos
+      const tabTitles: Record<string, string> = {
+        estado: 'estado_sesion',
+        equipo: 'por_equipo',
+        laboratorio: 'por_laboratorio',
+        codigo: 'por_codigo_inventario',
+        historico: 'historico_por_fecha',
+        hora: 'por_hora',
+        verificado: 'estado_verificacion',
+        paraUso: 'estado_disponibilidad',
+        muestras: 'muestras_por_sesion',
+        funcion: 'funciones_utilizadas',
+        usuario: 'por_responsable',
+      };
+
+      const tabName = tabTitles[this.activeTab] || 'reporte_general';
+
+      // 🕐 Fecha y hora Bogotá
+      const now = new Date();
+      const bogotaTime = new Date(
+        now.toLocaleString('en-US', { timeZone: 'America/Bogota' })
+      );
+      const yyyy = bogotaTime.getFullYear();
+      const MM = String(bogotaTime.getMonth() + 1).padStart(2, '0');
+      const dd = String(bogotaTime.getDate()).padStart(2, '0');
+      const hh = String(bogotaTime.getHours()).padStart(2, '0');
+      const mm = String(bogotaTime.getMinutes()).padStart(2, '0');
+      const ss = String(bogotaTime.getSeconds()).padStart(2, '0');
+
+      const fileName = `reporte_sesiones_${tabName}_${yyyy}-${MM}-${dd}_${hh}-${mm}-${ss}.pdf`;
 
       pdf.save(fileName);
+
+      setTimeout(() => {
+        this.pdfCooldown = false;
+      }, 3000);
     });
   }
 
@@ -580,8 +692,17 @@ export class SessionReportComponent implements OnInit {
         incrementMap(dateCounts, start.toISOString().split('T')[0]);
       }
 
-      session.verifiedStatus === 'SI' ? verified++ : notVerified++;
-      session.usageStatus === 'SI' ? available++ : unavailable++;
+      if (session.verifiedStatus === 'SI') {
+        verified++;
+      } else if (session.verifiedStatus === 'NO') {
+        notVerified++;
+      }
+
+      if (session.usageStatus === 'SI') {
+        available++;
+      } else if (session.usageStatus === 'NO') {
+        unavailable++;
+      }
 
       const sampleIndex = classifySampleRange(session.sampleCount ?? 0);
       this.sampleRangeData[sampleIndex]++;

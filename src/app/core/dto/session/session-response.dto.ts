@@ -18,6 +18,10 @@ export interface EquipmentUseResponse {
   equipment: {
     id: number;
     equipmentName: string;
+    brand: {
+      id: number;
+      brandName: string;
+    };
     inventoryNumber: string;
     availability: boolean;
     equipmentObservations: string | null;

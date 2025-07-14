@@ -3,6 +3,7 @@ export interface SessionRecord {
   equipment: string;
   lab: string;
   labName: string;
+  brand: string;
   inventoryCode: string;
   date: string;
   time: string;
@@ -13,6 +14,8 @@ export interface SessionRecord {
   functionsUsed?: string[];
   observations?: string;
   responsible: string;
+  email:string;
   inProgress: boolean;
   startDateTime: string;
+  endUseTime: string;
 }

@@ -210,6 +210,7 @@ export class SessionHistoryComponent implements OnInit {
     return {
       id: session.id,
       equipment: session.equipment.equipmentName,
+      brand: session.equipment.brand.brandName,
       lab: `${session.equipment.laboratory.laboratoryName}`,
       labName: session.equipment.laboratory.laboratoryName,
       inventoryCode: session.equipment.inventoryNumber,
@@ -226,6 +227,8 @@ export class SessionHistoryComponent implements OnInit {
       responsible: `${session.user.firstName} ${session.user.lastName}`,
       inProgress,
       startDateTime: session.startUseTime,
+      email: session.user.email,
+      endUseTime: session.endUseTime ?? '',
     };
   }
 

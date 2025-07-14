@@ -7,9 +7,9 @@
   flex-direction: column;
   max-width: 1750px;
   width: 100%;
-  margin: 3.5rem auto;
+  margin: 0 auto;
   font-family: Arial, sans-serif;
-  padding: 0 1rem;
+  padding: 2rem 0rem 0rem 0rem;
   box-sizing: border-box;
 }
 
@@ -203,7 +203,7 @@
 .session-detail {
   background-color: #fff;
   border-radius: 8px;
-  padding: 2rem;
+  padding: 2rem 2rem 1rem 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
   .detail-header {
@@ -249,7 +249,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
 
     .duration-badge {
       background-color: #e6f7ff;
