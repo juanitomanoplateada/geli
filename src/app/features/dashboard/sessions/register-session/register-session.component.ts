@@ -15,7 +15,6 @@ import { EquipmentUseService } from '../../../../core/services/session/equipment
 // Models
 import { LabeledOption } from '../../../../shared/components/dropdown-search-entity-obj/dropdown-search-entity-obj.component';
 import { Laboratory } from '../../../../core/dto/laboratory/laboratory.dto';
-import { AuthTokenService } from '../../../../core/auth/services/auth-token.service';
 import { EquipmentStartUseRequest } from '../../../../core/dto/session/start-session-request.dto';
 import { LaboratoryHelperService } from '../../../../core/helpers/laboratory/laboratory-helper.service';
 import { EquipmentHelperService } from '../../../../core/helpers/equipment/equipment-helper.service';
@@ -63,7 +62,6 @@ export class RegisterSessionComponent {
     private labService: LaboratoryService,
     private equipmentUseService: EquipmentUseService,
     private equipmentService: EquipmentService,
-    private authTokenService: AuthTokenService,
     private laboratoryHelper: LaboratoryHelperService,
     private equipmentHelper: EquipmentHelperService,
     private router: Router
@@ -76,7 +74,6 @@ export class RegisterSessionComponent {
   // Initialization methods
   private loadInitialData(): void {
     this.isLoading = true;
-    this.currentUserName = this.authTokenService.getUserName();
 
     this.labService.getLaboratoriesAuthorizeds().subscribe({
       next: (labs) => {

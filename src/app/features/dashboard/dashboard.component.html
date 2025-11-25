@@ -59,7 +59,7 @@
     </div>
 
     <!-- Grupo: Administración (para administradores de calidad) -->
-    <div *ngIf="hasRole(['QUALITY-ADMIN-USER'])">
+    <div *ngIf="hasRole(['quality_admin'])">
       <!-- Subgrupo: Usuarios -->
       <div
         class="dashboard-group"
@@ -261,7 +261,7 @@
   <main class="dashboard-main">
     <header class="dashboard-header">
       <span class="dashboard-user-info">
-        <i class="icon-user"></i> {{ name.toUpperCase() }} -
+        <i class="icon-user"></i> 👤 {{ name.toUpperCase() }} -
         {{ getTranslatedRole() }}
       </span>
     </header>

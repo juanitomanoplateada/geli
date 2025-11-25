@@ -24,7 +24,6 @@ import {
   DEFAULT_EQUIPMENT_USE_FILTERS,
 } from './equipment-use-filters.const';
 import { EQUIPMENT_USE_FIELDS_CONFIG } from './equipment-use-fields-config.const';
-import { AuthUserService } from '../../../../core/auth/services/auth-user.service';
 import { EquipmentUseFilterRequest } from '../../../../core/dto/session/session-filter-request.dto';
 import { EquipmentUseResponse } from '../../../../core/dto/session/session-response.dto';
 import { FunctionDto } from '../../../../core/dto/function/function-response.dto';
@@ -74,13 +73,12 @@ export class PersonalSessionHistoryComponent implements OnInit {
     private equipmentUseService: EquipmentUseService,
     private labService: LaboratoryService,
     private equipmentService: EquipmentService,
-    private functionService: FunctionService,
-    private authUserService: AuthUserService
+    private functionService: FunctionService
   ) {}
 
   // Lifecycle Hooks
   ngOnInit(): void {
-    this.authUserService.getAuthenticatedUserId().subscribe({
+    /*this.authUserService.getAuthenticatedUserId().subscribe({
       next: (id) => {
         this.userId = id;
         this.loadFilterOptions();
@@ -89,7 +87,7 @@ export class PersonalSessionHistoryComponent implements OnInit {
       error: (err) => {
         console.error('No se pudo obtener el ID del usuario autenticado', err);
       },
-    });
+    });*/
 
     // Duración en tiempo real
     setInterval(() => {

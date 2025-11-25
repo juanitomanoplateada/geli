@@ -6,7 +6,7 @@ import { equipmentsPatternsRoutes } from './equipments-patterns/equipments-patte
 import { sessionsRoutes } from './sessions/sessions.routes';
 import { reportsRoutes } from './reports/reports.routes';
 import { UserProfileComponent } from './user-profile/user-profile.component';
-import { RoleGuard } from '../../core/auth/guards/role.guard';
+import { KeycloakRoleGuard } from '../../core/auth/keycloak-role.guard';
 import { AssignEquipmentPermissionsComponent } from './assign-equipment-permissions/assign-equipment-permissions.component';
 import { SessionReportComponent } from './reports/session-report/session-report.component';
 
@@ -15,25 +15,25 @@ export const dashboardRoutes: Routes = [
   { path: 'home', component: HomeComponent },
   {
     path: 'assign-equipment-permissions',
-    canActivate: [RoleGuard],
+    canActivate: [KeycloakRoleGuard],
     data: { roles: ['QUALITY-ADMIN-USER'] },
     component: AssignEquipmentPermissionsComponent,
   },
   {
     path: 'users',
-    canActivate: [RoleGuard],
+    canActivate: [KeycloakRoleGuard],
     data: { roles: ['QUALITY-ADMIN-USER'] },
     children: usersRoutes,
   },
   {
     path: 'laboratories',
-    canActivate: [RoleGuard],
+    canActivate: [KeycloakRoleGuard],
     data: { roles: ['QUALITY-ADMIN-USER'] },
     children: laboratoriesRoutes,
   },
   {
     path: 'equipments-patterns',
-    canActivate: [RoleGuard],
+    canActivate: [KeycloakRoleGuard],
     data: { roles: ['QUALITY-ADMIN-USER'] },
     children: equipmentsPatternsRoutes,
   },
@@ -43,19 +43,19 @@ export const dashboardRoutes: Routes = [
   },
   {
     path: 'reports',
-    canActivate: [RoleGuard],
+    canActivate: [KeycloakRoleGuard],
     data: { roles: ['QUALITY-ADMIN-USER'] },
     children: reportsRoutes,
   },
   {
     path: 'user-profile',
-    canActivate: [RoleGuard],
+    canActivate: [KeycloakRoleGuard],
     data: { roles: ['AUTHORIZED-USER', 'QUALITY-ADMIN-USER'] },
     component: UserProfileComponent,
   },
   {
     path: 'session-report',
-    canActivate: [RoleGuard],
+    canActivate: [KeycloakRoleGuard],
     data: { roles: ['QUALITY-ADMIN-USER'] },
     component: SessionReportComponent,
   },

@@ -4,7 +4,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../core/auth/services/auth.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -50,33 +49,9 @@ export class UserProfileComponent implements OnInit {
   private debounceTimer: any;
   isValidatingCurrentPassword = false;
 
-  constructor(
-    private router: Router,
-    private authService: AuthService,
-    private userService: UserService
-  ) {}
+  constructor(private router: Router, private userService: UserService) {}
 
-  ngOnInit(): void {
-    const email = this.authService.getCurrentUserEmail();
-
-    this.userService.getUserByEmail(email).subscribe({
-      next: (user: UserRecordResponse) => {
-        this.userProfile = {
-          fullName: `${user.firstName} ${user.lastName}`,
-          userId: user.identification.toString(),
-          institutionalEmail: user.email,
-          userStatus: user.enabledStatus ? 'Activo' : 'Inactivo',
-          role: this.translateRole(user.role),
-          position: user.position?.positionName ?? 'Sin posición',
-        };
-        this.isLoadingProfile = false;
-      },
-      error: () => {
-        this.isLoadingProfile = false;
-        // Aquí podrías redirigir al login si lo deseas
-      },
-    });
-  }
+  ngOnInit(): void {}
 
   /** Traduce el rol interno a etiqueta en español */
   private translateRole(role: string): string {
@@ -117,35 +92,7 @@ export class UserProfileComponent implements OnInit {
   }
 
   /** Envía el cambio de contraseña al backend */
-  onSubmitPasswordChange(): void {
-    if (!this.canSubmitPasswordChange) return;
-
-    this.isLoadingPasswordChange = true;
-    this.feedbackMessage = null;
-
-    this.authService.changePassword(this.newPassword).subscribe({
-      next: (res) => {
-        this.isLoadingPasswordChange = false;
-        this.feedbackMessage =
-          res.message || 'Contraseña cambiada exitosamente.';
-        this.isPasswordChangeSuccessful = res.success ?? true;
-        this.resetAllFields();
-
-        // Cierra sesión tras mostrar feedback
-        setTimeout(() => {
-          this.feedbackMessage = null;
-          localStorage.clear();
-          this.router.navigate(['/auth/login']);
-        }, 4000);
-      },
-      error: () => {
-        this.isLoadingPasswordChange = false;
-        this.feedbackMessage = '❌ Error al cambiar la contraseña.';
-        this.isPasswordChangeSuccessful = false;
-        setTimeout(() => (this.feedbackMessage = null), 8000);
-      },
-    });
-  }
+  onSubmitPasswordChange(): void {}
 
   /** Limpia solo los campos de nueva contraseña */
   private resetNewPasswordFields(): void {
@@ -162,31 +109,5 @@ export class UserProfileComponent implements OnInit {
     this.canShowNewPasswordFields = false;
   }
 
-  onCurrentPasswordInput(): void {
-    clearTimeout(this.debounceTimer);
-
-    if (!this.currentPassword) {
-      this.canShowNewPasswordFields = false;
-      this.invalidCurrentPassword = false;
-      return;
-    }
-
-    this.debounceTimer = setTimeout(() => {
-      this.isValidatingCurrentPassword = true;
-
-      this.authService.validateCurrentPassword(this.currentPassword).subscribe({
-        next: () => {
-          this.isValidatingCurrentPassword = false;
-          this.canShowNewPasswordFields = true;
-          this.invalidCurrentPassword = false;
-        },
-        error: () => {
-          this.isValidatingCurrentPassword = false;
-          this.canShowNewPasswordFields = false;
-          this.invalidCurrentPassword = true;
-          this.resetNewPasswordFields();
-        },
-      });
-    }, 500); // debounce de 500ms
-  }
+  onCurrentPasswordInput(): void {}
 }

@@ -1,12 +1,35 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideHttpClient } from '@angular/common/http'; // 👈 Importante
+import { provideRouter } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { APP_INITIALIZER } from '@angular/core';
+
 import { AppComponent } from './app/app.component';
-import { appConfig } from './app/app.config';
+import { appRoutes } from './app/app.routes';
+import { KeycloakService } from 'keycloak-angular';
+import { keycloakConfig } from './app/core/auth/keycloak.config';
+import { keycloakInterceptor } from './app/core/auth/keycloak.interceptor';
+
+export function initializeKeycloak(keycloak: KeycloakService) {
+  return () =>
+    keycloak.init({
+      config: keycloakConfig.config,
+      initOptions: keycloakConfig.initOptions,
+      enableBearerInterceptor: true,
+      bearerPrefix: 'Bearer',
+      loadUserProfileAtStartUp: true,
+    });
+}
 
 bootstrapApplication(AppComponent, {
-  ...appConfig,
   providers: [
-    ...(appConfig.providers || []),
-    provideHttpClient(), // 👈 ¡Esto soluciona el error de HttpClient!
+    provideRouter(appRoutes),
+    provideHttpClient(withInterceptors([keycloakInterceptor])),
+    KeycloakService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeKeycloak,
+      multi: true,
+      deps: [KeycloakService],
+    },
   ],
 }).catch((err) => console.error(err));

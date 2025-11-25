@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
-import { UserSessionService } from '../../core/auth/services/user-session.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -32,16 +31,12 @@ export class DashboardComponent implements OnInit {
   };
 
   private readonly roleTranslations: Record<string, string> = {
-    'QUALITY-ADMIN-USER': 'Analista de Calidad',
+    quality_admin: 'Analista de Calidad',
     'AUTHORIZED-USER': 'Personal Autorizado',
     // Agrega más traducciones según necesites
   };
 
-  constructor(
-    private router: Router,
-    private session: UserSessionService,
-    private datePipe: DatePipe
-  ) {}
+  constructor(private router: Router, private datePipe: DatePipe) {}
 
   ngOnInit(): void {
     this.loadUserData();
@@ -52,11 +47,7 @@ export class DashboardComponent implements OnInit {
   // ----------------------------
   // Inicialización
   // ----------------------------
-  private loadUserData(): void {
-    this.username = this.session.getUsername() ?? 'Usuario';
-    this.roles = this.session.getRoles();
-    this.name = this.session.getNameFromToken() || this.username;
-  }
+  private loadUserData(): void {}
 
   private initializeSubmenus(): void {
     // Abrir automáticamente el submenú correspondiente a la ruta actual
@@ -108,7 +99,6 @@ export class DashboardComponent implements OnInit {
   }
 
   logout(): void {
-    this.session.logout();
     this.router.navigate(['/auth/login']);
   }
 
